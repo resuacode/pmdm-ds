@@ -60,7 +60,7 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'Programación Multimedia y Dispositivos Móviles',
+      title: 'PMDM',
       logo: {
         alt: 'My Site Logo',
         src: 'img/main/logo.svg',

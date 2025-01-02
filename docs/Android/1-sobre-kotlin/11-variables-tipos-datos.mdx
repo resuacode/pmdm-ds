@@ -4,7 +4,7 @@ import CodeBlock from '@theme/CodeBlock';
 
 En Kotlin las variables pueden declararse de dos formas, de forma explícita o de forma implícita. En el caso de las variables explícitas, se debe indicar el tipo de dato que almacenará la variable, mientras que en las variables implícitas, el tipo de dato se infiere automáticamente por el compilador.
 
-:::warn[Sobre la inferencia de tipos]
+:::warning[Sobre la inferencia de tipos]
 Que el tipo de dato se infiera automáticamente no quiere decir que Kotlin sea un lenguaje de tipado dinámico, ya que una vez que se asigna un tipo de dato a una variable, no se puede cambiar.
 :::
 
@@ -90,6 +90,60 @@ var edad: Int = 25 // Variable mutable
 ```
 
 En el ejemplo anterior, la variable `nombre` es inmutable, por lo que su valor no puede cambiar una vez asignado. La variable `edad`, en cambio, es mutable, por lo que su valor puede cambiar en cualquier momento.    
+
+### Sobre la mutabilidad y la inmutabilidad
+
+La inmutabilidad es una característica importante en Kotlin, ya que ayuda a prevenir los errores de programación al evitar que los valores de las variables cambien de forma inesperada. Al utilizar variables inmutables, se puede escribir código más seguro y predecible, lo que facilita la depuración y el mantenimiento del código.   
+
+Cuándo trabajamos con listas o arrays, podemos modificar los elementos de la lista, pero no podemos cambiar la referencia de la lista. 
+
+```kotlin
+val lista = mutableListOf(1, 2, 3, 4, 5)
+lista[0] = 10 // Modifica el elemento en la posición 0
+lista = mutableListOf(6, 7, 8, 9, 10) // Error de compilación
+```
+
+En el ejemplo anterior, se modifica el elemento en la posición `0` de la lista `lista`, pero no se puede cambiar la referencia de la lista. Si se intenta asignar una nueva lista a la variable `lista`, se produce un error de compilación.
+
+Podemos ver también un ejemplo de lista mutable pero cuyo contenido no puede ser modificado.
+
+```kotlin
+val lista = listOf(1, 2, 3, 4, 5)
+lista[0] = 10 // Error de compilación
+```
+
+En el ejemplo anterior, se intenta modificar el elemento en la posición `0` de la lista `lista`, pero como la lista es inmutable, se produce un error de compilación.
+
+Esto nos deja claro que la inmutabilidad no solo se refiere a la variable en sí, sino también a los elementos que contiene la variable.
+
+Podemos entonces tener cuatro situaciones posibles:
+
+- Variable inmutable y elementos inmutables: No se puede cambiar ni la variable ni los elementos.
+- Variable inmutable y elementos mutables: No se puede cambiar la variable, pero sí los elementos.
+- Variable mutable y elementos inmutables: Se puede cambiar la variable, pero no los elementos.
+- Variable mutable y elementos mutables: Se puede cambiar tanto la variable como los elementos.
+
+:::tip[Las variables inmutables y la programación funcional]
+Las variables inmutables son una característica fundamental de la programación funcional, ya que permiten escribir código más seguro y predecible al evitar los efectos secundarios y las mutaciones de estado. 
+
+Al utilizar variables inmutables, se puede escribir código más conciso, legible y mantenible, lo que facilita la depuración y el mantenimiento del código.
+:::
+
+## Sobre las variables nulas
+
+En Kotlin, las variables pueden ser nulas si se declara con el operador `?`. Esto permite que una variable pueda contener un valor nulo en lugar de un valor no nulo.
+
+```kotlin
+val nombre: String? = null
+```
+
+En el ejemplo anterior, la variable `nombre` se declara como nula utilizando el operador `?`. Esto significa que la variable `nombre` puede contener un valor nulo en lugar de un valor no nulo.
+
+:::info[Sobre la seguridad de nulos en Kotlin]
+El manejo de nulos en Kotlin es una de las características más importantes del lenguaje, ya que ayuda a prevenir los errores de referencia nula que son comunes en otros lenguajes de programación.
+
+Más adelante veremos cómo manejar los valores nulos de forma segura en Kotlin.
+:::
 
 ## Sobre las variables declaradas como const
 

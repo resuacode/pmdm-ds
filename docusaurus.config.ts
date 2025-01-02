@@ -5,12 +5,12 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'Programación',
+  title: 'Programación Multimedia y Dispositivos Móviles',
   tagline: 'Página del módulo con la documentación y los ejemplos del curso',
   favicon: 'img/favicon_io/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://your-docusaurus-site.example.com',
+  url: 'https://resuadam2-pmdm.vercel.app/',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -18,7 +18,7 @@ const config: Config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'resuadam2', // Usually your GitHub org/user name.
-  projectName: 'pro-ds', // Usually your repo name.
+  projectName: 'pmdm-ds', // Usually your repo name.
 
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
@@ -60,7 +60,7 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'Programación',
+      title: 'Programación Multimedia y Dispositivos Móviles',
       logo: {
         alt: 'My Site Logo',
         src: 'img/main/logo.svg',

@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Programación Multimedia y Dispositivos Móviles',
   tagline: 'Página del módulo con la documentación y los ejemplos del curso',
-  favicon: 'img/favicon_io/favicon.ico',
+  favicon: 'img/favicon_io/favicon32.png',
 
   // Set the production url of your site here
   url: 'https://resuadam2-pmdm.vercel.app/',

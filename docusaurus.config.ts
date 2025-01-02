@@ -72,7 +72,16 @@ const config: Config = {
           position: 'left',
           label: 'Inicio',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
+        {
+          type: 'docSidebar',
+          position: 'left',
+          label: 'Android',
+        },
+        {
+          type: 'docSidebar',
+          position: 'left',
+          label: 'Juegos',
+        },
         {
           href: 'https://github.com/resuadam2',
           label: 'GitHub',
@@ -89,10 +98,6 @@ const config: Config = {
             {
               label: 'Inicio',
               to: '/docs/intro',
-            },
-            {
-              label: 'Blog',
-              to: '/blog',
             },
           ],
         },

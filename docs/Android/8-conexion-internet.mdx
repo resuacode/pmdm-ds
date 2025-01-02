@@ -1,0 +1,37 @@
+import CodeBlock from '@theme/CodeBlock';
+
+# Conexión a internet
+
+Para conectarse a internet en una aplicación Android con Jetpack Compose, puedes utilizar las siguientes opciones:  
+
+- **Retrofit**: Retrofit es una biblioteca de cliente HTTP para Android y Java que facilita la conexión a servicios web RESTful. Puedes utilizar Retrofit para realizar peticiones HTTP a un servidor y obtener los datos necesarios para tu aplicación.
+
+- **Ktor**: Ktor es un framework de cliente y servidor web en Kotlin que te permite crear aplicaciones web
+
+- **Volley**: Volley es una biblioteca de red que facilita la conexión a servicios web en Android. Puedes utilizar Volley para realizar peticiones HTTP y gestionar las respuestas de forma sencilla.
+
+Vamos a centrarnos en la primera opción, Retrofit, que es una de las bibliotecas más utilizadas para conectarse a servicios web en Android. 
+
+## ¿Qué es Retrofit?
+
+Retrofit es una biblioteca de cliente HTTP para Android y Java que facilita la conexión a servicios web RESTful. Retrofit te permite definir una interfaz de servicio web con anotaciones que describen las operaciones disponibles en el servicio, como las peticiones GET, POST, PUT y DELETE. Retrofit se encarga de convertir las respuestas del servidor en objetos Java/Kotlin y de gestionar la comunicación con el servidor de forma eficiente.
+
+## Implementación de Retrofit en Jetpack Compose
+
+Para implementar Retrofit en una aplicación Android con Jetpack Compose, puedes seguir los siguientes pasos:
+
+1. **Definir la interfaz de servicio web**: Define una interfaz que contenga las operaciones disponibles en el servicio web y anótala con las anotaciones de Retrofit, como `@GET`, `@POST`, `@PUT` y `@DELETE`. Por ejemplo, puedes definir una interfaz `ApiService` que contenga métodos para obtener y enviar datos al servidor.
+
+2. **Crear una instancia de Retrofit**: Crea una instancia de Retrofit utilizando el constructor de `Retrofit.Builder` y configura la URL base del servicio web y el convertidor de JSON. Por ejemplo, puedes crear una instancia de Retrofit que se conecte a un servidor en `https://api.example.com` y utilice el convertidor de JSON de Gson.
+
+3. **Crear una instancia del servicio web**: Crea una instancia del servicio web a partir de la interfaz de servicio web y la instancia de Retrofit. Por ejemplo, puedes crear una instancia del servicio web a partir de la interfaz `ApiService` y la instancia de Retrofit.
+
+4. **Realizar peticiones HTTP**: Utiliza la instancia del servicio web para realizar peticiones HTTP al servidor y obtener los datos necesarios para tu aplicación. Por ejemplo, puedes utilizar el método `getUsers()` de la interfaz `ApiService` para obtener una lista de usuarios del servidor.
+
+## Ejemplo de implementación
+
+
+
+## Recursos
+
+

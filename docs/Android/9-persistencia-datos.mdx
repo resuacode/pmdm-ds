@@ -1,0 +1,39 @@
+import CodeBlock from '@theme/CodeBlock';
+
+# Persistencia de datos en Android
+
+En esta sección vamos a ver cómo implementar la persistencia de datos en una aplicación Android con Jetpack Compose y Room. La persistencia de datos es una parte fundamental de la arquitectura de una aplicación, ya que permite almacenar y recuperar datos de forma segura y eficiente. 
+
+Para ello, vamos a utilizar Room, una biblioteca de persistencia de datos que forma parte de Jetpack y que facilita el acceso a la base de datos y la gestión de los datos de la aplicación. Veremos cómo definir entidades, DAOs y la base de datos en Room, y cómo conectar Room con la capa de datos de la aplicación para acceder a los datos de forma sencilla y reactiva. 
+
+También veremos como almacenar datos de preferencias con `DataStore` y como trabajar con archivos en Android.
+
+## ¿Qué es Room?
+
+Room es una biblioteca de persistencia de datos que forma parte de Jetpack, el conjunto de bibliotecas y herramientas recomendadas por Google para el desarrollo de aplicaciones Android. Room proporciona una capa de abstracción sobre SQLite, la base de datos relacional integrada en Android, y facilita el acceso a la base de datos y la gestión de los datos de la aplicación.
+
+Room se compone de tres componentes principales:
+
+- **Database**: Representa la base de datos de la aplicación y contiene la lógica para crear y acceder a las tablas de la base de datos.
+
+- **Entity**: Representa una tabla de la base de datos y contiene la definición de las columnas y los tipos de datos de la tabla.
+
+- **DAO (Data Access Object)**: Define las operaciones de acceso a la base de datos, como la inserción, actualización y eliminación de datos.
+
+## Implementación de Room en Jetpack Compose
+
+Para implementar Room en una aplicación Android con Jetpack Compose, puedes seguir los siguientes pasos:
+
+1. **Definir la entidad**: Define una clase que represente la tabla de la base de datos y anótala con `@Entity`. Por ejemplo, puedes definir una clase `User` que represente un usuario de la aplicación.
+
+2. **Definir el DAO**: Define una interfaz que contenga las operaciones de acceso a la base de datos y anótala con `@Dao`. Por ejemplo, puedes definir un DAO que contenga métodos para insertar, actualizar y eliminar usuarios.
+
+3. **Definir la base de datos**: Define una clase que extienda `RoomDatabase` y anótala con `@Database`. En esta clase, define los métodos para acceder a las tablas de la base de datos y crea una instancia de la base de datos.
+
+4. **Conectar Room con la capa de datos**: Conecta Room con la capa de datos de tu aplicación para que puedas acceder a la base de datos y gestionar los datos de la aplicación. Puedes utilizar `remember` para crear una instancia de la base de datos en la capa de datos y `viewModel` para acceder a los datos de la base de datos.
+
+## Ejemplo de implementación
+
+
+
+## Recursos

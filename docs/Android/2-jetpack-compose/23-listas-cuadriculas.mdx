@@ -38,6 +38,29 @@ fun ListaHorizontal() {
 
 En el ejemplo anterior, se define un componente `ListaHorizontal` que muestra una lista de 100 elementos horizontales utilizando `LazyRow`. El método `items()` de `LazyRow` se utiliza para generar los elementos de la lista en función de un rango de índices.
 
+## Scroll infinito
+
+Puedes implementar el scroll infinito en las listas de Compose utilizando el método `items()` de `LazyColumn` o `LazyRow` y pasando una lista infinita como argumento. Esto te permite cargar nuevos elementos a medida que el usuario se desplaza por la lista.
+
+```kotlin
+@Composable
+fun ScrollInfinito() {
+    val elementos = remember { mutableStateListOf<String>() }
+
+    LazyColumn {
+        items(elementos) { elemento ->
+            Text(text = elemento)
+        }
+    }
+}
+```
+
+En el ejemplo anterior, se define un componente `ScrollInfinito` que muestra una lista de elementos utilizando `LazyColumn`. Se utiliza un estado mutable `mutableStateListOf` para almacenar los elementos de la lista, y se pasa esta lista como argumento al método `items()` de `LazyColumn`. Esto permite cargar nuevos elementos a medida que el usuario se desplaza por la lista.
+
+El manejo del scroll infinito en Compose es similar al manejo del scroll infinito en otras bibliotecas de UI, como RecyclerView en Android. Puedes utilizar técnicas como la paginación y la carga perezosa para cargar nuevos elementos a medida que el usuario se desplaza por la lista.
+
+El estado mutable `mutableStateListOf` se utiliza para almacenar los elementos de la lista y notificar a Compose cuando se actualizan los elementos. Esto permite que Compose vuelva a renderizar la lista con los nuevos elementos.
+
 ## Elementos personalizados
 
 Puedes utilizar elementos personalizados en las listas de Compose para mostrar elementos más complejos. Para ello, puedes utilizar el método `item()` de `LazyColumn` o `LazyRow` y pasar un componente personalizado como argumento.

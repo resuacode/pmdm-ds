@@ -2,6 +2,180 @@ import CodeBlock from '@theme/CodeBlock';
 
 # Conexión a internet
 
+## Corrutinas en Android
+
+Las corutinas en Android son una forma de escribir código asíncrono de forma más sencilla y concisa. Las corutinas te permiten ejecutar tareas en segundo plano de forma eficiente y reactiva, sin bloquear el hilo principal de la aplicación. Las corutinas en Android se basan en el concepto de suspensión, que te permite pausar la ejecución de una tarea hasta que se complete una operación asíncrona, como una petición HTTP o una consulta a la base de datos.
+
+Las corutinas en Android se utilizan principalmente para realizar operaciones asíncronas, como peticiones HTTP, consultas a la base de datos y operaciones de E/S. Las corutinas te permiten escribir código asíncrono de forma más sencilla y reactiva, sin tener que utilizar callbacks o interfaces de usuario complejas. Las corutinas en Android se basan en el concepto de suspensión, que te permite pausar la ejecución de una tarea hasta que se complete una operación asíncrona. 
+
+Para implementar una clase que se ejecute en segundo plano debe crearse una suspend function, que es una función que puede pausar su ejecución. Para ello, se utiliza la palabra clave `suspend` antes de la declaración de la función. 
+
+Por ejemplo, el siguiente código muestra un objeto que comienza un conteo en segundo plano y lo actualiza cada segundo:
+
+```kotlin
+object Timer {
+    suspend fun start(callback: (Int) -> Unit) {
+        var count = 0
+        while (true) {
+            delay(1000)
+            count++
+            callback(count)
+        }
+    }
+}
+```
+
+En este ejemplo, la función `start` es una suspend function que inicia un conteo en segundo plano y llama a un callback cada segundo con el valor actual del contador. 
+
+La función `delay` se utiliza para pausar la ejecución de la tarea durante un segundo.
+
+Para llamar a una suspend function desde una función principal, se utiliza la función `runBlocking`, que crea un bloque de código que ejecuta la tarea de forma síncrona. Por ejemplo, el siguiente código muestra cómo llamar a la función `start` desde una función principal:
+
+```kotlin
+fun main() {
+    runBlocking {
+        Timer.start { count ->
+            println("Count: $count")
+        }
+    }
+}
+```
+
+En este ejemplo, la función `main` llama a la función `start` de forma síncrona utilizando `runBlocking`. La función `start` inicia un conteo en segundo plano y llama a un callback cada segundo con el valor actual del contador. 
+
+Las corutinas en Android te permiten escribir código asíncrono de forma más sencilla y reactiva, sin tener que utilizar callbacks o interfaces de usuario complejas. Las corutinas se basan en el concepto de suspensión, que te permite pausar la ejecución de una tarea hasta que se complete una operación asíncrona.
+
+![Corroutine Scope](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-coroutines-android-studio/img/a3c314fb082a9626_960.png?hl=es-419)
+
+:::tip[La palabra clave suspend]
+La palabra clave suspend en kotlin se utiliza para marcar una función que puede pausar su ejecución y reanudarla más tarde. Las funciones suspendidas se utilizan en las corutinas para realizar operaciones asíncronas de forma reactiva y eficiente.
+:::
+
+### LaunchedEffect para ejecutar tareas en segundo plano en Jetpack Compose
+
+LaunchedEffect es una función de Jetpack Compose que te permite ejecutar una tarea en segundo plano cuando un composable se coloca en la jerarquía de composición.
+
+Por ejemplo, el siguiente código muestra un composable que muestra un contador que se actualiza cada segundo:
+
+```kotlin
+@Composable
+fun Timer() {
+    var count by remember { mutableStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000)
+            count++
+        }
+    }
+
+    Text(text = "Count: $count")
+}
+```
+
+En este ejemplo, el composable `Timer` muestra un contador que se actualiza cada segundo. La función `LaunchedEffect` se utiliza para iniciar un bucle infinito que actualiza el contador cada segundo. La función `delay` se utiliza para pausar la ejecución del bucle durante un segundo.    
+
+### Alcance de las corutinas en Jetpack Compose
+
+En Jetpack Compose, las corutinas se ejecutan en el alcance de un composable, lo que significa que una corutina se cancela automáticamente cuando el composable se elimina de la jerarquía de composición. Esto garantiza que las corutinas se cancelen de forma segura y eficiente cuando ya no son necesarias, evitando posibles fugas de memoria y problemas de rendimiento. 
+
+Por ejemplo, el siguiente código muestra un composable que inicia una corutina cuando se coloca en la jerarquía de composición y la cancela cuando se elimina:
+
+```kotlin 
+@Composable
+fun Timer() {
+    var count by remember { mutableStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000)
+            count++
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            // Cancela la corutina cuando el composable se elimina
+            coroutineContext.cancel()
+        }
+    }
+
+    Text(text = "Count: $count")
+}
+``` 
+
+En este ejemplo, el composable `Timer` inicia una corutina cuando se coloca en la jerarquía de composición utilizando `LaunchedEffect` y la cancela cuando se elimina utilizando `DisposableEffect`. La función `onDispose` se utiliza para realizar tareas de limpieza cuando el composable se elimina, como cancelar la corutina.
+
+### CoroutineScope en Jetpack Compose
+
+En Jetpack Compose, puedes utilizar `coroutineScope` para crear un alcance de corutina que se cancela automáticamente cuando el composable se elimina de la jerarquía de composición. `coroutineScope` es una función de Jetpack Compose que te permite crear un alcance de corutina local que se cancela automáticamente cuando el composable se elimina.  
+
+Por ejemplo, el siguiente código muestra un composable que inicia una corutina utilizando `coroutineScope` y la cancela cuando se elimina:
+
+```kotlin
+@Composable
+fun Timer() {
+    var count by remember { mutableStateOf(0) }
+
+    coroutineScope {
+        launch {
+            while (true) {
+                delay(1000)
+                count++
+            }
+        }
+    }
+
+    Text(text = "Count: $count")
+}
+``` 
+
+En este ejemplo, el composable `Timer` inicia una corutina utilizando `coroutineScope` y la cancela automáticamente cuando el composable se elimina. La función `launch` se utiliza para iniciar una corutina en el alcance de `coroutineScope` que actualiza el contador cada segundo. 
+
+`coroutineScope` es una función de Jetpack Compose que te permite crear un alcance de corutina local que se cancela automáticamente cuando el composable se elimina. `coroutineScope` es útil para iniciar corutinas en un composable y garantizar que se cancelen de forma segura y eficiente cuando ya no son necesarias. 
+
+### CoroutineScope en un LaunchedEffect
+
+En Jetpack Compose, puedes utilizar `coroutineScope` en un `LaunchedEffect` para crear un alcance de corutina local que se cancela automáticamente cuando el composable se elimina de la jerarquía de composición. `coroutineScope` es una función de Jetpack Compose que te permite crear un alcance de corutina local que se cancela automáticamente cuando el composable se elimina. 
+
+Por ejemplo, el siguiente código muestra un composable que inicia una corutina utilizando `coroutineScope` en un `LaunchedEffect` y la cancela cuando se elimina:
+
+```kotlin
+@Composable
+fun Timer() {
+    var count by remember { mutableStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        coroutineScope {
+            launch {
+                while (true) {
+                    delay(1000)
+                    count++
+                }
+            }
+        }
+    }
+
+    Text(text = "Count: $count")
+}
+``` 
+
+En este ejemplo, el composable `Timer` inicia una corutina utilizando `coroutineScope` en un `LaunchedEffect` y la cancela automáticamente cuando el composable se elimina. La función `launch` se utiliza para iniciar una corutina en el alcance de `coroutineScope` que actualiza el contador cada segundo.  
+
+`coroutineScope` es una función de Jetpack Compose que te permite crear un alcance de corutina local que se cancela automáticamente cuando el composable se elimina. `coroutineScope` es útil para iniciar corutinas en un composable y garantizar que se cancelen de forma segura y eficiente cuando ya no son necesarias. 
+
+Un ejemplo de uso podemos encontrarlo en el siguiente Codelab en el que se implemmenta una carrera ficticia entre dos jugadores:
+
+[Codelab: Carrera de coches ficticia](https://developer.android.com/codelabs/basic-android-kotlin-compose-coroutines-android-studio?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-5-pathway-1%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-coroutines-android-studio)
+
+![Imagen de ejemplo]](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-coroutines-android-studio/img/cf724160fd66ff21_960.png?hl=es-419)
+
+:::info[CoroutineContext]
+El contexto de la corutina es un objeto que proporciona información sobre la corutina, como su alcance, su trabajo y su estado. El contexto de la corutina se utiliza para gestionar la ejecución de la corutina y proporcionar información sobre su estado y progreso.
+:::
+
+## Formas de conectarse a internet desde uaa app
+
 Para conectarse a internet en una aplicación Android con Jetpack Compose, puedes utilizar las siguientes opciones:  
 
 - **Retrofit**: Retrofit es una biblioteca de cliente HTTP para Android y Java que facilita la conexión a servicios web RESTful. Puedes utilizar Retrofit para realizar peticiones HTTP a un servidor y obtener los datos necesarios para tu aplicación.
@@ -11,6 +185,8 @@ Para conectarse a internet en una aplicación Android con Jetpack Compose, puede
 - **Volley**: Volley es una biblioteca de red que facilita la conexión a servicios web en Android. Puedes utilizar Volley para realizar peticiones HTTP y gestionar las respuestas de forma sencilla.
 
 Vamos a centrarnos en la primera opción, Retrofit, que es una de las bibliotecas más utilizadas para conectarse a servicios web en Android. 
+
+![DataLayer](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-getting-data-internet/img/76551dbe9fc943aa_960.png?hl=es-419)
 
 ## ¿Qué es Retrofit?
 
@@ -29,6 +205,35 @@ Para implementar Retrofit en una aplicación Android con Jetpack Compose, puedes
 4. **Realizar peticiones HTTP**: Utiliza la instancia del servicio web para realizar peticiones HTTP al servidor y obtener los datos necesarios para tu aplicación. Por ejemplo, puedes utilizar el método `getUsers()` de la interfaz `ApiService` para obtener una lista de usuarios del servidor.
 
 ## Ejemplo de implementación
+
+A continuación, se muestra un ejemplo de implementación de Retrofit en una aplicación Android con Jetpack Compose:
+
+```kotlin
+// Define la interfaz de servicio web con las operaciones disponibles
+interface ApiService {
+    @GET("users")
+    suspend fun getUsers(): List<User>
+}
+
+// Crea una instancia de Retrofit con la URL base y el convertidor de JSON
+val retrofit = Retrofit.Builder()
+    .baseUrl("https://api.example.com")
+    .addConverterFactory(GsonConverterFactory.create())
+    .build()
+
+// Crea una instancia del servicio web a partir de la interfaz de servicio web y la instancia de Retrofit
+val apiService = retrofit.create(ApiService::class.java)
+
+// Realiza una petición HTTP al servidor para obtener una lista de usuarios
+val users = apiService.getUsers()
+```
+
+En este ejemplo, se define una interfaz `ApiService` con el método `getUsers()` que realiza una petición GET al servidor para obtener una lista de usuarios. Se crea una instancia de Retrofit con la URL base `https://api.example.com` y el convertidor de JSON de Gson. A continuación, se crea una instancia del servicio web a partir de la interfaz `ApiService` y la instancia de Retrofit. Por último, se utiliza la instancia del servicio web para realizar una petición HTTP al servidor y obtener una lista de usuarios.    
+
+Con Retrofit, puedes conectarte a servicios web RESTful de forma sencilla y eficiente en una aplicación Android con Jetpack Compose. Retrofit te permite definir una interfaz de servicio web con anotaciones que describen las operaciones disponibles en el servicio y gestionar la comunicación con el servidor de forma automática. 
+
+
+
 
 
 

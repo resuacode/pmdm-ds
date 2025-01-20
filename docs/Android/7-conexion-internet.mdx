@@ -182,7 +182,7 @@ Tampoco debemos preocuparnos de proporcionar un componente Dispatcher de forma e
 
 ## Formas de conectarse a internet desde uaa app
 
-Para conectarse a internet en una aplicación Android con Jetpack Compose, puedes utilizar las siguientes opciones:  
+Para conectarse a internet en una aplicación Android con Jetpack Compose, puedes utilizar las siguientes opciones (existen más opciones, pero estas son las más comunes):  
 
 - **Retrofit**: Retrofit es una biblioteca de cliente HTTP para Android y Java que facilita la conexión a servicios web RESTful. Puedes utilizar Retrofit para realizar peticiones HTTP a un servidor y obtener los datos necesarios para tu aplicación.
 
@@ -225,7 +225,7 @@ Para implementar Retrofit en una aplicación Android con Jetpack Compose, puedes
 
 ![Funcionamiento Retrofit](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-getting-data-internet/img/26043df178401c6a_960.png)
 
-## Ejemplo de implementación
+## Ejemplo sencillo de implementación
 
 A continuación, se muestra un ejemplo de implementación de Retrofit en una aplicación Android con Jetpack Compose:
 
@@ -537,12 +537,113 @@ Al actualizar el archivo `AndroidManifest.xml`, garantizamos que la aplicación 
 
 ### Utilizar el repositorio en la capa de UI (En el ViewModel)
 
+Para añadir los datos del servidor a la capa de UI, debes utilizar el repositorio en la capa de UI (en el ViewModel) para obtener los datos del servidor y mostrarlos en la pantalla.   
+
+Para ello, en la declaración del ViewModel agregaremos un parámetro al constructor principal, que será privado y del tipo del Repositorio.
+
+Al hacer esto, en la función get del repositorio ya no necesitamos pasarle el parámetro del repositorio, ya que este se inyectará automáticamente en el ViewModel.
+
+Además, ya que el propio framework de Android no nos permite pasar valores a los ViewModel cuándo estos se crean, debemos implementar un objeto ViewModelFactory que se encargue de proporcionar instancias de ViewModel en la aplicación.
+
+Este objeto es una implentación del patrón Factoría o Factory que se encarga de la creación de objetos, podemos utilizarlo para usar el propio contenedor de dependencias para proporcionar instancias de ViewModel en la aplicación.
+
+```kotlin
+class MainViewModel(private val repository: DataRepository) : ViewModel() {
+    var _state = mutableStateOf(MainState())
+    val state: State<MainState> = _state.asState()
+
+    init {
+        getUsers()
+    }
+
+    private fun getUsers() {
+        viewModelScope.launch {
+            val users = repository.getUsers()
+            _state.value = MainState(users = users)
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = ViewModelFactory {
+            initializer {
+                // [APLICATION_KEY] es una constante que se utiliza para obtener la instancia de la aplicación
+                val application = this[APLICATION_KEY] as Application
+                val repository = application.container.provideDataRepository
+                MainViewModel(repository)
+            }
+        }
+    }
+}
+```
+
+En este ejemplo, la clase `MainViewModel` extiende de `ViewModel` y utiliza el repositorio para obtener los datos del servidor y mostrarlos en la pantalla. La función `getUsers()` utiliza el repositorio para obtener una lista de usuarios del servidor y mostrarlos en la pantalla.
+Además, se ha añadido un objeto Factory que se encarga de proporcionar instancias de ViewModel en la aplicación.
+
+:::tip[Ubicación del ViewModel en el proyecto]
+El ViewModel suele ubicarse en un paquete de viewmodel o ui del proyecto para mantener una estructura limpia y organizada.
+:::
+
+:::tip[APLICATION_KEY]
+La constante `APLICATION_KEY` se utiliza para obtener la instancia de la aplicación en el ViewModelFactory. Esta constante se utiliza para acceder a la instancia de la aplicación en el ViewModelFactory y proporcionar instancias de ViewModel en la aplicación.  
+:::
+
+:::info[La palabra reservada companion en Kotlin]
+La palabra reservada companion en Kotlin se utiliza para definir miembros estáticos en una clase. 
+Los miembros estáticos son miembros de una clase que pertenecen a la clase en lugar de a una instancia de la clase.   
+En este ejemplo, la palabra reservada companion se utiliza para definir un objeto Factory que proporciona instancias de ViewModel en la aplicación.
+:::
 
 
+### Utilizar el ViewModel en la capa de UI (En el Composable)
 
+Para añadir los datos del servidor a la capa de UI, debes utilizar el ViewModel en la capa de UI (en el Composable) para obtener los datos del servidor y mostrarlos en la pantalla.    
 
+Para ello, en la declaración del Composable agregaremos un parámetro al constructor principal, que será privado y del tipo del ViewModel.
 
+Al hacer esto, en la función get del ViewModel ya no necesitamos pasarle el parámetro del ViewModel, ya que este se inyectará automáticamente en el Composable.
+
+```kotlin
+@Composable
+fun MainScreen(viewModel: MainViewModel) {
+    val state by viewModel.state.collectAsState()
+
+    Column {
+        Text("Users:")
+        state.users.forEach { user ->
+            Text(user.name)
+        }
+    }
+}
+```
+
+En este ejemplo, el composable `MainScreen` utiliza el ViewModel para obtener los datos del servidor y mostrarlos en la pantalla. La función `collectAsState()` se utiliza para obtener el estado del ViewModel y mostrar los datos en la pantalla. 
+
+:::tip[Ubicación del Composable en el proyecto]
+El Composable suele ubicarse en un paquete de ui del proyecto para mantener una estructura limpia y organizada.
+:::
 
 ## Recursos
 
+- [Codelab: Cómo obtener datos de Internet](https://developer.android.com/codelabs/basic-android-kotlin-compose-getting-data-internet?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-5-pathway-1%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-getting-data-internet#0)
+- [Codelab: Cómo agregar un repositorio e inyección de dependencias de forma manual](https://developer.android.com/codelabs/basic-android-kotlin-compose-add-repository?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-5-pathway-2%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-add-repository#0)
+- [Codelab: Cómo cargar y mostrar imágenes de Internet](https://developer.android.com/codelabs/basic-android-kotlin-compose-load-images?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-5-pathway-2%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-load-images#0)
 
+- [Ejercicio resuelto de ejemplo - TriviaApp versión con Retrofit](https://github.com/resuadam2/TriviaApp/tree/first-api-version)
+
+:::info[Nota sobre el ejemplo de TriviaApp]
+En el ejemplo de TriviaApp se ha resuelto uno de los ejercicios propuestos, 
+en concreto la rama del repositorio adjunta al enlace anterior hace referencia a una versión del proyecto que utiliza Retrofit para obtener las preguntas de una API externa.
+
+La api de la que se obtienen las preguntas es la siguiente: [Open Trivia Database](https://opentdb.com/api_config.php)
+:::
+
+## Referencias y documentacion
+
+- [Documentación de Retrofit](https://square.github.io/retrofit/)
+- [Documentación de Ktor](https://ktor.io/)
+- [Documentación de Volley](https://developer.android.com/training/volley)
+- [Documentación de CoroutineScope](https://kotlinlang.org/docs/coroutines-basics.html)
+- [Documentación de LaunchedEffect](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#LaunchedEffect(kotlin.coroutines.CoroutineScope,%20kotlin.coroutines.CoroutineStart,%20kotlin.Function0))
+- [Documentación de DisposableEffect](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#DisposableEffect(kotlin.coroutines.CoroutineScope,%20kotlin.Function0))
+- [Documentación de coroutineScope](https://kotlinlang.org/docs/coroutines-basics.html#coroutine-scope)
+- [Documentación de CoroutineContext](https://kotlinlang.org/docs/coroutines-basics.html#coroutine-context)

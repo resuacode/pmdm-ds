@@ -168,10 +168,16 @@ Un ejemplo de uso podemos encontrarlo en el siguiente Codelab en el que se imple
 
 [Codelab: Carrera de coches ficticia](https://developer.android.com/codelabs/basic-android-kotlin-compose-coroutines-android-studio?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-5-pathway-1%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-coroutines-android-studio)
 
-![Imagen de ejemplo]](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-coroutines-android-studio/img/cf724160fd66ff21_960.png?hl=es-419)
-
 :::info[CoroutineContext]
-El contexto de la corutina es un objeto que proporciona información sobre la corutina, como su alcance, su trabajo y su estado. El contexto de la corutina se utiliza para gestionar la ejecución de la corutina y proporcionar información sobre su estado y progreso.
+El contexto de la corrutina es un objeto que proporciona información sobre la corutina, como su alcance, su trabajo y su estado. El contexto de la corutina se utiliza para gestionar la ejecución de la corutina y proporcionar información sobre su estado y progreso.
+:::
+
+:::tip[LaunchedEffect]
+LaunchedEffect es una función de Jetpack Compose que te permite ejecutar una tarea en segundo plano cuando un composable se coloca en la jerarquía de composición. LaunchedEffect es útil para realizar operaciones asíncronas, como peticiones HTTP, consultas a la base de datos y operaciones de E/S.
+
+Una de las principales ventajas del uso de LaunchedEffect es que se ejecuta en el alcance de un composable, lo que significa que se cancela automáticamente cuando el composable se elimina de la jerarquía de composición. Esto garantiza que las tareas en segundo plano se cancelen de forma segura y eficiente cuando ya no son necesarias, evitando posibles fugas de memoria y problemas de rendimiento.
+Esto hace que no sea necesario preocuparse por la cancelación manual de las tareas en segundo plano, ya que Jetpack Compose se encarga de ello de forma automática. 
+Tampoco debemos preocuparnos de proporcionar un componente Dispatcher de forma explícita, ya que LaunchedEffect utiliza el Dispatcher predeterminado de la corrutina para ejecutar la tarea en segundo plano. 
 :::
 
 ## Formas de conectarse a internet desde uaa app
@@ -192,6 +198,19 @@ Vamos a centrarnos en la primera opción, Retrofit, que es una de las biblioteca
 
 Retrofit es una biblioteca de cliente HTTP para Android y Java que facilita la conexión a servicios web RESTful. Retrofit te permite definir una interfaz de servicio web con anotaciones que describen las operaciones disponibles en el servicio, como las peticiones GET, POST, PUT y DELETE. Retrofit se encarga de convertir las respuestas del servidor en objetos Java/Kotlin y de gestionar la comunicación con el servidor de forma eficiente.
 
+![Ejemplo de Petición http](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-getting-data-internet/img/301162f0dca12fcf_960.png)
+![Ejemplo de respuesta http](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-getting-data-internet/img/7ced9b4ca9c65af3_960.png)
+
+:::info[Tipos de peticiones habituales HTTP]
+- **GET**: Se utiliza para obtener datos del servidor. Por ejemplo, puedes utilizar una petición GET para obtener una lista de usuarios de un servidor.
+- **POST**: Se utiliza para enviar datos al servidor. Por ejemplo, puedes utilizar una petición POST para enviar un formulario con los datos de un nuevo usuario al servidor.
+- **PUT**: Se utiliza para actualizar datos en el servidor. Por ejemplo, puedes utilizar una petición PUT para actualizar los datos de un usuario existente en el servidor.
+- **DELETE**: Se utiliza para eliminar datos del servidor. Por ejemplo, puedes utilizar una petición DELETE para eliminar un usuario del servidor.
+
+![Ejemplo de petición http](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-getting-data-internet/img/5bbeef4ded3e84cf_960.png)
+![Ejemplo de respuesta http](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-getting-data-internet/img/83e8a6eb79249ebe_960.png)
+:::
+
 ## Implementación de Retrofit en Jetpack Compose
 
 Para implementar Retrofit en una aplicación Android con Jetpack Compose, puedes seguir los siguientes pasos:
@@ -203,6 +222,8 @@ Para implementar Retrofit en una aplicación Android con Jetpack Compose, puedes
 3. **Crear una instancia del servicio web**: Crea una instancia del servicio web a partir de la interfaz de servicio web y la instancia de Retrofit. Por ejemplo, puedes crear una instancia del servicio web a partir de la interfaz `ApiService` y la instancia de Retrofit.
 
 4. **Realizar peticiones HTTP**: Utiliza la instancia del servicio web para realizar peticiones HTTP al servidor y obtener los datos necesarios para tu aplicación. Por ejemplo, puedes utilizar el método `getUsers()` de la interfaz `ApiService` para obtener una lista de usuarios del servidor.
+
+![Funcionamiento Retrofit](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-getting-data-internet/img/26043df178401c6a_960.png)
 
 ## Ejemplo de implementación
 
@@ -232,7 +253,20 @@ En este ejemplo, se define una interfaz `ApiService` con el método `getUsers()`
 
 Con Retrofit, puedes conectarte a servicios web RESTful de forma sencilla y eficiente en una aplicación Android con Jetpack Compose. Retrofit te permite definir una interfaz de servicio web con anotaciones que describen las operaciones disponibles en el servicio y gestionar la comunicación con el servidor de forma automática. 
 
+Todo este código suele ordenarse y distribuirse en diferentes archivos y paquetes para mantener una estructura limpia y organizada. A continuación veremos cada uno de estos pasos en detalle.  
 
+## Implementación de Retrofit en Android
+
+### Importar las dependencias de Retrofit
+
+Para utilizar Retrofit en una aplicación Android, primero debes importar las dependencias de Retrofit en el archivo `build.gradle` del módulo de la aplicación. Puedes hacerlo añadiendo las siguientes líneas al archivo `build.gradle`:
+
+```gradle
+dependencies {
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+}
+```
 
 
 

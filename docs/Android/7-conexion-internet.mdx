@@ -257,6 +257,16 @@ Todo este código suele ordenarse y distribuirse en diferentes archivos y paquet
 
 ## Implementación de Retrofit en Android
 
+### Permiso de Internet
+
+Para conectarse a internet en una aplicación Android, debes añadir el permiso de internet al archivo `AndroidManifest.xml` de la aplicación. Puedes hacerlo añadiendo la siguiente línea al archivo `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+Este permiso permite que la aplicación se conecte a internet y realice peticiones HTTP al servidor. Sin este permiso, la aplicación no podrá conectarse a internet y no podrá realizar peticiones HTTP al servidor.
+
 ### Importar las dependencias de Retrofit
 
 Para utilizar Retrofit en una aplicación Android, primero debes importar las dependencias de Retrofit en el archivo `build.gradle` del módulo de la aplicación. Puedes hacerlo añadiendo las siguientes líneas al archivo `build.gradle`:
@@ -354,7 +364,7 @@ val apiService = retrofit.create(ApiService::class.java)
 
 En este ejemplo, se crea una instancia del servicio web a partir de la interfaz `ApiService` y la instancia de Retrofit.
 
-Esta instancia suele implementarse a través de un patrón Singleton para garantizar que solo haya una instancia del servicio web en la aplicación, sin embargo, esto dependerá de las necesidades de tu aplicación.
+Esta instancia puede implementarse a través de un patrón Singleton para garantizar que solo haya una instancia del servicio web en la aplicación, sin embargo, esto dependerá de las necesidades de tu aplicación.
 En muchas ocasiones es preferible utilizar inyección de dependencias para proporcionar instancias de servicios web en lugar de crearlas manualmente. 
 De esta forma los objetos se pueden reutilizar y se facilita la gestión de dependencias en la aplicación.
 
@@ -362,6 +372,172 @@ Esto se debe a que los Singleton representan estados globales en la aplicación 
 Por otro lado, la inyección de dependencias permite desacoplar las dependencias de los objetos y facilita la gestión de las dependencias en la aplicación.
 
 Vamos a acostumbrarnos a gestionar las dependencias de esta forma, ya que es una buena práctica de programación y facilita la gestión de dependencias en la aplicación.
+
+Para esto separaremos claramente la capa de datos de la de UI a través de un repositorio o Repository, que será el encargado de gestionar las peticiones al servidor y devolver los datos a la capa de UI.
+
+Este repositorio se encargará de gestionar las peticiones al servidor y devolver los datos a la capa de UI.
+
+![Separación de la Data Layer](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-add-repository/img/dbf927072d3070f0_960.png)
+
+
+### Creación de un repositorio
+
+Para separar claramente la capa de datos de la de UI, vamos a crear un repositorio que se encargue de gestionar las peticiones al servidor y devolver los datos a la capa de UI.
+
+Para ello, crearemos un nuevo paquete llamado `data` en el que crearemos una clase `DataRepository` que contendrá los métodos para obtener y enviar datos al servidor.
+
+Es habitual que esta clase implemente una interfaz que defina los métodos necesarios para interactuar con el servidor, de esta forma se facilita la gestión de dependencias y se mejora la modularidad de la aplicación.
+
+```kotlin
+interface DataRepository {
+    suspend fun getUsers(): List<User>
+}
+
+class DataRepositoryImpl(private val apiService: ApiService) : DataRepository {
+    override suspend fun getUsers(): List<User> {
+        return apiService.getUsers()
+    }
+}
+```
+
+En este ejemplo, la interfaz `DataRepository` define un método `getUsers()` que obtiene una lista de usuarios del servidor. La clase `DataRepositoryImpl` implementa la interfaz `DataRepository` y utiliza la instancia del servicio web para obtener los datos del servidor.  
+
+:::tip[Ubicación del repositorio en el proyecto]
+El repositorio suele ubicarse en un paquete de datos o repository del proyecto para mantener una estructura limpia y organizada.
+:::
+
+Al implementar el repositorio, nos aseguramos de que la capa de datos esté separada de la de UI y que las operaciones de red se gestionen de forma eficiente y reactiva.
+
+### Inyección de dependencias
+
+La inyección de dependencias no es más que un patrón de diseño que se utiliza para desacoplar las dependencias de los objetos y facilitar la gestión de las dependencias en la aplicación.
+
+Para implementar la inyección de dependencias en la aplicación, puedes utilizar una biblioteca de inyección de dependencias como Dagger, Hilt o Koin. Estas bibliotecas te permiten definir módulos que proporcionan instancias de objetos y componentes que gestionan la inyección de dependencias en la aplicación.
+
+Sin embargo, en este caso vamos a utilizar la inyección de dependencias manual para proporcionar instancias de objetos en la aplicación.
+
+Para ello, vamos a crear un contenedor de dependencias dentro del propio paquete de datos que se encargue de proporcionar instancias de objetos en la aplicación.
+
+Es interesante que nuestra clase `DataContainer` sea un objeto Singleton que proporcione instancias de objetos en la aplicación. De esta forma, garantizamos que solo haya una instancia del contenedor de dependencias en la aplicación y que los objetos se puedan reutilizar en toda la aplicación.
+
+También debería de heredar de una interfaz que defina los métodos necesarios para proporcionar instancias de objetos en la aplicación.
+
+De esta forma, facilitamos la gestión de dependencias y mejoramos la modularidad de la aplicación.
+
+```kotlin
+private const val BASE_URL = "https://api.example.com"
+
+interface DataContainer {
+    val provideDataRepository: DataRepository
+}
+
+object DataContainerImpl : DataContainer {
+    private val retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val apiService by lazy { retrofit.create(ApiService::class.java) }
+    private val dataRepository = DataRepositoryImpl(apiService)
+
+    override val provideDataRepository: DataRepository by lazy { dataRepository }
+}
+```
+
+En este ejemplo, la interfaz `DataContainer` define un método `provideDataRepository` que proporciona una instancia del repositorio de datos en la aplicación. El objeto `DataContainerImpl` implementa la interfaz `DataContainer` y proporciona una instancia del repositorio de datos utilizando la instancia del servicio web.  
+
+:::tip[Ubicación del contenedor de dependencias en el proyecto]
+El contenedor de dependencias suele ubicarse en un paquete de datos o repository del proyecto para mantener una estructura limpia y organizada.
+:::
+
+Al implementar la inyección de dependencias, nos aseguramos de que las dependencias de los objetos se gestionen de forma eficiente y reactiva en la aplicación.
+
+Si en lugar de utilizar un Singleton utilizasemos una clase normal, deberíamos de proporcionar una instancia del contenedor de dependencias en la aplicación para que pueda proporcionar instancias de objetos en la aplicación.
+
+El mismo ejemplo de contenedor anterior pero utilizando una clase quedaría tal que así:
+
+```kotlin
+private const val BASE_URL = "https://api.example.com"
+
+interface DataContainer {
+    val provideDataRepository: DataRepository
+}
+
+class DataContainerImpl : DataContainer {
+    private val retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val apiService by lazy { retrofit.create(ApiService::class.java) }
+    private val dataRepository = DataRepositoryImpl(apiService)
+
+    override val provideDataRepository: DataRepository by lazy { dataRepository }
+}
+```
+
+La elección de si utilizar un Singleton o una clase normal dependerá de las necesidades de tu aplicación y de cómo quieras gestionar las dependencias en la aplicación.
+
+
+### Adjuntar el contenedor de dependencias a la aplicación
+
+Una vez que hayas creado el contenedor de dependencias, debes adjuntarlo a la aplicación para que pueda proporcionar instancias de objetos en la aplicación.
+
+Para ello, puedes adjuntar el contenedor de dependencias a la aplicación en el archivo `Application` de la aplicación.
+
+```kotlin
+class MyApplication : Application() {
+    lateinit var container: DataContainer
+    override fun onCreate() {
+        super.onCreate()
+        container = DataContainerImpl
+    }
+}
+```
+
+En este ejemplo, la clase `MyApplication` extiende de `Application` y adjunta el contenedor de dependencias a la aplicación en el método `onCreate()`.
+
+Si utilizamos una clase para el contenedor en lugar de un objeto Singleton, la implementación sería la siguiente:
+
+```kotlin
+class MyApplication : Application() {
+    lateinit var container: DataContainer
+    override fun onCreate() {
+        super.onCreate()
+        container = DataContainerImpl()
+    }
+}
+```
+
+:::tip[Ubicación de la clase Application en el proyecto]
+La clase `Application` suele ubicarse en el paquete de la aplicación para mantener una estructura limpia y organizada.
+:::
+
+Al adjuntar el contenedor de dependencias a la aplicación, garantizamos que las instancias de objetos se proporcionen de forma eficiente y reactiva en la aplicación.
+
+Debemos también actualizar el archivo `AndroidManifest.xml` para que la aplicación utilice la clase `MyApplication` como clase de aplicación principal.
+
+```xml
+<application
+    android:name=".MyApplication"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:supportsRtl="true"
+    android:theme="@style/Theme.BasicAndroidKotlinCompose"
+    android:allowBackup="true"
+    android:usesCleartextTraffic="true"
+    android:networkSecurityConfig="@xml/network_security_config"
+    tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+```
+
+En este ejemplo, se actualiza el atributo `android:name` de la etiqueta `<application>` para que la aplicación utilice la clase `MyApplication` como clase de aplicación principal.
+
+Al actualizar el archivo `AndroidManifest.xml`, garantizamos que la aplicación utilice la clase `MyApplication` como clase de aplicación principal.
+
+### Utilizar el repositorio en la capa de UI (En el ViewModel)
+
+
 
 
 

@@ -261,12 +261,108 @@ Todo este código suele ordenarse y distribuirse en diferentes archivos y paquet
 
 Para utilizar Retrofit en una aplicación Android, primero debes importar las dependencias de Retrofit en el archivo `build.gradle` del módulo de la aplicación. Puedes hacerlo añadiendo las siguientes líneas al archivo `build.gradle`:
 
-```gradle
+```kotlin
 dependencies {
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    // Retrofit with Scalar Converter
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
 }
 ```
+
+Estas líneas importan las dependencias de Retrofit y el convertidor de escalares en la aplicación. El convertidor de escalares se utiliza para convertir las respuestas del servidor en cadenas de texto.
+
+### Definir la interfaz de servicio web
+
+A continuación, debes definir una interfaz de servicio web que contenga las operaciones disponibles en el servicio. 
+Puedes hacerlo creando una interfaz en un archivo Kotlin y anotándola con las anotaciones de Retrofit, como `@GET`, `@POST`, `@PUT` y `@DELETE`. 
+Por ejemplo, puedes definir una interfaz `ApiService` que contenga métodos para obtener y enviar datos al servidor:
+
+```kotlin
+import retrofit2.http.GET
+
+interface ApiService {
+    @GET("users")
+    suspend fun getUsers(): List<User>
+}
+```
+
+En este ejemplo, la interfaz `ApiService` contiene un método `getUsers()` que realiza una petición GET al servidor para obtener una lista de usuarios.
+
+:::tip[Ubicación de la interfaz de servicio web en el proyecto]
+La interfaz de servicio web suele ubicarse en un paquete de datos, network o servicios del proyecto para mantener una estructura limpia y organizada.
+:::
+
+:::info[Anotaciones de Retrofit]
+Las anotaciones de Retrofit se utilizan para describir las operaciones disponibles en el servicio web. Por ejemplo, la anotación `@GET` se utiliza para realizar una petición GET al servidor, la anotación `@POST` se utiliza para realizar una petición POST al servidor, y así sucesivamente.    
+:::
+
+### Crear una instancia de Retrofit
+
+Una vez que hayas definido la interfaz de servicio web, debes crear una instancia de Retrofit utilizando el constructor de `Retrofit.Builder`.
+Puedes hacerlo creando una instancia de Retrofit en un archivo Kotlin y configurando la URL base del servicio web y el convertidor de JSON.
+Por ejemplo, puedes crear una instancia de Retrofit que se conecte a un servidor en `https://api.example.com` y utilice el convertidor de JSON de Gson:
+
+```kotlin
+private const val BASE_URL = "https://api.example.com"
+
+val retrofit = Retrofit.Builder()
+    .baseUrl(BASE_URL)
+    .addConverterFactory(GsonConverterFactory.create())
+    .build()
+```
+
+:::warning[Para usar Gson en tu proyecto]
+Para utilizar Gson en tu proyecto, debes importar la dependencia de Gson en el archivo `build.gradle` del módulo de la aplicación. Puedes hacerlo añadiendo la siguiente línea al archivo `build.gradle`:
+
+```kotlin
+dependencies {
+    // Gson
+    implementation("com.google.code.gson:gson:2.8.8")
+}
+```
+:::
+
+En este ejemplo, se crea una instancia de Retrofit con la URL base `https://api.example.com` y el convertidor de JSON de Gson.
+
+:::tip[Ubicación de la instancia de Retrofit en el proyecto]
+La instancia de Retrofit suele ubicarse en un archivo Kotlin en el paquete de datos, network o servicios del proyecto para mantener una estructura limpia y organizada.
+:::
+
+:::tip[Convertidores de Retrofit]
+Retrofit utiliza convertidores para convertir las respuestas del servidor en objetos Java/Kotlin y viceversa. 
+Puedes utilizar convertidores como Gson, Moshi, Jackson y Scalars para convertir los datos del servidor en objetos Java/Kotlin y viceversa.   
+Cada uno de estos convertidores tiene sus propias ventajas y desventajas, por lo que debes elegir el que mejor se adapte a tus necesidades.
+En este ejemplo, se utiliza el convertidor de Gson para convertir los datos del servidor en objetos Java/Kotlin. 
+Sin embargo, si prefieres utilizar otro convertidor, puedes cambiar el convertidor de Gson por el convertidor de tu elección.
+Por ejemplo, para hacer el mismo ejemplo anterior pero usando Scalars, puedes cambiar la línea de configuración del convertidor de Gson por la siguiente:
+
+```kotlin
+.addConverterFactory(ScalarsConverterFactory.create())
+```
+:::
+
+### Crear una instancia del servicio web
+
+Una vez que hayas creado una instancia de Retrofit, debes crear una instancia del servicio web a partir de la interfaz de servicio web y la instancia de Retrofit.
+Puedes hacerlo creando una instancia del servicio web en un archivo Kotlin y utilizando el método `create()` de Retrofit.
+Por ejemplo, puedes crear una instancia del servicio web a partir de la interfaz `ApiService` y la instancia de Retrofit:
+
+```kotlin
+val apiService = retrofit.create(ApiService::class.java)
+```
+
+En este ejemplo, se crea una instancia del servicio web a partir de la interfaz `ApiService` y la instancia de Retrofit.
+
+Esta instancia suele implementarse a través de un patrón Singleton para garantizar que solo haya una instancia del servicio web en la aplicación, sin embargo, esto dependerá de las necesidades de tu aplicación.
+En muchas ocasiones es preferible utilizar inyección de dependencias para proporcionar instancias de servicios web en lugar de crearlas manualmente. 
+De esta forma los objetos se pueden reutilizar y se facilita la gestión de dependencias en la aplicación.
+
+Esto se debe a que los Singleton representan estados globales en la aplicación y pueden ser difíciles de gestionar y probar. 
+Por otro lado, la inyección de dependencias permite desacoplar las dependencias de los objetos y facilita la gestión de las dependencias en la aplicación.
+
+Vamos a acostumbrarnos a gestionar las dependencias de esta forma, ya que es una buena práctica de programación y facilita la gestión de dependencias en la aplicación.
+
 
 
 

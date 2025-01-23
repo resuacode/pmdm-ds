@@ -119,11 +119,6 @@ const config: Config = {
     ({
        hashed: true,
      }),
-     'vercel-analytics',
-      {
-        debug: true,
-        mode: 'auto',
-      },
   ],
 
   
@@ -133,4 +128,15 @@ const config: Config = {
 };
 
 
-export default config;
+export default {
+  config,
+  plugins: [
+    [
+      'vercel-analytics',
+      {
+        debug: true,
+        mode: 'auto',
+      },
+    ],
+  ],
+};

@@ -120,13 +120,6 @@ const config: Config = {
        hashed: true,
      }),
   ],
-  [
-    'vercel-analytics',
-    {
-      debug: true,
-      mode: 'auto',
-    },
-  ],
 
   
 ],

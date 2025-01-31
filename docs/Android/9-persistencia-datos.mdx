@@ -20,20 +20,736 @@ Room se compone de tres componentes principales:
 
 - **DAO (Data Access Object)**: Define las operaciones de acceso a la base de datos, como la inserción, actualización y eliminación de datos.
 
+![Room](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-persisting-data-room/img/a3288e8f37250031_960.png)
+
 ## Implementación de Room en Jetpack Compose
 
-Para implementar Room en una aplicación Android con Jetpack Compose, puedes seguir los siguientes pasos:
+### 1. Agregar las dependencias de Room
 
-1. **Definir la entidad**: Define una clase que represente la tabla de la base de datos y anótala con `@Entity`. Por ejemplo, puedes definir una clase `User` que represente un usuario de la aplicación.
+Para utilizar Room en una aplicación Android con Jetpack Compose, primero debemos agregar las dependencias necesarias en el archivo `build.gradle.kts` del módulo de la aplicación:
 
-2. **Definir el DAO**: Define una interfaz que contenga las operaciones de acceso a la base de datos y anótala con `@Dao`. Por ejemplo, puedes definir un DAO que contenga métodos para insertar, actualizar y eliminar usuarios.
+```kotlin
+dependencies {
+    //Room
+    implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
+    ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
+    implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
+}
+```
 
-3. **Definir la base de datos**: Define una clase que extienda `RoomDatabase` y anótala con `@Database`. En esta clase, define los métodos para acceder a las tablas de la base de datos y crea una instancia de la base de datos.
+KSP es una API simple y potente para analizar las anotaciones de Kotlin.
 
-4. **Conectar Room con la capa de datos**: Conecta Room con la capa de datos de tu aplicación para que puedas acceder a la base de datos y gestionar los datos de la aplicación. Puedes utilizar `remember` para crear una instancia de la base de datos en la capa de datos y `viewModel` para acceder a los datos de la base de datos.
+:::tip[Versiones en el archivo Gradle]
+Parar las depedencias del archivo Gradle, es importante usar siempre los números de versión LTS más actuales, pueden consultarse [en este enlace](https://developer.android.com/jetpack/androidx/versions?hl=es-419)
+:::
 
-## Ejemplo de implementación
+### 2. Definir la entidad
 
+La clase `Entity` representa una tabla de la base de datos y contiene la definición de las columnas y los tipos de datos de la tabla. 
+Para definir una entidad en Room, debemos crear una clase que anote con `@Entity` y que contenga las propiedades correspondientes a las columnas de la tabla. 
+Por ejemplo, la siguiente clase `User` representa una entidad de usuario con las columnas `id`, `name` y `email`:
+
+```kotlin
+@Entity(tableName = "users")
+data class User(
+    @PrimaryKey val id: Int,
+    val name: String,
+    val email: String
+)
+```
+
+En este ejemplo, la clase `User` representa una tabla de la base de datos con las columnas `id`, `name` y `email`. 
+La propiedad `id` se anota con `@PrimaryKey` para indicar que es la clave primaria de la tabla. 
+
+![Representación de Entity en formato de tabla](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-persisting-data-room/img/8c9f1659ee82ca43_960.png)
+
+:::info[Anotaciones de Room]
+Room proporciona varias anotaciones que se pueden utilizar para personalizar la definición de la entidad, como `@Entity`, `@PrimaryKey`, `@ColumnInfo`, `@Ignore`, `@ForeignKey`, entre otras.
+
+Las anotaciones tienen los siguientes significados:
+
+- `@Entity`: Indica que la clase es una entidad de la base de datos.
+- `@PrimaryKey`: Indica que la propiedad es la clave primaria de la tabla.
+- `@ColumnInfo`: Permite personalizar el nombre de la columna en la tabla.
+- `@Ignore`: Indica que la propiedad no se debe incluir en la tabla.
+- `@ForeignKey`: Permite definir una clave foránea en la tabla.
+:::
+
+#### Ejemplo de ForeignKey
+
+```kotlin
+@Entity(tableName = "users")
+data class User(
+    @PrimaryKey val id: Int,
+    val name: String,
+    val email: String,
+    @ForeignKey(entity = Company::class, parentColumns = ["id"], childColumns = ["company_id"])
+    val companyId: Int
+)
+```
+
+En este ejemplo, la propiedad `companyId` se anota con `@ForeignKey` para indicar que es una clave foránea que hace referencia a la tabla `Company` y a la columna `id`.
+
+:::tip[Ubicación del archivo Entity]
+Es recomendable tener las clases Entity en un archivo separado, para mantener la organización del código. 
+Este archivo puede estar en el mismo paquete que la base de datos o en un paquete separado, dependiendo de la estructura del proyecto.
+:::
+
+### 3. Definir el DAO
+
+La interfaz `DAO` (Data Access Object) define las operaciones de acceso a la base de datos, como la inserción, actualización y eliminación de datos.
+
+El Data Access Object (DAO) es un patrón de diseño que permite separar la lógica de acceso a los datos de la lógica de negocio de una aplicación.
+
+La función del DAO es ocultar todas las complejidades relacionadas con las operaciones de acceso a los datos, como la conexión a la base de datos, la creación de consultas SQL y la gestión de transacciones.  
+
+Esto nos permite intercambiar fácilmente la fuente de datos subyacente sin tener que modificar la lógica de negocio de la aplicación.
+
+![Ejemplo de representación del DAO](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-persisting-data-room/img/8b91b8bbd7256a63_960.png)
+
+Para definir un DAO en Room, debemos crear una interfaz que anote con `@Dao` y que contenga las operaciones de acceso a la base de datos.
+
+Por ejemplo, la siguiente interfaz `UserDao` define las operaciones de acceso a la tabla de usuarios:
+
+```kotlin
+@Dao
+interface UserDao {
+    @Query("SELECT * FROM users")
+    fun getUsers(): List<User>
+
+    @Insert
+    fun insertUser(user: User)
+
+    @Update
+    fun updateUser(user: User)
+
+    @Delete
+    fun deleteUser(user: User)
+}
+```
+
+En este ejemplo, la interfaz `UserDao` define las operaciones `getUsers()`, `insertUser()`, `updateUser()` y `deleteUser()` para acceder a la tabla de usuarios.
+
+Como se puede obversar, antes de cada función se anota con la operación que se va a realizar, ya sea `@Query`, `@Insert`, `@Update` o `@Delete`.
+
+Estas operaciones definen las consultas SQL que se ejecutarán en la base de datos para realizar las operaciones correspondientes:
+
+- `@Query`: Permite definir una consulta SQL personalizada para recuperar datos de la base de datos.
+- `@Insert`: Permite definir una operación de inserción de datos en la base de datos.
+- `@Update`: Permite definir una operación de actualización de datos en la base de datos.
+- `@Delete`: Permite definir una operación de eliminación de datos en la base de datos.
+
+:::tip[Ubicación del archivo DAO]
+Es recomendable tener las interfaces DAO en un archivo separado, para mantener la organización del código.
+Este archivo puede estar en el mismo paquete que la base de datos o en un paquete separado, dependiendo de la estructura del proyecto.
+:::
+
+### 4. Definir la base de datos
+
+La clase `Database` representa la base de datos de la aplicación y contiene la lógica para crear y acceder a las tablas de la base de datos.
+
+Para definir una base de datos en Room, debemos crear una clase que extienda de `RoomDatabase` y que contenga las definiciones de las entidades y los DAOs de la base de datos.
+
+Por ejemplo, la siguiente clase `AppDatabase` define una base de datos con la tabla de usuarios y el DAO correspondiente:
+
+```kotlin
+@Database(entities = [User::class], version = 1)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun userDao(): UserDao
+}
+```
+
+En este ejemplo, la clase `AppDatabase` representa una base de datos con la tabla de usuarios y el DAO `UserDao`.
+
+La anotación `@Database` se utiliza para indicar que la clase es una base de datos de Room y para especificar las entidades y la versión de la base de datos.
+
+La clase `AppDatabase` debe ser abstracta y extender de `RoomDatabase`. También debe contener una función abstracta que devuelva el DAO correspondiente a la tabla de usuarios.
+
+Si queremos que no se conserven copias de seguridad del historial de versiones podemos añadir `exportSchema = false` a la anotación `@Database`.
+
+Además, es interesante definir un `companion object` para obtener una instancia de la base de datos de forma segura y eficiente:
+
+```kotlin
+@Database(entities = [User::class], version = 1, exportSchema = false)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun userDao(): UserDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getDatabase(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "app_database"
+                ).build()
+                .also { INSTANCE = it }
+                instance
+            }
+        }
+    }
+}
+```
+
+En este ejemplo, el `companion object` de la clase `AppDatabase` define una función `getDatabase()` que devuelve una instancia de la base de datos de forma segura y eficiente.
+
+La función `getDatabase()` utiliza una variable `INSTANCE` para almacenar la instancia de la base de datos y la inicializa si es `null`.
+
+La función `getDatabase()` también utiliza la función `databaseBuilder()` para crear una instancia de la base de datos con el contexto de la aplicación, la clase de la base de datos y el nombre de la base de datos.
+
+:::tip[Ubicación del archivo Database]
+Es recomendable tener la clase Database en un archivo separado, para mantener la organización del código.
+Este archivo suele estar en el mismo paquete que las clases Entity y DAO o en un paquete separado, dependiendo de la estructura del proyecto.
+:::
+
+:::info[Sobre la anotación @Volatile]
+La anotación `@Volatile` se utiliza para indicar que la variable `INSTANCE` es volátil y que su valor puede cambiar en cualquier momento.
+Esto garantiza que la variable `INSTANCE` siempre se lea desde la memoria principal y no desde la caché de un subprocesos, lo que evita problemas de concurrencia.
+
+En general, las variables volátiles se utilizan para garantizar la coherencia de la memoria en entornos multiproceso o multihilo.
+
+En este caso, la variable `INSTANCE` se utiliza para almacenar la instancia de la base de datos y garantizar que solo se cree una instancia de la base de datos en la aplicación.   
+
+Esto se utiliza además en un bloque `synchronized` para garantizar que solo se cree una instancia de la base de datos en entornos multiproceso o multihilo.
+:::
+
+### 5. Implementar un repositorio
+
+El repositorio es una capa intermedia entre la capa de datos y la capa de presentación de la aplicación.
+
+El repositorio se encarga de gestionar la obtención de datos de la base de datos y de proporcionar los datos a la capa de presentación de la aplicación.
+
+El repositorio también puede realizar operaciones de red, almacenamiento en caché y otras operaciones relacionadas con la obtención y el almacenamiento de datos.
+
+Para implementar un repositorio en Room, debemos crear una clase que contenga las operaciones de acceso a la base de datos y que proporcione los datos a la capa de presentación.   
+
+Para este ejemplo, crearemos una interfaz `UserRepository` que defina las operaciones de acceso a la tabla de usuarios, es decir, las operaciones del DAO `UserDao`:
+
+```kotlin
+import kotlinx.coroutines.flow.Flow
+
+interface UserRepository {
+    fun getUsers(): Flow<List<User>>
+    suspend fun insertUser(user: User)
+    suspend fun updateUser(user: User)
+    suspend fun deleteUser(user: User)
+}
+```
+
+Debajo de la declaración de la interfaz `UserRepository`, creamos una clase `UserRepositoryImpl` que implementa la interfaz `UserRepository` y que contiene las operaciones de acceso a la base de datos:
+
+```kotlin
+class UserRepositoryImpl(private val userDao: UserDao) : UserRepository {
+    override fun getUsers(): Flow<List<User>> {
+        return userDao.getUsers()
+    }
+
+    override suspend fun insertUser(user: User) {
+        userDao.insertUser(user)
+    }
+
+    override suspend fun updateUser(user: User) {
+        userDao.updateUser(user)
+    }
+
+    override suspend fun deleteUser(user: User) {
+        userDao.deleteUser(user)
+    }
+}
+```
+
+En este ejemplo, la clase `UserRepositoryImpl` implementa la interfaz `UserRepository` y contiene las operaciones `getUsers()`, `insertUser()`, `updateUser()` y `deleteUser()` que acceden a la tabla de usuarios a través del DAO `UserDao`.
+
+La clase `UserRepositoryImpl` recibe una instancia de `UserDao` como parámetro en su constructor y utiliza el DAO para realizar las operaciones de acceso a la base de datos.
+
+:::tip[Ubicación del archivo Repository]
+Es recomendable tener la clase Repository en un archivo separado, para mantener la organización del código.
+Este archivo suele estar en el paquete `data` o en un paquete separado, dependiendo de la estructura del proyecto.
+:::
+
+### 6. Implementar la clase AppContainer
+
+La clase `AppContainer` es una clase de contenedor que se utiliza para proporcionar instancias de las dependencias de la aplicación a las clases que las necesitan.
+
+La clase `AppContainer` se utiliza para gestionar la creación y la inyección de dependencias en la aplicación y para garantizar que las dependencias se creen y se proporcionen de forma segura y eficiente.    
+
+Para implementar la clase `AppContainer`, debemos crear una clase que contenga las instancias de las dependencias de la aplicación y que proporcione métodos para obtener las instancias de las dependencias.   
+
+Por ejemplo, la siguiente clase `AppContainer` define las instancias de la base de datos, el DAO y el repositorio de la aplicación:
+
+```kotlin
+class AppContainer(context: Context) {
+    private val appDatabase = AppDatabase.getDatabase(context)
+    private val userDao = appDatabase.userDao()
+    private val userRepository = UserRepositoryImpl(userDao)
+
+    fun provideUserRepository(): UserRepository {
+        return userRepository
+    }
+}
+```
+
+En este ejemplo, la clase `AppContainer` define las instancias de la base de datos, el DAO y el repositorio de la aplicación y proporciona un método `provideUserRepository()` para obtener la instancia del repositorio.
+
+La clase `AppContainer` recibe el contexto de la aplicación como parámetro en su constructor y utiliza el contexto para crear la instancia de la base de datos y el DAO.
+
+La clase `AppContainer` también utiliza la instancia del DAO para crear la instancia del repositorio y proporcionarla a las clases que la necesitan.
+
+:::tip[Ubicación del archivo AppContainer]
+Es recomendable tener la clase AppContainer en un archivo separado, para mantener la organización del código.
+Este archivo suele estar en el paquete `data` o en un paquete separado, dependiendo de la estructura del proyecto.
+:::
+
+
+### 7. Inyectar dependencias en la aplicación
+
+Una vez que hemos definido las entidades, los DAOs, la base de datos, el repositorio y la clase `AppContainer`, podemos inyectar las dependencias en la aplicación para acceder a los datos de la base de datos.    
+
+Para inyectar las dependencias en la aplicación, debemos crear una instancia de la clase `AppContainer` en la clase de aplicación de la aplicación y utilizarla para obtener las instancias de las dependencias.    
+
+Por ejemplo, la siguiente clase `MyApplication` define una instancia de la clase `AppContainer` y la utiliza para obtener la instancia del repositorio de usuarios:
+
+```kotlin
+class MyApplication : Application() {
+    val appContainer by lazy { AppContainer(this) }
+
+    override fun onCreate() {
+        super.onCreate()
+        // Inicializar la base de datos y otras dependencias
+        val userRepository = appContainer.provideUserRepository()
+    }
+}
+```
+
+En este ejemplo, la clase `MyApplication` define una instancia de la clase `AppContainer` utilizando la función `lazy()` para crear la instancia de forma diferida.
+
+La clase `MyApplication` utiliza la instancia de `AppContainer` para obtener la instancia del repositorio de usuarios a través del método `provideUserRepository()`.
+
+La clase `MyApplication` también puede utilizar la instancia de `AppContainer` para obtener otras instancias de dependencias, como la base de datos y el DAO.
+
+:::tip[Ubicación del archivo Application]
+Es recomendable tener la clase Application en un archivo separado, para mantener la organización del código.
+Este archivo suele estar en el paquete `application` o en un paquete separado, dependiendo de la estructura del proyecto.
+:::
+
+:::info[Sobre la función lazy()]
+La función `lazy()` se utiliza para crear una instancia de una clase de forma diferida, es decir, la instancia se crea solo cuando se accede por primera vez a ella.
+
+Esto permite inicializar las dependencias de la aplicación de forma segura y eficiente, ya que las dependencias se crean solo cuando se necesitan y no antes.
+
+En este caso, la función `lazy()` se utiliza para crear la instancia de la clase `AppContainer` de forma diferida y para garantizar que la instancia se cree solo cuando se accede a ella por primera vez.  
+
+Esto es útil para evitar la creación innecesaria de instancias de dependencias en la aplicación y para mejorar el rendimiento de la aplicación.
+:::
+
+También se podría crear el contenedor con lateinit:
+
+```kotlin
+class MyApplication : Application() {
+    private lateinit var appContainer: AppContainer
+
+    override fun onCreate() {
+        super.onCreate()
+        appContainer = AppContainer(this)
+        // Inicializar la base de datos y otras dependencias
+        val userRepository = appContainer.provideUserRepository()
+    }
+}
+```
+
+En este caso, se inicializa la variable `appContainer` en el método `onCreate()` de la clase `MyApplication` y se utiliza para obtener la instancia del repositorio de usuarios.    
+
+Esta forma de inicialización es útil cuando se necesita inicializar la instancia de la clase `AppContainer` en el método `onCreate()` de la clase `MyApplication` y no antes.
+
+:::info[Sobre lateinit]
+La palabra clave `lateinit` se utiliza para indicar que una variable se inicializará más tarde, es decir, que su valor se asignará en algún momento antes de que se acceda a ella por primera vez.  
+
+Esto permite diferir la inicialización de la variable y garantizar que se inicialice solo cuando sea necesario.
+
+En este caso, la palabra clave `lateinit` se utiliza para inicializar la variable `appContainer` en el método `onCreate()` de la clase `MyApplication` y para garantizar que la instancia de la clase `AppContainer` se cree solo cuando se acceda a ella por primera vez.  
+
+Esto es útil para evitar la inicialización innecesaria de la variable `appContainer` y para mejorar el rendimiento de la aplicación.
+:::
+
+### 8. Acceder a los datos de la base de datos desde un ViewModel
+
+Una vez que hemos inyectado las dependencias en la aplicación, podemos acceder a los datos de la base de datos desde un ViewModel de Jetpack Compose.
+
+Para acceder a los datos de la base de datos desde un ViewModel, debemos crear una clase que extienda de `ViewModel` y que contenga las operaciones de acceso a los datos.
+
+Por ejemplo, la siguiente clase `UserViewModel` define un ViewModel que accede a los datos de la base de datos a través del repositorio de usuarios:
+
+```kotlin
+class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
+    val users: Flow<List<User>> = usersRepository.getUsers().asFlow()
+}
+```
+
+En este ejemplo, la clase `UserViewModel` define un ViewModel que accede a los datos de la base de datos a través del repositorio de usuarios y proporciona los datos a la capa de presentación.    
+
+La clase `UserViewModel` recibe una instancia del repositorio de usuarios como parámetro en su constructor y utiliza el repositorio para obtener los datos de la base de datos. 
+
+La clase `UserViewModel` también define una propiedad `users` que contiene los datos de los usuarios como un flujo de datos (`Flow`) y que se puede observar desde la capa de UI. 
+
+:::tip[Ubicación del archivo ViewModel]
+Es recomendable tener la clase ViewModel en un archivo separado, para mantener la organización del código.
+Este archivo suele estar en el paquete `ui` o en un paquete separado, dependiendo de la estructura del proyecto.
+:::
+
+Si quisieramos también implementar la funcionalidad para insertar, borrar o actualizar un usuario, podríamos hacerlo de la siguiente manera:
+
+```kotlin
+class UserViewModel(private val userRepository: UserRepository) : ViewModel() {
+    val users: Flow<List<User>> = usersRepository.getUsers().asFlow()
+
+    fun insertUser(user: User) {
+        viewModelScope.launch {
+            userRepository.insertUser(user)
+        }
+    }
+
+    fun updateUser(user: User) {
+        viewModelScope.launch {
+            userRepository.updateUser(user)
+        }
+    }
+
+    fun deleteUser(user: User) {
+        viewModelScope.launch {
+            userRepository.deleteUser(user)
+        }
+    }
+}
+```
+
+En este caso, se han añadido las funciones `insertUser()`, `updateUser()` y `deleteUser()` al ViewModel para insertar, actualizar y eliminar un usuario en la base de datos.
+
+:::warning[Sobre los datos a guardar, borrar o actualizar en la base de datos]
+Es importante tener en cuenta que las operaciones de inserción, actualización y eliminación de datos en la base de datos deben realizarse en un hilo de fondo para evitar bloquear el hilo principal de la aplicación.
+
+Además, estas operaciones deben realizarse dentro de un bloque `viewModelScope.launch` para garantizar que se realicen de forma segura y eficiente.
+
+En general, es recomendable utilizar corutinas para realizar operaciones asíncronas en la base de datos y para garantizar que la aplicación sea reactiva y eficiente.
+
+También es importante comprobar que los datos introducidos en la base de datos sean válidos y estén correctamente formateados antes de realizar las operaciones de inserción, actualización o eliminación. 
+
+Para ello, se pueden utilizar validaciones y comprobaciones de datos en el ViewModel o en el repositorio antes de realizar las operaciones en la base de datos.
+:::
+
+### 9. Observar los datos en la capa de UI
+
+Una vez que hemos definido el ViewModel y hemos accedido a los datos de la base de datos, podemos observar los datos en la capa de UI de Jetpack Compose.
+
+Para observar los datos en la capa de UI, debemos utilizar la función `collectAsState()` para convertir el flujo de datos (`Flow`) en un estado que se puede observar desde la capa de UI.  
+
+Por ejemplo, la siguiente función `UserListScreen` define una pantalla que muestra la lista de usuarios y que observa los datos del ViewModel:
+
+```kotlin
+@Composable
+fun UserListScreen(userViewModel: UserViewModel) {
+    val users by userViewModel.users.collectAsState(emptyList())
+
+    LazyColumn {
+        items(users) { user ->
+            UserItem(user = user)
+        }
+    }
+}
+```
+
+En este ejemplo, la función `UserListScreen` define una pantalla que muestra la lista de usuarios y que observa los datos del ViewModel a través de la propiedad `users`.
+
+La propiedad `users` se convierte en un estado que se puede observar desde la capa de UI utilizando la función `collectAsState()`.
+
+La función `collectAsState()` convierte el flujo de datos (`Flow`) en un estado que se puede observar desde la capa de UI y que se actualiza automáticamente cuando cambian los datos.  
+
+Esto permite mostrar los datos de la base de datos en la pantalla y actualizar la pantalla automáticamente cuando cambian los datos.
+
+Si quisieramos crear un pequeño formulario para insertar un usuario, podríamos hacerlo de la siguiente manera:
+
+```kotlin
+@Composable
+fun AddUserScreen(userViewModel: UserViewModel) {
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+
+    Column {
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Name") }
+        )
+        TextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") }
+        )
+        Button(onClick = { 
+            userViewModel.insertUser(User(name = name, email = email))
+        }) {
+            Text("Add User")
+        }
+    }
+}
+```
+
+En este caso, se han definido dos variables `name` y `email` para almacenar el nombre y el email del usuario introducidos en el formulario.
+
+:::warning[Sobre las variables en la UI]
+Aclarar que en este ejemplo, por hacerlo más ameno, no se han incluído las variables `name` y `email` en un ViewModel, lo cual sería lo recomendable para mantener la lógica de la aplicación separada de la capa de UI. 
+
+En general, es recomendable utilizar un ViewModel para gestionar la lógica de la aplicación y para mantener la capa de UI lo más simple y desacoplada posible.
+:::
+
+La función `TextField` se utiliza para mostrar los campos de texto para introducir el nombre y el email del usuario y para actualizar las variables `name` y `email` cuando se introducen los datos.
+
+La función `Button` se utiliza para mostrar un botón que permite insertar un usuario en la base de datos cuando se hace clic en él.
+
+También podríamos añadir a la lista de usuarios un botón para eliminar un usuario:
+
+```kotlin
+@Composable
+fun UserItem(user: User, onDeleteUser: (User) -> Unit) {
+    Row {
+        Text(text = user.name)
+        Text(text = user.email)
+        Button(onClick = { onDeleteUser(user) }) {
+            Text("Delete")
+        }
+    }
+}
+```
+
+En este caso, se ha añadido un botón a la lista de usuarios que permite eliminar un usuario de la base de datos cuando se hace clic en él.
+
+La función `UserItem` recibe un parámetro `onDeleteUser` que es una función de tipo `(User) -> Unit` que se llama cuando se hace clic en el botón de eliminar.
+
+La función `onDeleteUser` se utiliza para eliminar un usuario de la base de datos a través del ViewModel.
+
+:::warning[Sobre la eliminación de un usuario]
+Es importante tener en cuenta que la eliminación de un usuario de la base de datos debe realizarse de forma segura y eficiente para evitar problemas de integridad de los datos.
+
+Antes de eliminar un usuario de la base de datos, es recomendable comprobar que el usuario existe y que los datos son válidos y están correctamente formateados.
+
+También es importante tener en cuenta que la eliminación de un usuario de la base de datos puede afectar a otras tablas relacionadas, por lo que es importante gestionar las relaciones entre las tablas de forma adecuada. 
+
+En general, es recomendable utilizar corutinas para realizar operaciones asíncronas en la base de datos y para garantizar que la aplicación sea reactiva y eficiente.
+:::
+
+La lambda que le pasaríamos a la función `UserItem` sería la siguiente:
+
+```kotlin
+@Composable
+fun UserListScreen(userViewModel: UserViewModel) {
+    val users by userViewModel.users.collectAsState(emptyList())
+
+    LazyColumn {
+        items(users) { user ->
+            UserItem(user = user) {
+                userViewModel.deleteUser(it)
+            }
+        }
+    }
+}
+```
+
+En este caso, se ha pasado una lambda a la función `UserItem` que llama a la función `deleteUser()` del ViewModel cuando se hace clic en el botón de eliminar.
+
+La lambda recibe un parámetro `it` que es el usuario que se va a eliminar de la base de datos.
+
+
+## Consultar el contenido de las bases de datos con el inspector en Android Studio
+
+Para consultar el contenido de las bases de datos de Room en Android Studio, podemos utilizar el inspector de bases de datos integrado en Android Studio.
+
+El inspector de bases de datos permite ver y modificar los datos de las tablas de la base de datos, ejecutar consultas SQL personalizadas y realizar otras operaciones relacionadas con la base de datos.   
+
+Para abrir el inspector de bases de datos en Android Studio, debemos seguir los siguientes pasos:
+
+1. Abrir el panel de herramientas de Android Studio.
+2. Seleccionar la pestaña `Device File Explorer`.
+3. Navegar a la carpeta `/data/data/<nombre del paquete de la aplicación>/databases/`.
+4. Hacer clic con el botón derecho en el archivo de la base de datos y seleccionar `Database Inspector`.
+
+## Guardado de preferencias con DataStore
+
+DataStore es una biblioteca de Jetpack que proporciona una forma sencilla y eficiente de almacenar y recuperar datos de preferencias en una aplicación Android.
+
+DataStore reemplaza a SharedPreferences como la forma recomendada de almacenar y recuperar datos de preferencias en una aplicación Android y proporciona una API reactiva y segura para trabajar con datos de preferencias. 
+
+A diferencia de los datos guardados con Room, que tienden a ser más complejos y pesados, DataStore es más ligero y está pensado para guardar datos de preferencias de forma sencilla y eficiente.
+
+Es decir, utilizaremos las preferencias para guardar datos simples como configuraciones de la aplicación, preferencias del usuario, etc.
+
+DataStore tiene dos implmenetaciones:
+
+- **Preferences DataStore**: Almacena y recupera datos de preferencias clave-valor de forma asíncrona y reactiva.
+    - Los datos almacenados con preferencias solo pueden ser de tipo primitivo o String.
+    - No se pueden almacenar ocnjuntos de datos complejos.
+    - No se requiere un esquema predeterminado.
+- **Proto DataStore**: Almacena y recupera datos de preferencias en formato de mensajes protobuf de forma asíncrona y reactiva.
+    - Permite almacenar y recuperar datos de preferencias más complejos.
+    - Requiere un esquema definido.
+
+Para utilizar DataStore en una aplicación Android, debemos agregar las dependencias necesarias en el archivo `build.gradle.kts` del módulo de la aplicación:
+
+```kotlin
+dependencies {
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+}
+```
+
+Para implementar las preferencias empezaremos creando una nueva clase en el paquete `data` llamada `UserPreferencesRepository`.
+
+En esta clase definiremos una propiedad privada para representar una instancia de DataStore de tipo Preferences.
+
+Este objeto almacenará pares clave-valor. Para ello, debemos definir una clave, crearemos un objeto companion y usaremos las funciones `stringPreferencesKey()` e `intPreferencesKey()` para definir las claves de las preferencias.    
+
+Tamnbién crearemos una función una función `writeUserPreferences()` para escribir las preferencias del usuario y dos flujos de datos para observar los cambios en las preferencias del usuario.
+
+```kotlin
+class UserPreferencesRepository(
+    private val dataStore: DataStore<Preferences>
+) {
+    private companion object {
+        val USER_NAME_KEY = stringPreferencesKey("user_name")
+        val USER_AGE_KEY = intPreferencesKey("user_age")
+    }
+
+    val userNameFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[USER_NAME_KEY] ?: ""
+    }
+
+    val userAgeFlow: Flow<Int> = dataStore.data.map { preferences ->
+        preferences[USER_AGE_KEY] ?: 0
+    }
+
+    suspend fun writeUserPreferences(userName: String, userAge: Int) {
+        dataStore.edit { preferences ->
+            preferences[USER_NAME_KEY] = userName
+            preferences[USER_AGE_KEY] = userAge
+        }
+    }
+}
+```
+
+En este ejemplo, la clase `UserPreferencesRepository` define una propiedad `dataStore` que representa una instancia de DataStore de tipo Preferences y que se utiliza para almacenar y recuperar los datos de preferencias del usuario. 
+
+Al utilizar archivos de preferencias estamos interactuando con el sistema de archivos, y esto puede darnos algún que otro problema.
+
+Para lidiar con los posibles problemas es recomendable capturar las posibles excepciones que puedan surgir al interactuar con el sistema de archivos.
+
+Podemos usar el operador catch{} para capturar las excepciones y manejarlas de forma adecuada.
+
+```kotlin
+val userNameFlow: Flow<String> = dataStore.data
+    .catch { exception ->
+        if (exception is IOException) {
+            emit(emptyPreferences())
+        } else {
+            throw exception
+        }
+    }
+    .map { preferences ->
+        preferences[USER_NAME_KEY] ?: ""
+    }
+```
+
+En este ejemplo, se ha añadido un bloque `catch` al flujo de datos `userNameFlow` para capturar las excepciones de tipo `IOException` que puedan surgir al interactuar con el sistema de archivos.  
+
+Si se produce una excepción de tipo `IOException`, se emite un valor predeterminado (`emptyPreferences()`) en el flujo de datos para evitar que la aplicación se bloquee o se cierre.   
+
+Esto permite manejar las excepciones de forma adecuada y garantizar que la aplicación sea reactiva y eficiente.
+
+Para utilizar el `UserPreferencesRepository` en la aplicación, debemos crear una instancia de la clase en la clase de aplicación y utilizarla para acceder a los datos de preferencias del usuario.
+
+```kotlin
+private const val USER_PREFERENCES_NAME = "user_preferences"
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = USER_PREFERENCES_NAME)
+
+class MyApplication : Application() {
+    lateinit var userPreferencesRepository: UserPreferencesRepository
+
+    override fun onCreate() {
+        super.onCreate()
+        userPreferencesRepository = UserPreferencesRepository(dataStore)
+    }
+}
+```
+
+:::tip[Recuerda actualizar el archivo AndroidManifest.xml]
+Para poder utilizar la clase `MyApplication` como clase de aplicación, debemos actualizar el archivo `AndroidManifest.xml` y añadir la propiedad `android:name` al elemento `<application>` para indicar la clase de aplicación.
+
+```xml
+<application
+    android:name=".MyApplication"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:theme="@style/AppTheme">
+    ...
+</application>
+```
+
+Una vez hecho esto ya podemos proporcionar el `UserPreferencesRepository` a las clases que lo necesiten, como por ejemplo un ViewModel.
+
+Haremos que este repositorio sea una propiedad del constructor del ViewModel y crearemos una función para escribir las preferencias del usuario.
+
+Además, también crearemos un companion object para obtener una instancia de la clase de forma segura y eficiente.
+
+```kotlin
+class UserViewModel(
+    private val userPreferencesRepository: UserPreferencesRepository
+) : ViewModel() {
+    val userNameFlow: Flow<String> = userPreferencesRepository.userNameFlow
+    val userAgeFlow: Flow<Int> = userPreferencesRepository.userAgeFlow
+
+    fun writeUserPreferences(userName: String, userAge: Int) {
+        viewModelScope.launch {
+            userPreferencesRepository.writeUserPreferences(userName, userAge)
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer  {
+                val application = (this[APLICATION_KEY] as MyApplication)
+                UserViewModel(application.userPreferencesRepository)
+            }
+        }
+    }
+}
+```
+
+Para leer la preferencia podemos crear un uiState en el ViewModel para reflejar el flujo de datos de la preferencia.
+
+```kotlin
+val uiState: StateFlow<UiState> = 
+    userPreferencesRepository.userName.map {
+        UiState(userName = it)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = UiState()
+    )
+```
+
+:::info[Sobre stateIn]
+La función `stateIn()` se utiliza para convertir un flujo de datos en un estado que se puede observar desde la capa de UI y que se actualiza automáticamente cuando cambian los datos.  
+
+La función `stateIn()` toma varios parámetros, como el ámbito de la corutina, el tiempo de inicio, el valor inicial y otros parámetros, para configurar el estado y garantizar que se actualice de forma segura y eficiente.    
+
+En este caso, la función `stateIn()` se utiliza para convertir el flujo de datos `userName` en un estado que se puede observar desde la capa de UI y que se actualiza automáticamente cuando cambia el nombre de usuario.   
+
+Esto permite mostrar el nombre de usuario en la pantalla y actualizar la pantalla automáticamente cuando cambia el nombre de usuario.
+
+Los parámetros sirven para lo siguiente:
+- `scope`: El ámbito de la corutina en el que se ejecutará el estado.
+- `started`: El tiempo de inicio del estado.
+- `initialValue`: El valor inicial del estado.
+:::
 
 
 ## Recursos

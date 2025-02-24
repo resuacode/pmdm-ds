@@ -1,19 +1,63 @@
 import CodeBlock from '@theme/CodeBlock';
 
-# Enunciados para ejercicios de ejemplo
+# Ejercicios: enunciados y soluciones
 
 En esta página encontraréis una serie de enunciados para ejercicios de ejemplo que podéis realizar para practicar y aprender más sobre el desarrollo de aplicaciones Android con Kotlin y Jetpack Compose.
 
 ## Índice
 
-- [App de lista de la compra o to-do list](#app-de-lista-de-la-compra-o-to-do-list)
 - [App de contadores](#app-de-contadores)
 - [App de pruebas de navegación](#app-de-pruebas-de-navegación)
+- [App de lista de la compra o to-do list](#app-de-lista-de-la-compra-o-to-do-list)
 - [App de calculadora](#app-de-calculadora)
 - [App de TicTacToe](#app-de-tictactoe)
 - [App de Trivial](#app-de-trivial)
 - [App genérica de un modelo de datos a elegir](#app-genérica-de-un-modelo-de-datos-a-elegir)
 - [App generadora de alarmas](#app-generadora-de-alarmas)
+
+
+## App de contadores
+
+Elaborar una app sencilla de una sola pantalla en la que manejaremos el estado de uno o varios contadores. 
+
+Debemos elaborar varios ejemplos de la misma app pasando por los siguientes:
+
+1. Una app con un único contador que se muestre en pantalla y al que se le añada 1 cada vez que se pulse un botón. Debe existir también un botón para reiniciar el contador a 0.
+2. En esta versión tendremos dos contadores y un contador general, de forma que los dos primeros funcionarán de forma independiente y el general aumentará cada vez que cualquiera de los otros aumente.
+3. Modificar la versión anterior añadiendo un TextField que solo admita números enteros positivos por cada contador, para que si el usuario lo desea, se pueda modificar la cantidad que se aumenta con cada pulsación. Esto debe afectar al contador y al contador general.
+4. Crear una pantalla principal con botones que mediante navegación te llevan a cada uno de los 3 ejemplos anteriores y configurarlos con una barra superior que incluya una flecha para volver a la pantalla principal.
+5. Incluir una nueva versión en la que se eleva el estado de los contadores para manejarlo mediante un ViewModel y su correspondiente StateFlow.
+
+:::info[Video explicación de proyecto Contadores]
+<iframe width="560" height="315" src="https://www.youtube.com/embed/V1L8PdraovU?si=aX7trxtk8BDtFNug" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/ContadoresCompose)
+
+## App de pruebas de navegación
+
+Elaborar una app con 4 pantallas diferentes y gestionar su navegación tal y como hemos visto en ejemplos anteriores de forma que sea posible navegar así:
+
+- Desde la pantalla principal se debe poder ir mediante un botón a la pantalla 2 y la 3.
+- Desde la pantalla 2 se debe poder volver a la 1 y moverse a la 3.
+- Desde la pantalla 3 se debe poder volver a la 1 o a la 2 dependiendo de cuál se venga. Se debe poder también ir a la 4 de forma simple o pasándole uno o dos parámetros textuales que se visualizarán en ella.
+- Desde la pantalla 4 se debe poder volver a la 3 o a la 1 directamente y borrando la pila de pantallas. Además, si se reciben parámetros deben mostrarse, en caso contrario debe mostrarse un mensaje de que no se han recibido. 
+
+### Versión 1.0 Navegación básica entre pantallas
+
+:::info[Video explicación de proyecto Navegación - Versión 1]
+En proceso y pendiente de redistribución del proyecto
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/PruebasNavigationCompose)
+
+### Versión 2.0 Navegación con argumentos
+
+:::info[Video explicación de proyecto Navegación - Versión 2]
+En proceso y pendiente de redistribución del proyecto
+:::
+
+#### [Solución en Github con paso de parámetros](https://github.com/resuadam2/EjemploParamsNavegacion)
 
 ## App de lista de la compra o to-do list
 
@@ -29,34 +73,62 @@ Hacer varias versiones de la app pasando por los siguientes pasos:
 4. Elevar el estado de la app para manejarlo mediante un ViewModel y su correspondiente StateFlow. 
 5. Añadir una barra superior a la app a través de un Scafold, en la barra superior debe aparecer el título de la app y un botón para elminar todos los elementos de la lista marcados como realizados de golpe.
 
-### [Solución en Github](https://github.com/resuadam2/ListaCompraCompose)
-### [Vídeos solucionandolo](./11-ejercicios-resueltos-explicados.mdx#app-de-la-lista-de-la-compra-o-to-do-list)
+### Versión 1.0 Gestionando el estado dentro de los composables
 
-## App de contadores
+:::info[Video introducción a la arquitectura y explicación de proyecto - Versión 1]
+<iframe width="560" height="315" src="https://www.youtube.com/embed/M5wcl1khohk?si=9HFgnlxLwF2A54s3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+:::
 
-Elaborar una app sencilla de una sola pantalla en la que manejaremos el estado de uno o varios contadores. 
+#### [Solución en Github](https://github.com/resuadam2/ListaCompraCompose/tree/master/sin_view_model)
 
-Debemos elaborar varios ejemplos de la misma app pasando por los siguientes:
+### Versión 2.0 Gestionando el estado dentro de los composables pero usando mutableStateOf
 
-1. Una app con un único contador que se muestre en pantalla y al que se le añada 1 cada vez que se pulse un botón. Debe existir también un botón para reiniciar el contador a 0.
-2. En esta versión tendremos dos contadores y un contador general, de forma que los dos primeros funcionarán de forma independiente y el general aumentará cada vez que cualquiera de los otros aumente.
-3. Modificar la versión anterior añadiendo un TextField que solo admita números enteros positivos por cada contador, para que si el usuario lo desea, se pueda modificar la cantidad que se aumenta con cada pulsación. Esto debe afectar al contador y al contador general.
-4. Crear una pantalla principal con botones que mediante navegación te llevan a cada uno de los 3 ejemplos anteriores y configurarlos con una barra superior que incluya una flecha para volver a la pantalla principal.
-5. Incluir una nueva versión en la que se eleva el estado de los contadores para manejarlo mediante un ViewModel y su correspondiente StateFlow.
+:::info[Video explicación de proyecto con mutableStateOf - Versión 2]
+<iframe width="560" height="315" src="https://www.youtube.com/embed/sqbHb15MCQI?si=iDiAAjn6Tt1ztOee" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+:::
 
-### [Solución en Github](https://github.com/resuadam2/ContadoresCompose)
+#### [Solución en Github](https://github.com/resuadam2/ListaCompraCompose/tree/master/sin_view_model_v2)
 
-## App de pruebas de navegación
+### Explicación básica de la arquitectura MVVM
 
-Elaborar una app con 4 pantallas diferentes y gestionar su navegación tal y como hemos visto en ejemplos anteriores de forma que sea posible navegar así:
+:::info[Video explicación de la arquitectura MVVM]
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Af72QxiHRh0?si=RtYClOSgTyUT39dQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+:::
 
-- Desde la pantalla principal se debe poder ir mediante un botón a la pantalla 2 y la 3.
-- Desde la pantalla 2 se debe poder volver a la 1 y moverse a la 3.
-- Desde la pantalla 3 se debe poder volver a la 1 o a la 2 dependiendo de cuál se venga. Se debe poder también ir a la 4 de forma simple o pasándole uno o dos parámetros textuales que se visualizarán en ella.
-- Desde la pantalla 4 se debe poder volver a la 3 o a la 1 directamente y borrando la pila de pantallas. Además, si se reciben parámetros deben mostrarse, en caso contrario debe mostrarse un mensaje de que no se han recibido. 
+### Versión 3.0 Gestionando el estado con ViewModel y mutableStateFlow
 
-### [Solución en Github](https://github.com/resuadam2/PruebasNavigationCompose)
-### [Solución en Github con paso de parámetros](https://github.com/resuadam2/EjemploParamsNavegacion)
+:::info[Video explicación de proyecto con ViewModel y mutableStateFlow - Versión 3]
+<iframe width="560" height="315" src="https://www.youtube.com/embed/EZQ5Y-R9V9g?si=3Nnpxqtb8eI6ly8A" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/ListaCompraCompose/tree/master/app)
+
+### Versión 4.0 Gestionando el estado con ViewModel Híbrido, manejando la lista fuera del mutableStateFlow
+
+:::info[Video explicación de proyecto con ViewModel Híbrido - Versión 4]
+<iframe width="560" height="315" src="https://www.youtube.com/embed/FgpGh1gPaUY?si=oROh3mZl1gO0y-cW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/ListaCompraCompose/tree/master/view_model_hibrido)
+
+### Versión 5.0 Variante en la que almacenamos la cantidad y el precio de cada producto e implementamos un CRUD con Room
+
+:::info[Video explicación de proyecto con Room - Versión 5]
+En proceso...
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/ListaCompraRoom)
+
+## App de Carta Alta 
+
+### [Enunciado en PDF](./CartaAlta.pdf)
+
+:::info[Video explicación de proyecto Carta Alta]
+<iframe width="560" height="315" src="https://www.youtube.com/embed/2Odtr-8mXLQ?si=6SoFFcv50sC1yNiU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/CartaAltaApp)
+
 
 ## App de calculadora
 
@@ -72,7 +144,7 @@ Se pueden añadir tantas posibles operaciones matemáticas como se quieran.
 
 Y todas las que se os ocurran y queráis implementar.
 
-### [Solución en el Github de avidaldo](https://github.com/avidaldo/android-windows-calculator-ui)
+#### [Solución en el Github de avidaldo](https://github.com/avidaldo/android-windows-calculator-ui)
 
 ## App de TicTacToe
 
@@ -84,7 +156,7 @@ Se debe mostrar en cada momento si es el turno del jugador X o de las O. Se debe
 
 Este ejemplo puede basarse en [siguiente Codelab](https://developer.android.com/codelabs/basic-android-kotlin-compose-viewmodel-and-state?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-4-pathway-1%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-viewmodel-and-state#0) cuyo código final está disponible en [este repositorio](https://github.com/resuadam2/basic-android-kotlin-compose-training-unscramble).
 
-### [Solución en el Github de avidaldo](https://github.com/avidaldo/compose-tictactoe)
+#### [Solución en el Github de avidaldo](https://github.com/avidaldo/compose-tictactoe)
 
 ## App de Trivial
 
@@ -100,7 +172,13 @@ Una vez elegida la cantidad de preguntas debe comenzar el juego en una pantalla 
 
 Se pueden elaborar variantes de esta aplicación añadiendo cosas como tiempos límite de respuesta, cambiando a un número de preguntas fijo pero con un máximo de errores permitido o cualquier variante que e os ocurra.
 
-### [Solución en Github](https://github.com/resuadam2/TriviaApp/tree/initial-version)
+### Versión 1.0 Con los datos en crudo desde un archivo Kotlin
+
+:::info[Video explicación de proyecto Trivial - Versión 1]
+<iframe width="560" height="315" src="https://www.youtube.com/embed/bwfZz1Prcz0?si=ilkfKRSgRndbCWHU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/TriviaApp/tree/initial-version)
 
 ### Versión del Trivial haciendo uso de una API para obtener las preguntas
 
@@ -129,7 +207,41 @@ Algunas APIs famosas de temas variados que podéis utilizar son:
 
 Hay muchas más APIs disponibles en internet, podéis buscar en [RapidAPI](https://rapidapi.com/) para encontrar más.
 
-### [Solución en Github usando la API de Open Trivia Database](https://github.com/resuadam2/TriviaApp/tree/first-api-version)
+### Versión 2.0 Con los datos desde una API
+
+API de referencia: [Open Trivia Database](https://opentdb.com/api_config.php)
+
+:::info[Video explicación de proyecto Trivial - Versión 2]
+En proceso...
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/TriviaApp/tree/first-api-version)
+
+### Versión 3.0 Gurardando el record en un archivo de preferencias con DataStore
+
+:::info[Video explicación de proyecto Trivial - Versión 3]
+En proceso...
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/TriviaApp/tree/record-in-datastore)
+
+### Versión 4.0 Gurardando las partidas y el record por categorías en una base de datos con Room
+
+:::info[Video explicación de proyecto Trivial - Versión 4]
+En proceso...
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/TriviaApp/tree/master)
+
+## App de Pokedex
+
+API de referenica: [API de Pokémon](https://pokeapi.co/)
+
+:::info[Video explicación de proyecto Pokedex]
+En proceso...
+:::
+
+#### [Solución en Github](https://github.com/resuadam2/PokedexApp)
 
 ## App genérica de un modelo de datos a elegir
 

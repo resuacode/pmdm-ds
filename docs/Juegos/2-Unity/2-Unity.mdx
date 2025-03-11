@@ -56,7 +56,7 @@ Estas propiedades determinan sus características o comportamientos y finalmente
 
 Es muy importante entender la estructura de cómo está organizado el proyecto para así entender de una forma más eficiente como acceder a los objetos. 
 
-![Estructura de un proyecto en Unity](/static/img/apuntes_unity/estructura_proyecto.png)
+![Estructura de un proyecto en Unity](../../../static/img/apuntes_unity/estructura_proyecto.png)
 
 Por otro lado tenemos la configuración de Unity, la cuál se divide en dos niveles, el primero de ellos es la correspondiente al Engine, el cuál se puede modificar desde la pestaña Edit o Edición de la barra superior y entrando en Preferences o Preferencias y dónde vamos a encontrar un listado de opciones que se pueden ir personalizando y se van a ver aplicados a todos los proyectos que creemos desde Unity Hub. 
 
@@ -70,13 +70,13 @@ En primer lugar hablaremos del **Layout** que hace referencia la manera en la qu
 
 La primera vez que ejecutamos Unity, el layout **por defecto** tiene la escena en la parte central, el inspector a la derecha, las carpetas y archivos del proyecto en la ventana inferior y la jerarquía del proyecto a la izquierda. Iremos viendo poco a poco para qué se usa cada ventana. Podremos también ir añadiendo más pestañas y ventanas desde la opción Window o Ventana, dónde encontraremos todas las disponibles. 
 
-![Layout por defecto de Unity](/static/img/apuntes_unity/interfaz1.png)
+![Layout por defecto de Unity](../../../static/img/apuntes_unity/interfaz1.png)
 
 Las **pestañas** pueden arrastrarse también para añadirlas a otras ventanas existentes y desacoplarse para crear una ventana independiente. para abarcar incluso varias pantallas y trabajar de la forma más eficiente y cómoda posible. 
 
 En la parte superior derecha de la barra del editor (dónde sale la opción Default la primera vez que abrimos el programa en una lista desplegable) también podemos seleccionar entre varios layouts diferentes que vienen configurados por defecto y que tienen un aspecto coherente para según qué tipo de proyectos y de distribución de monitores de trabajo que tengamos. Aquí también podemos guardar nuestro layout actual si lo hemos personalizado a nuestro gusto para no perderlo.
 
-![Layouts de Unity](/static/img/apuntes_unity/interfaz2.png)
+![Layouts de Unity](../../../static/img/apuntes_unity/interfaz2.png)
 
 Todas las pestañas tiene un botón de opciones en el margen superior derecho. 
 
@@ -84,11 +84,11 @@ Dentro de las principales pestañas que necesitamos para trabajar, empezaremos h
 
 Esta pestaña contiene precisamente un **explorador** de carpetas dónde podremos seleccionar y arrastrar los distintos assets y crear nuevos haciendo clic derecho, o simplemente arrastrando archivos desde fuera del programa hacia aquí. También podremos crear carpetas para organizar los assets directamente desde aquí. También tenemos una barra de búsqueda y un botón de filtros para los proyectos grandes. En resumen, esta pestaña se utiliza para organizar los assets.
 
-![Carpetas de un proyecto en Unity](/static/img/apuntes_unity/interfaz3.png)
+![Carpetas de un proyecto en Unity](../../../static/img/apuntes_unity/interfaz3.png)
 
 La siguiente pestaña importante es la izquierda, es decir, la de **Hierarchy** o Jerarquía, la cual contiene las escenas del proyecto y todos los objetos del juego, los cuáles pueden ser creados desde 0 o a partir de un asset. Aquí es dónde iremos agregando todos nuestros objetos al escenario como pueden ser los elementos de los escenarios, personajes, UI, etc. Todos los objetos pueden contener otros, y todos los objetos deben estar en una escena a nivel jerárquico. Esta pestaña está directamente conectada con la pestaña central, que es la de la escena o Scene, pestaña en la cuál se nos muestra una previsualización de cómo está quedando nuestro juego a nivel visual. Si usamos el buscador de esta pestaña nos va a ayudar también a encontrar objetos ya que nos mostrará solo los buscados en la escena. 
 
-![Jerarquía de un proyecto en Unity](/static/img/apuntes_unity/interfaz4.png)
+![Jerarquía de un proyecto en Unity](../../../static/img/apuntes_unity/interfaz4.png)
 
 Justo encima de la pestaña de Jerarquía encontramos la barra de herramientas con la que podremos manejar los objetos del juego, con opciones como mover, escalar o rotar los mismos (en las versiones más actuales del editor estas opciones se han movido a dentro de la propia pestaña de escena, con buen criterio ya que son herramientas para interactuar con la misma). En el centro de esta barra encontramos también los botones de play y pausa del proyecto, los cuales nos sirven para ejecutar y probar nuestro juego mientras lo estamos desarrollando. 
 
@@ -98,15 +98,15 @@ El color del que se pone la interfaz mientras probamos el juego puede modificars
 
 **Edit → preferencias → colores → playmode tint**
 
-![Pantalla de Scene](/static/img/apuntes_unity/interfaz5.png)
+![Pantalla de Scene](../../../static/img/apuntes_unity/interfaz5.png)
 
 El jugeo corriendo con el playmode tint en un tono azul turquesa:
 
-![Pantalla de Game](/static/img/apuntes_unity/interfaz6.png)
+![Pantalla de Game](../../../static/img/apuntes_unity/interfaz6.png)
 
 La siguiente pestaña importante es la del **inspector**, ubicada a la derecha por defecto, la cuál nos ayuda a inspeccionar un objeto de la escena, mostrándonos todos los componentes y sus propiedades que tenga el objeto seleccionado. Además, también podremos ir añadiendo otros componentes y modificando sus propiedades y los valores de las mismas. 
 
-![Inspector de Unity](/static/img/apuntes_unity/interfaz7.png)
+![Inspector de Unity](../../../static/img/apuntes_unity/interfaz7.png)
 
 Estas son las pestañas básicas pero existen muchas otras para sus funciones concretas, las cuales serán más o menos interesantes dependiendo del tipo de proyecto que estemos realizando.
 
@@ -116,7 +116,7 @@ Profundizando un poco más en la pestaña de **Scene** o Escena, en la parte sup
 
 Además también podemos elegir otros modos de visualización para cosas más concretas.
 
-![Modos de visualización de la escena en Unity](/static/img/apuntes_unity/scene.png)
+![Modos de visualización de la escena en Unity](../../../static/img/apuntes_unity/scene.png)
 
 Inmediatamente después de esta opción desplegable nos encontramos con un botón para alternar la vista entre el 2D y el 3D. Otro para activar y desactivar las luces de la escena. Otro para el audio del proyecto y otras opciones para activar o desactivar la visibilidad de los Skybox, Fog, Flares, los materiales animados, las partículas, etc.
 
@@ -128,7 +128,7 @@ Tras ellas, el menú de la cámara, pero ojo, es importante entender que **estas
 
 Después tenemos los **Gizmos**, que son los pequeños iconos que aparecen en la escena para indicar dónde se encuentra una cámara del juego o una fuente de luz, etc. Desde esta opción podemos personalizarlos a nuestro gusto. 
 
-![Gizmos de Unity](/static/img/apuntes_unity/gizmos.png)
+![Gizmos de Unity](../../../static/img/apuntes_unity/gizmos.png)
 
 Una de las tareas que más vamos a realizar durante el desarrollo de un juego en Unity es navegar por la escena, ya sea para colocar objetos mientras diseñamos un nivel o para hacer alguna configuración y para ello disponemos de diferentes métodos. 
 

@@ -159,7 +159,7 @@ Con la clase Log podemos imprimir mensajes en la consola de Unity, para ello usa
 Debug.Log("Mensaje de depuración");
 ```
 
-## Ejemplo de uso de un Script
+### Ejemplo de uso de un Script
 
 Vamos a ver un ejemplo sencillo de cómo utilizar un Script en Unity. Para ello, vamos a crear un Script que haga que un cubo rote en la escena.
 
@@ -196,4 +196,169 @@ Una vez hecho esto, si ejecutamos la escena, veremos cómo el cubo rota en la es
 Este es un ejemplo muy sencillo de cómo utilizar un Script en Unity. A partir de aquí, podemos crear Scripts más complejos con comportamientos más avanzados para los objetos en la escena. 
 
 En resumen, los Scripts en Unity son una parte fundamental del desarrollo de videojuegos y aplicaciones interactivas. Con los Scripts, podemos controlar el comportamiento de los objetos en la escena y crear experiencias interactivas y realistas para los usuarios. 
+
+## El ciclo de vida de un Script
+
+El ciclo de vida de un Script en Unity es el conjunto de eventos que se producen en un Script desde que se carga en la escena hasta que se destruye.
+
+El ciclo de vida de un Script en Unity consta de los siguientes eventos:
+
+- **Awake()**: Se llama una vez al inicio del juego, antes de que se ejecute el primer frame. Se utiliza para inicializar variables y configurar el estado inicial del objeto.
+- **OnEnable()**: Se llama cuando el objeto se activa.
+- **Start()**: Se llama una vez al inicio del juego, antes de que se ejecute el primer frame.
+- **Update()**: Se llama una vez por frame. Se utiliza para actualizar el comportamiento del objeto en cada frame.
+- **FixedUpdate()**: Se llama una vez por frame, pero se sincroniza con el tiempo físico del juego.
+- **LateUpdate()**: Se llama una vez por frame, después de que se hayan procesado todos los Updates.
+- **OnDisable()**: Se llama cuando el objeto se desactiva.
+- **OnDestroy()**: Se llama cuando el objeto se destruye.
+
+El ciclo de vida de un Script en Unity es importante para entender cómo se ejecutan las funciones y cómo se controla el comportamiento de los objetos en la escena.
+
+## El Input en Unity
+
+El **Input** en Unity se utiliza para detectar la entrada del usuario, como el teclado, el ratón, el mando, la pantalla táctil, etc.
+
+Para detectar la entrada del usuario en Unity, se utilizan los métodos de la clase `Input`. Algunos de los métodos más comunes de la clase `Input` son:
+
+- **Input.GetKey(KeyCode key)**: Devuelve verdadero si la tecla especificada está presionada.
+- **Input.GetKeyDown(KeyCode key)**: Devuelve verdadero si la tecla especificada se ha presionado en este frame.
+- **Input.GetKeyUp(KeyCode key)**: Devuelve verdadero si la tecla especificada se ha soltado en este frame.
+- **Input.GetMouseButton(int button)**: Devuelve verdadero si el botón del ratón especificado está presionado.
+- **Input.GetMouseButtonDown(int button)**: Devuelve verdadero si el botón del ratón especificado se ha presionado en este frame.
+- **Input.GetMouseButtonUp(int button)**: Devuelve verdadero si el botón del ratón especificado se ha soltado en este frame.
+- **Input.GetAxis(string axisName)**: Devuelve el valor del eje especificado.
+- **Input.GetButton(string buttonName)**: Devuelve verdadero si el botón especificado está presionado.
+- **Input.GetButtonDown(string buttonName)**: Devuelve verdadero si el botón especificado se ha presionado en este frame.
+- **Input.GetButtonUp(string buttonName)**: Devuelve verdadero si el botón especificado se ha soltado en este frame.
+- **Input.mousePosition**: Devuelve la posición del ratón en la pantalla.
+
+Los métodos relacionados con el teclado y el ratón utilizan el enumerador `KeyCode` para especificar la tecla o el botón que se va a detectar.
+
+Los métodos relacionados con los ejes utilizan el nombre del eje para especificar el eje que se va a detectar. Los ejes más comunes en Unity son `Horizontal` y `Vertical`. Esto hace referencia a las teclas de dirección del teclado o a los botones del mando que se utilizan para mover un objeto en la escena. 
+
+Los métodos relacionados con los botones utilizan el nombre del botón para especificar el botón que se va a detectar. Los botones más comunes en Unity son `Jump` para saltar y `Fire1` para disparar.
+
+Los métodos relacionados con el ratón utilizan el número del botón para especificar el botón del ratón que se va a detectar. El botón izquierdo del ratón se representa con el número `0`, el botón derecho con el número `1` y el botón central con el número `2`.
+
+Por ejemplo, para detectar si se ha presionado la tecla `Espacio`, se puede utilizar el siguiente código:
+
+```csharp
+if (Input.GetKeyDown(KeyCode.Space))
+{
+    Debug.Log("Se ha presionado la tecla Espacio");
+}
+```
+
+El Input en Unity es una parte fundamental del desarrollo de videojuegos y aplicaciones interactivas. Con el Input, podemos detectar la entrada del usuario y controlar el comportamiento de los objetos en la escena.  
+
+### Ejemplo de uso del Input
+
+Vamos a ver un ejemplo sencillo de cómo utilizar el Input en Unity. Para ello, vamos a crear un Script que haga que un cubo se mueva en la escena con las teclas de dirección del teclado.  
+
+1. Crearemos un nuevo proyecto en Unity y crearemos un nuevo GameObject 3D en la escena. Para ello, haremos clic en **GameObject → 3D Object → Cube**.
+2. Seleccionaremos el cubo en la jerarquía y añadiremos un componente **Rigidbody**. Para ello, haremos clic en **Add Component → Physics → Rigidbody**.
+3. Crearemos un nuevo Script de C# en la pestaña de proyecto. Para ello, haremos clic en **Assets → Create → C# Script** y lo llamaremos `MoverCubo`.
+4. Editaremos el Script `MoverCubo` y escribiremos el siguiente código:
+
+```csharp
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MoverCubo : MonoBehaviour
+{
+    public float velocidad = 5f;
+
+    // Update is called once per frame
+    void Update()
+    {
+        float movimientoHorizontal = Input.GetAxis("Horizontal");
+        float movimientoVertical = Input.GetAxis("Vertical");
+
+        Vector3 movimiento = new Vector3(movimientoHorizontal, 0, movimientoVertical);
+
+        transform.Translate(movimiento * velocidad * Time.deltaTime);
+    }
+}
+```
+
+5. Asociaremos el Script `MoverCubo` al cubo en la escena. Para ello, arrastraremos el Script desde la pestaña de proyecto al cubo en la jerarquía.
+
+Una vez hecho esto, si ejecutamos la escena, veremos cómo el cubo se mueve en la escena con las teclas de dirección del teclado. Esto es debido a que hemos asociado el Script `MoverCubo` al cubo y hemos escrito un código en el Script que hace que el cubo se mueva con las teclas de dirección del teclado.    
+
+Este es un ejemplo muy sencillo de cómo utilizar el Input en Unity. A partir de aquí, podemos crear Scripts más complejos con comportamientos más avanzados para los objetos en la escena.  
+
+En resumen, el Input en Unity es una parte fundamental del desarrollo de videojuegos y aplicaciones interactivas. Con el Input, podemos detectar la entrada del usuario y controlar el comportamiento de los objetos en la escena.
+
+:::tip[Sobre Time.deltaTime]
+Time.deltaTime es una variable que nos da el tiempo que ha pasado desde el último frame. 
+Esto es importante para que el movimiento sea fluido y no dependa de la velocidad de fotogramas del hardware en el que se ejecute el juego.
+
+Si no se multiplica el movimiento por Time.deltaTime, el movimiento del objeto dependerá de la velocidad de fotogramas del hardware en el que se ejecute el juego, lo que puede hacer que el movimiento sea más rápido o más lento en función de la velocidad de fotogramas.
+:::
+
+### InputManager
+
+El **InputManager** en Unity es un componente que se utiliza para configurar la entrada del usuario en el juego.
+
+El InputManager en Unity se utiliza para configurar los ejes, los botones y las teclas que se van a utilizar para controlar el comportamiento de los objetos en la escena.
+
+Para acceder al InputManager en Unity, se puede hacer clic en **Edit → Project Settings → InputManager**.
+
+En el InputManager se pueden configurar los ejes, los botones y las teclas que se van a utilizar en el juego. Por ejemplo, se pueden configurar los ejes `Horizontal` y `Vertical` para controlar el movimiento de un objeto en la escena con las teclas de dirección del teclado.  
+
+El InputManager en Unity es una parte fundamental del desarrollo de videojuegos y aplicaciones interactivas. Con el InputManager, podemos configurar la entrada del usuario en el juego y controlar el comportamiento de los objetos en la escena.  
+
+:::tip[Sobre el control con mandos o teclado]
+En el InputManager también se pueden configurar los ejes, los botones y las teclas que se van a utilizar para controlar el juego con un mando o un teclado. Por ejemplo, se pueden configurar los ejes `Horizontal` y `Vertical` para controlar el movimiento de un objeto en la escena con un mando o las teclas de dirección del teclado. 
+:::
+
+### Entrada táctil
+
+La entrada táctil en Unity se utiliza para detectar la entrada del usuario en dispositivos táctiles, como smartphones y tablets.
+
+Para detectar la entrada táctil en Unity, se utilizan los métodos de la clase `Input`. Algunos de los métodos más comunes de la clase `Input` para la entrada táctil son:
+
+- **Input.touchCount**: Devuelve el número de toques en la pantalla.
+- **Input.GetTouch(int index)**: Devuelve el objeto `Touch` en el índice especificado.
+- **Touch.phase**: Devuelve la fase del toque (Began, Moved, Stationary, Ended, Canceled).
+    - **TouchPhase.Began**: El toque ha comenzado.
+    - **TouchPhase.Moved**: El toque se ha movido.
+    - **TouchPhase.Stationary**: El toque está estacionario.
+    - **TouchPhase.Ended**: El toque ha terminado.
+    - **TouchPhase.Canceled**: El toque ha sido cancelado.
+- **Touch.position**: Devuelve la posición del toque en la pantalla.
+- **Touch.deltaPosition**: Devuelve el desplazamiento del toque en la pantalla.
+- **Touch.deltaTime**: Devuelve el tiempo transcurrido desde el último frame.
+
+Por ejemplo, para detectar si se ha tocado la pantalla en un dispositivo táctil, se puede utilizar el siguiente código:
+
+```csharp
+if (Input.touchCount > 0)
+{
+    Touch touch = Input.GetTouch(0);
+
+    if (touch.phase == TouchPhase.Began)
+    {
+        Debug.Log("Se ha tocado la pantalla");
+    }
+}
+```
+
+La entrada táctil en Unity es una parte fundamental del desarrollo de videojuegos y aplicaciones interactivas para dispositivos táctiles. Con la entrada táctil, podemos detectar la entrada del usuario en dispositivos táctiles y controlar el comportamiento de los objetos en la escena.    
+
+### Input System package
+
+El **Input System package** en Unity es un paquete que se utiliza para gestionar la entrada del usuario en el juego.
+
+El Input System package en Unity se utiliza para configurar los ejes, los botones y las teclas que se van a utilizar para controlar el comportamiento de los objetos en la escena.  
+
+Para acceder al Input System package en Unity, se puede hacer clic en **Window → Package Manager** y buscar el paquete **Input System**.
+
+El Input System package en Unity es una parte fundamental del desarrollo de videojuegos y aplicaciones interactivas. Con el Input System package, podemos configurar la entrada del usuario en el juego y controlar el comportamiento de los objetos en la escena.  
+
+:::tip[Sobre el Input System package]
+El Input System package en Unity es una alternativa al InputManager que ofrece más funcionalidades y flexibilidad para gestionar la entrada del usuario en el juego. Con el Input System package, se pueden configurar los ejes, los botones y las teclas de forma más sencilla y eficiente.    
+:::
+
 

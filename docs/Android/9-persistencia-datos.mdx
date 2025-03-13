@@ -26,22 +26,34 @@ Room se compone de tres componentes principales:
 
 ### 1. Agregar las dependencias de Room
 
-Para utilizar Room en una aplicación Android con Jetpack Compose, primero debemos agregar las dependencias necesarias en el archivo `build.gradle.kts` del módulo de la aplicación:
+Para utilizar Room en una aplicación Android con Jetpack Compose, primero debemos agregar las dependencias necesarias en el archivo `build.gradle.kts` del proyecto y del módulo de la aplicación:
 
-```kotlin
+```kotlin[build.gradle.kts (Project)]	
+plugins {
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27" apply false
+}
+```
+
+```kotlin[build.gradle.kts (Module)]
+plugins {
+    id("com.google.devtools.ksp")
+}
+
 dependencies {
     //Room
-    implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
-    ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
-    implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 }
 ```
 
 KSP es una API simple y potente para analizar las anotaciones de Kotlin.
 
-:::tip[Versiones en el archivo Gradle]
-Parar las depedencias del archivo Gradle, es importante usar siempre los números de versión LTS más actuales, pueden consultarse [en este enlace](https://developer.android.com/jetpack/androidx/versions?hl=es-419)
-:::
+Hay que tener en cuenta que la versión utilizada de KSP debe ser compatible con la versión de Kotlin que se esté utilizando en el proyecto, la compatibilidad entre las diferentes versiones puede consultarse en la documentación.
+
+La versión utilizada en el ejemplo es compatible con la versión 2.0.21 de Kotlin.
+
+
 
 ### 2. Definir la entidad
 

@@ -129,16 +129,16 @@ Por ejemplo, la siguiente interfaz `UserDao` define las operaciones de acceso a 
 @Dao
 interface UserDao {
     @Query("SELECT * FROM users")
-    fun getUsers(): List<User>
+    fun getUsers(): Flow<List<User>>
 
     @Insert
-    fun insertUser(user: User)
+    suspend fun insertUser(user: User)
 
     @Update
-    fun updateUser(user: User)
+    suspend fun updateUser(user: User)
 
     @Delete
-    fun deleteUser(user: User)
+    suspend fun deleteUser(user: User)
 }
 ```
 

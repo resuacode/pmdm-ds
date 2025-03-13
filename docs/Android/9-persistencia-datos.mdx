@@ -28,19 +28,21 @@ Room se compone de tres componentes principales:
 
 Para utilizar Room en una aplicación Android con Jetpack Compose, primero debemos agregar las dependencias necesarias en el archivo `build.gradle.kts` del proyecto y del módulo de la aplicación:
 
-```kotlin[build.gradle.kts (Project)]	
+```kotlin title="build.gradle.kts (Project)"
 plugins {
+    // Add this line
     id("com.google.devtools.ksp") version "2.0.21-1.0.27" apply false
 }
 ```
 
-```kotlin[build.gradle.kts (Module)]
+```kotlin title="build.gradle.kts (Module)"
 plugins {
+    // Add this line
     id("com.google.devtools.ksp")
 }
 
 dependencies {
-    //Room
+    //Room (add the following dependencies)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)

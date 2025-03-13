@@ -38,7 +38,6 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
         },
-        /*
         blog: {
           showReadingTime: true,
           feedOptions: {
@@ -50,7 +49,6 @@ const config: Config = {
           onInlineAuthors: 'warn',
           onUntruncatedBlogPosts: 'warn',
         },
-        */
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -123,11 +121,7 @@ const config: Config = {
        hashed: true,
      }),
   ],
-
-  
 ],
-
-
 };
 
 

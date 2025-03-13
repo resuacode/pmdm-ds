@@ -66,6 +66,14 @@ También podemos modificar mucho más las físicas desde código, utilizando scr
 - **Center**: El centro del collider en su espacio local. Se especifica en coordenadas X, Y, Z. Es decir, usa un Vector3.
 - **Size**: El tamaño del collider en su espacio local. Se especifica en coordenadas X, Y, Z. Es decir, usa un Vector3.
 
+### Matriz de colisiones
+
+La matriz de colisiones es una herramienta que nos permite definir qué capas de colisión interactúan entre sí. Esto es útil para controlar qué objetos colisionan entre sí y cuáles no. 
+
+Para acceder a la matriz de colisiones en Unity, debemos ir a **Edit → Project Settings → Physics** o **Physics 2D** y buscar la sección **Layer Collision Matrix**. Aquí podremos ver todas las capas de colisión y definir si colisionan entre sí o no.   
+
+![Matriz de colisiones en Unity](../../../static/img/apuntes_unity/collision_matrix.png)
+
 ## Ejemplo de uso de Rigidbody y Collider
 
 Vamos a ver un ejemplo sencillo de cómo utilizar un **Rigidbody** y un **Collider** en Unity. Para ello, vamos a crear un cubo que caiga por la gravedad y colisione con un suelo.  

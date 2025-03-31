@@ -467,3 +467,116 @@ Este método se llamará **Reset()** y simplemente le asignará la posición ini
 }
 ```
 
+### Marcar puntos y Sistema de puntuación
+
+Antes de continuar podemos organizar un poquito la escena creando un GameObject vacío y llamándolo "Map" o "Escencario" y metiendo dentro de él todos los objetos que hemos creado hasta ahora. Esto nos ayudará a mantener la jerarquía más ordenada y a identificar más fácilmente los objetos del juego.
+
+Para ello, hacemos clic derecho en la jerarquía y seleccionamos **Create Empty**. Esto creará un nuevo GameObject vacío en la jerarquía. Vamos a renombrarlo a **Map** o **Escenario** y arrastramos todos los objetos que hemos creado hasta ahora dentro de este nuevo GameObject.
+
+Ahora que ya tenemos las palas y la pelota funcionando, vamos a añadir un sistema de puntuación al juego. Para ello, vamos a crear un nuevo Script que se encargará de gestionar la puntuación del juego.
+
+Vamos a crear un nuevo Script llamado **GameManager** y lo abrimos con el editor de código. Este Script se encargará de gestionar la puntuación del juego y de reiniciar la posición de la pelota y las palas cuando un jugador pierda un punto.
+
+Vamos a crear una variable pública de tipo **int** que llamaremos **leftScore** y otra que llamaremos **rightScore**. Estas variables se encargarán de almacenar la puntuación de cada jugador. 
+
+Además, vamos a añadir 3 variables de tipo **GameObject** que llamaremos **leftPlayer**, **rightPlayer** y **ball**. Estas variables se encargarán de almacenar las referencias a las palas y la pelota. Las usaremos básicamente para tras cada punto llamar a los métodos **Reset()** de las palas y la pelota.
+
+Vamos a añadir también dos variables públicas de tipo **TextMeshProUGUI** que llamaremos **leftScoreText** y **rightScoreText**. Estas variables se encargarán de almacenar las referencias a los textos que mostrarán la puntuación de cada jugador.
+
+:::info[Sobre el TextMeshProUGUI]
+El **TextMeshProUGUI** es un componente de Unity que nos permite mostrar texto en la pantalla de forma más avanzada y con más opciones de personalización que el componente **Text**. Este componente nos permite cambiar el tamaño, el color, la fuente y muchas otras propiedades del texto.  
+Para utilizar este componente, debemos importar el paquete **TextMeshPro** desde el **Package Manager** de Unity. Una vez importado, podemos añadir el componente **TextMeshProUGUI** a cualquier GameObject y utilizarlo para mostrar texto en la pantalla.    
+Podemos crear un nuevo objeto de tipo **TextMeshProUGUI** desde la pestaña de la jerarquía y seleccionando **UI -> Text - TextMeshPro**. Esto creará un nuevo objeto de texto en la escena. 
+Podemos cambiar el texto, el tamaño, el color y muchas otras propiedades desde el inspector.
+:::
+
+Las variables del script nos quedarán tal que así:
+
+```csharp title="GameManager.cs"
+using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+    public GameObject ball, playerLeft, playerRight;
+    public int leftPlayerScore, rightPlayerScore;
+    public TMPro.TextMeshProUGUI playerLeftScoreText, playerRightScoreText;
+}
+```
+
+Todas las referencias a los GameObject y TextMeshProUGUI las arrastraremos desde el editor al script para asignarlas.
+
+Ahora añadiremos a este Script un método para resetear las posiciones de la pelota y las palas. Este método se llamará **ResetPositions()** y simplemente llamará a los métodos **Reset()** de las palas y la pelota.
+
+Para acceder a los métodos **Reset()** de las palas y la pelota, utilizaremos las variables que hemos creado anteriormente. Y para acceder a los componentes de los Scripts que contienen los métodos, utilizaremos la función **GetComponent()**.
+
+```csharp title="GameManager.cs"
+using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+    public GameObject ball, playerLeft, playerRight;
+    public int leftPlayerScore, rightPlayerScore;
+    public TMPro.TextMeshProUGUI playerLeftScoreText, playerRightScoreText;
+
+    // This method is called to reset the ball and players to their starting positions
+    private void ReserPositions()
+    {
+        // highlight-next-line
+        ball.GetComponent<Ball>().Reset();
+        playerLeft.GetComponent<Player>().Reset();
+        playerRight.GetComponent<Player>().Reset();
+    }
+}
+
+```
+
+:::info[Sobre el GetComponent()]
+La función **GetComponent()** nos permite acceder a los componentes de un GameObject. Esto es útil para acceder a los métodos y propiedades de los componentes de un GameObject.
+En este caso, estamos utilizando **GetComponent\<Ball\>()** para acceder al componente **Ball** de la pelota y **GetComponent\<Player\>()** para acceder al componente **Player** de las palas. 
+Esto nos permite llamar a los métodos **Reset()** de las palas y la pelota desde el Script **GameManager**.
+:::
+
+Con el método **ResetPositions()** creado, vamos a añadir un método que se encargue de marcar un punto al jugador que haya marcado el gol. Este método se llamará **ScorePoint()** y recibirá un parámetro de tipo **bool** que nos indicará si el jugador que ha marcado el gol es el izquierdo o el derecho.
+
+Este método se encargará de aumentar la puntuación del jugador que ha marcado el gol y de actualizar el texto de la puntuación en la pantalla.
+Para ello, utilizaremos un **if** y comprobaremos si el jugador que ha marcado el gol es el izquierdo o el derecho. Si es el izquierdo, aumentaremos la puntuación del jugador izquierdo y actualizaremos el texto de la puntuación del jugador izquierdo. Si es el derecho, haremos lo mismo pero con el jugador derecho.
+
+```csharp title="GameManager.cs"    
+using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+    public GameObject ball, playerLeft, playerRight;
+    public int leftPlayerScore, rightPlayerScore;
+    public TMPro.TextMeshProUGUI playerLeftScoreText, playerRightScoreText;
+
+// highlight-start
+    // This method is called when the ball enters the goal area (the trigger collider)
+    public void GoalScored(bool isPlayerLeft)
+    {
+        if (isPlayerLeft)
+        {
+            leftPlayerScore++;
+            playerLeftScoreText.text = leftPlayerScore.ToString();
+        }
+        else
+        {
+            rightPlayerScore++;
+            playerRightScoreText.text = rightPlayerScore.ToString();
+        }
+        ReserPositions();
+    }
+// highlight-end
+
+    // This method is called to reset the ball and players to their starting positions
+    private void ReserPositions()
+    {
+        ball.GetComponent<Ball>().Reset();
+        playerLeft.GetComponent<Player>().Reset();
+        playerRight.GetComponent<Player>().Reset();
+    }
+}
+
+```
+
+Para poner en marcha todo esto vamos a necesitar por un lado, crear los textos para mostrar la puntuación y por otro lado, crear los triggers para detectar cuando la pelota entra en la portería.

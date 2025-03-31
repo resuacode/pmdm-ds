@@ -431,7 +431,6 @@ Si es **true**, utilizaremos el eje **VerticalLeft** y si es **false**, utilizar
 
 ```csharp title="Player.cs"
 ...
-    // highlight-start
     public bool isPlayerLeft = true; // This is set in the inspector
 
     void Update()
@@ -446,7 +445,6 @@ Si es **true**, utilizaremos el eje **VerticalLeft** y si es **false**, utilizar
         }
         rb.velocity = new Vector2(rb.linearVelocity.x, verticalInput * speed);
     }
-    // highlight-end
 }
 ```
 

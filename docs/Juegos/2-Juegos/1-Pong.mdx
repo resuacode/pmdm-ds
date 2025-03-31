@@ -57,6 +57,8 @@ También podemos usar un Sprite circular en lugar de un cuadrado, no hay problem
 
 Al igual que a las palas y a las barras, le añadimos un componente **Box Collider 2D** para que colisione con las barras y las palas.
 
+Podemos darle otro color a la pelota para que se distinga mejor de las palas y las barras, al hacerlo es posible que nos ocurra que queda "dibujada" por detrás de la línea central decorativa (si la hemos añadido). Para solucionar esto bastaría con seleccionar la línea central y en su componente **Sprite Renderer** darle un valor al **Order in Layer** inferior al de la pelota, por ejemplo, -1, ya que por defecto el resto de objetos deberían tener un valor 0.
+
 Llegados a este punto añadiremos un nuevo componente a las palas y a la pelota, el componente **Rigidbody 2D**. Este componente es el encargado de aplicar las físicas a los objetos, en este caso, a las palas y a la pelota.  
 
 Si ahora mismo ejecutamos el juego podremos ver como los tres elementos caen por la pantalla, esto es debido a que el componente **Rigidbody 2D** les está aplicando la gravedad. Para evitar esto, vamos a desactivar la propiedad **Gravity Scale** de los **Rigidbody 2D** de las palas y de la pelota.  
@@ -64,3 +66,91 @@ Si ahora mismo ejecutamos el juego podremos ver como los tres elementos caen por
 Para solucionar esto vamos a poner la propiedad **Gravity Scale** de los **Rigidbody 2D** de las palas y de la pelota a 0.
 
 Si volvemos a ejecutar ya deberían de mantenerse en la posición en la que estaban.
+
+Ahora ya podemos empezar con el Scripting para mover las palas y la pelota.
+
+#### Dándole vida a la pelota
+
+Para hacer que la pelota se mueva vamos a generar un Script. Para ello, nos situamos en la pestaña de **Project** y hacemos clic derecho en la carpeta **Assets** y seleccionamos **Create -> C# Script**.
+
+Lo ideal para mantener el proyecto organizado es crear una carpeta llamada **Scripts** y dentro de ella crear el script o moverlo a la misma.
+
+Vamos a llamarlo **Ball** y lo abrimos con el editor de código que tengamos configurado. En mi caso Visual Studio.
+
+:::info[Sobre el editor de código]
+Unity nos permite configurar el editor de código que queramos, pero por defecto viene configurado con Visual Studio. Si no lo tenemos instalado, podemos descargarlo desde [la página oficial de Microsoft](https://visualstudio.microsoft.com/es/downloads/).
+:::
+
+:::tip[Elegir un editor de código por defecto]
+Si no tenemos un editor de código por defecto, podemos elegir uno desde **Edit -> Preferences -> External Tools** y seleccionar el editor que queramos usar.
+:::
+
+Partiremos de un MonoBehaviour básico, por lo que el código inicial será el siguiente:
+
+```csharp title="Ball.cs"
+using UnityEngine;
+
+public class Ball : MonoBehaviour
+{
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+}
+```
+
+:::info[Sobre el MonoBehaviour]
+Al heredar de **MonoBehaviour** estamos creando un script que se ejecutará en el contexto de Unity. Esto significa que podemos utilizar las funciones de Unity, como **Start()** y **Update()**, para ejecutar código en momentos específicos del ciclo de vida del juego.
+
+**Start()** se ejecuta una vez al inicio del juego, mientras que **Update()** se ejecuta una vez por cada frame del juego. Esto es útil para ejecutar código que necesita ser actualizado constantemente, como el movimiento de la pelota.  
+
+Tenéis más información sobre el ciclo de vida de un MonoBehaviour en la documentación oficial de Unity y en la sección de [Scripting en Unity](../1-Unity/9-Scripting.mdx).
+:::
+
+Empezaremos creando dentro de la clase **Ball** una variable pública de tipo **float** que llamaremos **speed** y le daremos un valor de 5.0f. Esta variable será la velocidad a la que se moverá la pelota.
+
+Aunque le demos un valor inicial, al ser pública podremos modificarla desde el editor de Unity. Para ello, simplemente debemos seleccionar el objeto que contiene el script y en el componente **Ball** podremos ver la variable **speed** y modificar su valor.
+
+Además de la velocidad, añadiremos también una variable de tipo **Rigidbody2D** que llamaremos **rb**. Esta variable contendrá la referencia al componente **Rigidbody2D** de la pelota. Más adelante se lo asignaremos arrastrándolo desde el editor.
+
+Necesitamos este componente para aplicarle fuerzas a la pelota y hacer que se mueva. 
+
+Vamos a inicializar también, por último, una variable de tipo **Vector2** llamada *startPos* que contendrá la posición inicial de la pelota. Esta variable la utilizaremos para reiniciar la posición de la pelota cuando un jugador pierda un punto.
+
+```csharp title="Ball.cs"
+using UnityEngine;
+
+public class Ball : MonoBehaviour
+{
+  // highlight-start
+    public float speed = 5.0f;
+    public Rigidbody2D rb; // This is set in the inspector, represents the Rigidbody2D component of the ball
+    private Vector2 startPos; // This is set in the inspector, represents the initial position of the ball
+  // highlight-end
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+}
+```
+
+:::warning[Sobre las variables públicas]
+Las variables públicas son visibles en el editor de Unity y podemos modificarlas desde allí. Esto es útil para ajustar valores sin necesidad de modificar el código.
+
+Es importante tener en cuenta que si le damos un valor inicial en el script, este valor se sobrescribirá por el que le demos en el editor.
+:::

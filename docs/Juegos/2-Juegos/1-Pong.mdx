@@ -1,0 +1,66 @@
+# Pong 
+
+El pong fue publicado por Atari en 1972 y es uno de los primeros videojuegos de la historia. El juego es un simulador de tenis de mesa en el que los jugadores controlan una paleta y deben golpear una pelota de un lado a otro de la pantalla. El objetivo es hacer que la pelota pase al otro lado de la pantalla sin que el oponente la devuelva. El juego fue un gran éxito y ayudó a popularizar los videojuegos en todo el mundo.
+
+Creado por Nolan Bushnell y basado en el juego de tenis de mesa, Pong fue un gran éxito en los salones recreativos de la época. El juego fue tan popular que Atari tuvo que fabricar más máquinas para satisfacer la demanda. Pong fue el primer juego de arcade de Atari y ayudó a establecer a la compañía como un líder en la industria de los videojuegos.  
+
+Vamos a hacer una versión mínima de Pong en Unity. Este juego nos va a servir para conocer un poco mejor el entorno, el sistema de físicas, las colisiones y el manejo general del programa.
+
+## Primera versión PvP
+
+Empezaremos creando una primera versión del juego en la que dos jugadores controlan las palas y deben golpear la pelota para que no se salga de la pantalla. En esta versión no habrá IA.
+
+Cada jugador jugará con unas teclas concretas del teclado, el jugador de la izqueirda jugará con las teclas W y S, mientras que el de la derecha jugará con las flechas arriba y abajo. La pelota se moverá sola y rebotará en las palas y en las barras superior e inferior. Si la pelota se sale de la pantalla, el jugador que no la haya golpeado perderá un punto. El juego terminará cuando uno de los jugadores llegue a 5 puntos.
+
+
+### Creando el proyecto
+
+Partiremos de un proyecto vacío en Unity utilizando la plantilla de Universal 2D Core de Unity 6. 
+
+Esta plantilla ya nos viene con una escena 2D que contiene una cámara y una luz de tipo **GlobalLight**, podemos cambiar el color de fondo de lo que muestra la cámara en su componente Camera y en concreto en la propiedad **Environment -> Background** (Siempre y cuándo el **Background Type** lo dejemos como viene por defecto, en *Solid Color*).
+
+![Pong proyecto base](../../../static/img/apuntes_unity/pong_base.png)
+
+### Creando el escenario
+
+Para empezar a crear el escenario del juego crearemos varios **GameObject** de la siguiente forma:
+1. Hacemos clic derecho sobre la pestaña de la jerarquía y seleccionamos 2D Object -> Sprite -> Square.
+2. Cambiamos el nombre del objeto a **BarraSuperior** o algo por el estilo.
+3. Posicionamos el objeto en la parte superior de la pantalla y ajustamos su tamaño para que sea una barra que ocupe toda la pantalla, es decir, que ocupe el ancho del cuadrado que marca lo que la cámara va a renderizar.
+4. Le añadimos un componente **Box Collider 2D** para que más adelante la pelota y las palas de los jugadores colisionen con ella.
+5. Con Control + D duplicamos el objeto y lo posicionamos en la parte inferior de la pantalla.
+
+Para crear las "porterías" vamos a hacer exactamente el mismo proceso que para las barras superior e inferior, pero en este caso vamos a posicionarlas fuera del alcance de la cámara, justo a la derecha y a la izquierda del límite que marca la cámara para que no se vean.
+
+Si en la pantalla de **Game** queremos ver como se vería el juego en ejecución, podemos hacer clic en el botón **Maximize on Play** que se encuentra en la esquina superior derecha de la ventana de **Game**. Pero para ver una resolución parecida a la cámara que estamos renderizando podemos clicar el aspecto dónde por defecto pone **Free Aspect** y poner un valor de 16:9.
+
+Crearemos también una línea en el medio utilizando los mismos pasos que para las barras, pero en este caso la posicionaremos en el centro de la pantalla y la haremos más estrecha.
+Esta línea sin embargo, no debe llevar el componente **Box Collider 2D**, ya que es meramente visual y no queremos que la pelota colisione contra ella. 
+
+Para las palas de los jugadores vamos a hacer lo mismo que para las barras, pero en este caso las vamos a hacer más estrechas y las vamos a posicionar en los extremos de la pantalla.
+
+Podemos jugar con la posición en el eje X de las palas y ponerlo a nuestro gusto, pero es importante que las palas no se salgan de la pantalla, ya que si la pelota colisiona con ellas y se sale de la pantalla, el juego no funcionará correctamente.
+
+:::note[Sobre los nombres de los GameObject]
+Es importante que los nombres de los GameObject sean descriptivos y claros, ya que nos ayudarán a identificarlos más fácilmente en la jerarquía y en el código.
+::: 
+
+:::info[Sobre los colores y los tamaños]
+Podemos cambiar los colores de los objetos y ajustar los tamaños a nuestro gusto, pero es importante que las barras superior e inferior ocupen toda la pantalla y que las palas no se salgan de la pantalla.    
+:::
+
+#### Creando la pelota
+
+Para crear la pelota vamos a seguir los mismos pasos que para las barras, pero en este caso vamos a hacerla más pequeña y la vamos a posicionar en el centro de la pantalla.
+Podemos usar un color diferente para la pelota para que se distinga mejor de las barras y las palas.
+También podemos usar un Sprite circular en lugar de un cuadrado, no hay problema en ello.
+
+Al igual que a las palas y a las barras, le añadimos un componente **Box Collider 2D** para que colisione con las barras y las palas.
+
+Llegados a este punto añadiremos un nuevo componente a las palas y a la pelota, el componente **Rigidbody 2D**. Este componente es el encargado de aplicar las físicas a los objetos, en este caso, a las palas y a la pelota.  
+
+Si ahora mismo ejecutamos el juego podremos ver como los tres elementos caen por la pantalla, esto es debido a que el componente **Rigidbody 2D** les está aplicando la gravedad. Para evitar esto, vamos a desactivar la propiedad **Gravity Scale** de los **Rigidbody 2D** de las palas y de la pelota.  
+
+Para solucionar esto vamos a poner la propiedad **Gravity Scale** de los **Rigidbody 2D** de las palas y de la pelota a 0.
+
+Si volvemos a ejecutar ya deberían de mantenerse en la posición en la que estaban.

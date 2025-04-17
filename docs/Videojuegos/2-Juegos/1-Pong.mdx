@@ -19,7 +19,7 @@ Partiremos de un proyecto vacío en Unity utilizando la plantilla de Universal 2
 
 Esta plantilla ya nos viene con una escena 2D que contiene una cámara y una luz de tipo **GlobalLight**, podemos cambiar el color de fondo de lo que muestra la cámara en su componente Camera y en concreto en la propiedad **Environment -> Background** (Siempre y cuándo el **Background Type** lo dejemos como viene por defecto, en *Solid Color*).
 
-![Pong proyecto base](../../../static/img/apuntes_unity/pong_base.png)
+![Pong proyecto base](../../../static/img/apuntes_unity/pong/pong_base.png)
 
 ### Creando el escenario
 
@@ -49,7 +49,7 @@ Es importante que los nombres de los GameObject sean descriptivos y claros, ya q
 Podemos cambiar los colores de los objetos y ajustar los tamaños a nuestro gusto, pero es importante que las barras superior e inferior ocupen toda la pantalla y que las palas no se salgan de la pantalla.    
 :::
 
-![Escenario inicial](../../../static/img/apuntes_unity/scenario1.png)
+![Escenario inicial](../../../static/img/apuntes_unity/pong/scenario1.png)
 
 #### Creando la pelota
 
@@ -61,13 +61,13 @@ Al igual que a las palas y a las barras, le añadimos un componente **Box Collid
 
 Podemos darle otro color a la pelota para que se distinga mejor de las palas y las barras, al hacerlo es posible que nos ocurra que queda "dibujada" por detrás de la línea central decorativa (si la hemos añadido). 
 
-![Pelota en el escenario inicial](../../../static/img/apuntes_unity/scenario2.png)
+![Pelota en el escenario inicial](../../../static/img/apuntes_unity/pong/scenario2.png)
 
 Para solucionar esto bastaría con seleccionar la línea central y en su componente **Sprite Renderer** darle un valor al **Order in Layer** inferior al de la pelota, por ejemplo, -1, ya que por defecto el resto de objetos deberían tener un valor 0.
 
-![Order in Layer](../../../static/img/apuntes_unity/orderInLayer.png)
+![Order in Layer](../../../static/img/apuntes_unity/pong/orderInLayer.png)
 
-![Pelota y línea central](../../../static/img/apuntes_unity/scenario3.png)
+![Pelota y línea central](../../../static/img/apuntes_unity/pong/scenario3.png)
 
 Llegados a este punto añadiremos un nuevo componente a las palas y a la pelota, el componente **Rigidbody 2D**. Este componente es el encargado de aplicar las físicas a los objetos, en este caso, a las palas y a la pelota.  
 
@@ -268,7 +268,7 @@ Vamos a llamarlo **BallMaterial** y lo abrimos para configurarlo. En el inspecto
 La propiedad **Friction** es la fricción del material, que determina cuánto se frena el objeto al chocar con otro objeto. La propiedad **Bounciness** es la elasticidad del material, que determina cuánto rebota el objeto al chocar con otro objeto.
 Podemos dejar la fricción a 0 y la elasticidad a 1 para que la pelota rebote al máximo.
 
-![BallMaterial](../../../static/img/apuntes_unity/ballMaterial.png)
+![BallMaterial](../../../static/img/apuntes_unity/pong/ballMaterial.png)
 
 Una vez configurado el material, lo arrastramos al componente **Circle Collider 2D** de la pelota. Esto hará que la pelota rebote al chocar con las palas y las barras.
 
@@ -335,7 +335,7 @@ Una vez hecho esto, vamos a cambiar las propiedades de cada eje para que se ajus
 Para el eje **VerticalLeft** vamos a cambiar el nombre a **VerticalLeft** y en la propiedad **Positive Button** vamos a poner la tecla **w** y en la propiedad **Negative Button** vamos a poner la tecla **s**.
 Para el eje **VerticalRight** vamos a cambiar el nombre a **VerticalRight** y en la propiedad **Positive Button** vamos a poner la tecla **up** y en la propiedad **Negative Button** vamos a poner la tecla **down**.
 
-![Input Manager](../../../static/img/apuntes_unity/inputManager.png)
+![Input Manager](../../../static/img/apuntes_unity/pong/inputManager.png)
 
 :::info[Sobre el Input Manager]
 El **Input Manager** es una herramienta de Unity que nos permite gestionar los ejes de entrada y las teclas que utilizaremos en el juego. Podemos crear nuevos ejes, duplicar ejes existentes y cambiar las propiedades de cada eje para ajustarlas a nuestras necesidades.
@@ -583,11 +583,11 @@ En primer lugar crearemos las porterías si no las habíamos creado ya.
 
 Para ello, crearemos dos sprites rectangulares como los de las barras superior e inferior y los posicionaremos fuera de cámara. Uno a la izquierda de la pala izquierda y otro a la derecha de la pala derecha, de forma que sea imposible que la pelota pase por ahí tras rebotar sin que la pala lo toque.
 
-![Porterías](../../../static/img/apuntes_unity/goals.png)
+![Porterías](../../../static/img/apuntes_unity/pong/goals.png)
 
 Una vez tengamos las porterías colocadas, simplemente les añadiremos un componente **Box Collider 2D** y marcaremos la opción **Is Trigger**. Esto hará que el collider actúe como un trigger y no como un collider normal, es decir, no afectará a la física de los objetos que colisionen con él.
 
-![Is Trigger](../../../static/img/apuntes_unity/goals_trigger.png)
+![Is Trigger](../../../static/img/apuntes_unity/pong/goals_trigger.png)
 
 :::info[Sobre los triggers]
 Los **triggers** son colisionadores que no afectan a la física de los objetos que colisionan con ellos. Esto significa que los objetos pueden atravesar el trigger sin ser afectados por la física. Sin embargo, podemos detectar cuando un objeto entra o sale del trigger utilizando los métodos **OnTriggerEnter2D()** y **OnTriggerExit2D()**.
@@ -651,11 +651,11 @@ En este ejemplo, para darle un toque más adecuado, estamos usando la fuente **E
 
 Así queda en nuestro ejemplo:
 
-![Score Text](../../../static/img/apuntes_unity/scoreText.png)
+![Score Text](../../../static/img/apuntes_unity/pong/scoreText.png)
 
 Una vez añadidos a la escena ahora debemos asignarselos a las referencias del **GameManager** junto con el resto de elementos declarados en el script. Para ello, seleccionamos el objeto **GameManager** en la jerarquía y arrastramos los objetos de texto a las variables **ScoreLeft** y **ScoreRight** desde el inspector, junto con todas las demás:
 
-![GameManager](../../../static/img/apuntes_unity/pong/gameManager.png)
+![GameManager](../../../static/img/apuntes_unity/pong/gamemanager.png)
 
 Si hemos hecho todo correctamente, al ejecutar el juego ahora deberíamos ver los textos de la puntuación en la pantalla y al marcar un gol, la puntuación debería actualizarse correctamente.
 

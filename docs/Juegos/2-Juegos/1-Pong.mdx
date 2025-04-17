@@ -550,7 +550,6 @@ public class GameManager : MonoBehaviour
     public int leftPlayerScore, rightPlayerScore;
     public TMPro.TextMeshProUGUI playerLeftScoreText, playerRightScoreText;
 
-// highlight-start
     // This method is called when the ball enters the goal area (the trigger collider)
     public void GoalScored(bool isPlayerLeft)
     {
@@ -566,7 +565,6 @@ public class GameManager : MonoBehaviour
         }
         ReserPositions();
     }
-// highlight-end
 
     // This method is called to reset the ball and players to their starting positions
     private void ReserPositions()
@@ -580,3 +578,85 @@ public class GameManager : MonoBehaviour
 ```
 
 Para poner en marcha todo esto vamos a necesitar por un lado, crear los textos para mostrar la puntuación y por otro lado, crear los triggers para detectar cuando la pelota entra en la portería.
+
+En primer lugar crearemos las porterías si no las habíamos creado ya. 
+
+Para ello, crearemos dos sprites rectangulares como los de las barras superior e inferior y los posicionaremos fuera de cámara. Uno a la izquierda de la pala izquierda y otro a la derecha de la pala derecha, de forma que sea imposible que la pelota pase por ahí tras rebotar sin que la pala lo toque.
+
+![Porterías](../../../static/img/apuntes_unity/goals.png)
+
+Una vez tengamos las porterías colocadas, simplemente les añadiremos un componente **Box Collider 2D** y marcaremos la opción **Is Trigger**. Esto hará que el collider actúe como un trigger y no como un collider normal, es decir, no afectará a la física de los objetos que colisionen con él.
+
+![Is Trigger](../../../static/img/apuntes_unity/goals_trigger.png)
+
+:::info[Sobre los triggers]
+Los **triggers** son colisionadores que no afectan a la física de los objetos que colisionan con ellos. Esto significa que los objetos pueden atravesar el trigger sin ser afectados por la física. Sin embargo, podemos detectar cuando un objeto entra o sale del trigger utilizando los métodos **OnTriggerEnter2D()** y **OnTriggerExit2D()**.
+:::
+
+Una vez creados los triggers de las porterías, vamos a hacer que se detecte cuando la pelota entra en la portería. Para ello, vamos a crear un nuevo Script llamado **Goal** y lo abrimos con el editor de código.
+
+```csharp title="Goal.cs"	
+using UnityEngine;
+
+public class Goal : MonoBehaviour
+{
+    // highlight-next-line
+    public bool isPlayerLeftGoal; // This is set in the inspector
+
+    // This method is called when the ball enters the goal area (the trigger collider)
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ball"))
+        {
+            if (isPlayerLeftGoal)
+            {
+                FindAnyObjectByType<GameManager>().GoalScored(true); // true to score a foal of the left player
+            }
+            else
+            {
+                FindAnyObjectByType<GameManager>().GoalScored(false); // false to score a goal of the right player
+            }
+        }
+    }
+}
+```
+
+Para poder detectar la colisión con la pelota, utilizamos el método **OnTriggerEnter2D()**. Este método se llama automáticamente cuando un objeto entra en el trigger. En este caso, estamos comprobando si el objeto que ha entrado en el trigger es la pelota utilizando la función **CompareTag()**.
+
+Si el objeto que ha entrado en el trigger es la pelota, llamamos al método **GoalScored()** del **GameManager** y le pasamos un parámetro de tipo **bool** que indica si el jugador que ha marcado el gol es el izquierdo o el derecho.
+
+Debemos acordarnos también de asignar la etiqueta **Ball** a la pelota para que el método **CompareTag()** funcione correctamente. Para ello, seleccionamos la pelota en la jerarquía y en el componente **Tag** seleccionamos la etiqueta **Ball** (si no existe, la creamos).
+
+En el script podemos ver como hemos creado una variable pública de tipo **bool** que llamamos **isPlayerLeftGoal**. Esta variable nos servirá para distinguir entre la portería izquierda y la portería derecha. La pondremos en **true** para la portería derecha y en **false** para la portería izquierda, ya que cuándo es verdadero es cuándo ha sido el jugador de la izquierda el que ha marcado, por eso se pone en la contraria.
+
+Además, como podemos observar estamos utilizando la función **FindAnyObjectByType()** para acceder al componente **GameManager**. Esta función nos permite buscar un objeto en la escena por su tipo y acceder a sus componentes. En este caso, estamos buscando el componente **GameManager** y llamando al método **GoalScored()** para marcar el gol.
+
+Una vez creado el script, lo arrastramos a los dos triggers de las porterías y asignamos la variable **isPlayerLeftGoal** a **true** para la portería derecha y a **false** para la portería izquierda.
+
+A continuación, vamos a crear los textos para mostrar la puntuación de cada jugador. Para ello, hacemos clic derecho en la jerarquía y seleccionamos **UI -> Text - TextMeshPro**. Esto creará un nuevo objeto de texto en la escena.
+
+Opcionalmente al añadir un TextMeshProUGUI, Unity nos preguntará si queremos importar el paquete de TextMeshPro. Si no lo hemos hecho ya, le decimos que sí y lo importamos. Esto creará una carpeta llamada **TextMesh Pro** en la carpeta **Assets** y añadirá los archivos necesarios para utilizar TextMeshPro en nuestro proyecto.
+
+También nos preguntará si queremos añadir el **TMP Essentials**. Le decimos que sí y lo añadimos. Esto añadirá los archivos necesarios para utilizar TextMeshPro en nuestro proyecto. Y por último, nos preguntará si queremos añadir el **TMP Examples & Extras**. Podemos añadirlo o no, pero no es necesario para este proyecto.
+
+Con el objeto de texto creado, lo renombramos a **LeftScore** y lo posicionamos en la parte superior izquierda de la pantalla. Hacemos lo mismo con el otro objeto de texto y lo renombramos a **RightScore** y lo posicionamos en la parte superior derecha de la pantalla.
+
+Para posicionar los textos, podemos utilizar el componente **Rect Transform** del objeto de texto. Este componente nos permite cambiar la posición, el tamaño y la escala del objeto de texto en la pantalla. Podemos cambiar la posición del objeto de texto arrastrándolo en la escena o cambiando los valores de la propiedad **Pos X** y **Pos Y** en el inspector.
+
+También es cómodo posicionarlo pulsando sobre el botón de anclaje y seleccionando la posición que queremos. En este caso, seleccionamos la parte superior izquierda para el texto de la izquierda y la parte superior derecha para el texto de la derecha.
+
+Modificamos ambos textos poniendo un valor inicial de 0 y cambiamos el tamaño de la fuente a 50. También podemos cambiar el color del texto y la alineación del texto desde el inspector. Para ello, seleccionamos el objeto de texto y en el componente **TextMeshProUGUI** cambiamos las propiedades que queramos.
+
+En este ejemplo, para darle un toque más adecuado, estamos usando la fuente **Electronic Highway** que viene por defecto con los ejemplos de TextMeshPro para darle un toque retro.
+
+Así queda en nuestro ejemplo:
+
+![Score Text](../../../static/img/apuntes_unity/scoreText.png)
+
+Una vez añadidos a la escena ahora debemos asignarselos a las referencias del **GameManager** junto con el resto de elementos declarados en el script. Para ello, seleccionamos el objeto **GameManager** en la jerarquía y arrastramos los objetos de texto a las variables **ScoreLeft** y **ScoreRight** desde el inspector, junto con todas las demás:
+
+![GameManager](../../../static/img/apuntes_unity/pong/gameManager.png)
+
+Si hemos hecho todo correctamente, al ejecutar el juego ahora deberíamos ver los textos de la puntuación en la pantalla y al marcar un gol, la puntuación debería actualizarse correctamente.
+
+El juego ya es "jugable", pero todavía podemos añadir algunas mejoras para pulirlo. A continuación iremos añadiendo detalles como que la pelota vaya más rápido al chocar con las palas, añadir una pequeña "IA" para que la pala derecha juegue sola y un menú de inicio y fin de partida.

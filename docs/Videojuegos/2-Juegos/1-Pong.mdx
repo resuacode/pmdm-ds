@@ -860,6 +860,12 @@ A continuación vamos a crear la escena para el menú principal.
 
 Vamos a irnos a la carpeta de **Assets** y de nuevo, a la subcarpeta de **Scenes** y en ella haremos clic derecho y seleccionaremos **Create -> Scene -> Scene** y la renombraremos como *MainMenu* o algo por el estilo.
 
+Vamos a incluir tanto esta escena recién creada como las de PVP y PVE en el **Build Profiles** de Unity. Para ello, vamos a **File -> Build Profiles -> Scene List** y en la ventana que se nos abre, arrastramos las tres escenas a la lista de escenas que se van a incluir en el build dentro del array de escenas llamado **Scene List**. 
+
+Podéis ordenarlas en el orden que queráis pero quizás el de arriba a abajo sea el más lógico, es decir, primero el menú principal y luego las dos escenas de juego.
+
+![Scene List](../../../static/img/apuntes_unity/pong/scenelist.png)
+
 Una vez hecho esto hacemos doble clic sobre la escena recién creada y esto nos la cargará en la jerarquía. Deberíamos estar ante una escena vacía con una cámara por defecto y poco más como cuándo inciamos el proyecto.
 
 Ahora lo que queremos ahcer es generar una UI a partir de un Canvas y con un título y un par de botones, uno para jugar una partida PVP y otro para jugar una partida PVE. 
@@ -878,10 +884,10 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    public void PlayerCPU()
+    public void PVE()
     {
         // Load the CPU scene
-        SceneManager.LoadScene("PlayerCPU");
+        SceneManager.LoadScene("PVE");
     }
 
     public void PVP()
@@ -897,7 +903,6 @@ public class MainMenu : MonoBehaviour
 El **SceneManager** es una clase de Unity que nos permite gestionar las escenas del juego. Esto incluye cargar, descargar y cambiar entre escenas. En este caso, estamos utilizando **SceneManager.LoadScene()** para cargar las escenas correspondientes al pulsar los botones del menú.
 :::
 
-:::warning[Errores en este punto]
-Es posible que la consola de Unity comience a decirnos que hay algún error, esto es porque todavía no hemos añadido las escenas al array de escenas del proyecto, ahora lo solucionamos.
-:::
+Con la UI creada y los métodos del Script creados, ahora simplemente debemos asignar el Script al Canvas y arrastrar los botones a los métodos correspondientes desde el editor. Para ello, seleccionamos el botón en la jerarquía y en el componente **Button** arrastramos el objeto **MainMenu** al campo **On Click()**. Luego seleccionamos el método que queremos que se ejecute al pulsar el botón.
 
+![Button on click](../../../static/img/apuntes_unity/pong/button_onclick.png)

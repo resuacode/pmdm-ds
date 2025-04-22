@@ -659,4 +659,245 @@ Una vez añadidos a la escena ahora debemos asignarselos a las referencias del *
 
 Si hemos hecho todo correctamente, al ejecutar el juego ahora deberíamos ver los textos de la puntuación en la pantalla y al marcar un gol, la puntuación debería actualizarse correctamente.
 
-El juego ya es "jugable", pero todavía podemos añadir algunas mejoras para pulirlo. A continuación iremos añadiendo detalles como que la pelota vaya más rápido al chocar con las palas, añadir una pequeña "IA" para que la pala derecha juegue sola y un menú de inicio y fin de partida.
+El juego ya es "jugable", pero todavía podemos añadir algunas mejoras para pulirlo. 
+
+A continuación iremos añadiendo detalles como que la pelota vaya más rápido al chocar con las palas, añadir una pequeña "IA" para que la pala derecha juegue sola y un menú de inicio y fin de partida.
+
+## Haciendo la versión PVE (Player vs Environment)
+
+Antes de ponernos a hacer menús ni a hacer que el juego termine tras marcar una serie de puntos, vamos a aprovechar esta versión inicial para probar a programar la versión PVE.
+
+PVE significa **Player vs Environment**, es decir, el jugador contra el entorno. En este caso, el entorno será la pala derecha que se moverá sola para intentar interceptar la pelota.
+
+Para programar este comportamiento, vamos a comenzar por crear un nuevo Script llamado **AIPlayer** y lo abrimos con el editor de código.
+
+Este Script será el encargado de mover la pala dependiendo de la posición de la pelota, esto podemos hacerlo de muchas formas, a partir de la referencia de la pelota o a partir de la posición de la pala. En este caso, lo haremos a partir de la posición de la pelota, ya que es más sencillo y nos permitirá hacer una IA más sencilla.
+
+También podríamos hacer que la pala se moviese de forma aleatoria o que se moviese de forma más inteligente, pero en este caso lo haremos de forma sencilla para que la pala siga la pelota.
+
+Lo que nos interesa entonces es conocer la posición en el eje Y de la pelota y la pala. Para ello, crearemos una variable pública de tipo **GameObject** que llamaremos **ball**. Esta variable contendrá la referencia a la pelota y la arrastraremos desde el editor al script para asignarla una vez tengamos el Script añadido a la pala derecha.
+
+Lo que vamos a hacer es que dependiendo de si la pelota está por encima o por debajo de la pala, la pala se moverá hacia arriba o hacia abajo. Esto lo haremos también en base a una velocidad que le daremos a la pala, por lo que crearemos una variable de tipo **float** que llamaremos **speed** y le daremos un valor de 5.0f. Esta variable será la velocidad a la que se moverá la pala.
+
+Jugando con esta variable y con la velocidad de la pala podríamos hacer la dificultad variable en el futuro.
+
+```csharp title="AIPlayer.cs"
+using UnityEngine;
+
+public class AIPlayer : MonoBehaviour
+{
+
+    [SerializeField] private float speed = 3f;
+
+    public GameObject ball;
+
+    private Vector2 ballPosition;
+
+    // Update is called once per frame
+    void Update()
+    {
+        // Ejecutamos Movement en el Update para que compruebe a dónde moverse en cada frame
+        Movement();
+    }
+
+    private void Movement()
+    {
+        ballPosition = ball.transform.position; // Posición de la pelota
+
+        if (transform.position.y > ballPosition.y) // Si la posición de la IA es mayor que la de la pelota, se mueve hacia abajo
+        {
+            transform.Translate(Vector2.down * speed * Time.deltaTime);
+            // También se podría hacer así: transform.position += new Vector3(0, -speed * Time.deltaTime, 0);
+        }
+        else if (transform.position.y < ballPosition.y) // Si la posición de la IA es menor que la de la pelota, se mueve hacia arriba
+        {
+            transform.Translate(Vector2.up * speed * Time.deltaTime);
+        }
+    }
+}
+```
+
+:::info[Sobre el SerializeField]
+El atributo **[SerializeField]** nos permite serializar una variable privada para que aparezca en el inspector de Unity. Esto es útil para poder modificar la variable desde el inspector sin necesidad de hacerla pública.
+:::
+
+Le asignamos el Script a la pala de la derecha y arrastramos la pelota al campo **ball** desde el editor. Esto hará que la pala de la derecha siga la pelota y se mueva hacia arriba o hacia abajo dependiendo de la posición de la pelota.
+
+![AIPlayer](../../../static/img/apuntes_unity/pong/iaPlayer.png)
+
+Si ejecutamos el juego podemos probar como la pala de la derecha se mueve sola para intentar interceptar la pelota. Si la pelota va muy rápido, la IA no podrá interceptarla, pero si la pelota va despacio, la IA podrá interceptarla sin problemas.
+
+Decir que podemos alternar entre el PVP y el PVE simplemente desactivando el Script de la IA o el de la pala derecha. De esta forma podemos jugar contra un amigo o contra la IA.
+
+:::warning[Si la bola rebota horizontalmente]
+Hay que tener en cuenta que en el punto del desarrollo que estamos ahora mismo puede ser que nos encontremos con un bug que hace que la pelota rebote de forma horizontal indefinidamente y la partida no avance. Esto es un bug que ocurre cuando la pelota rebota contra la pala y la pala se mueve hacia arriba o hacia abajo al mismo tiempo. 
+
+Para solucionarlo, podemos añadir una pequeña fuerza a la pelota al chocar con la pala para que no rebote de forma horizontal indefinidamente. Ya veremos en futuros ejemplos como se implementa esto.
+:::
+
+Ahora que la versión PVE está funcionando, puede ser que si le damos demasiada velocidad a la IA, la pelota no pueda pasar por la pala y no podamos marcar puntos. 
+
+Para evitar esto, podemos hacer varias cosas, como añadir un límite a la posición de la pala para que no se mueva más allá de un punto determinado. 
+
+Pero esto puede parecer algo injusto, en lugar de eso, vamos a hacer que conforme avance la partida, la pelota vaya cogiendo más y más velocidad, lo cuál también hará las partidas PVP algo más interesantes según avanza el punto. 
+
+Para ello, vamos a irnos al Script de la pelota y vamos a añadir una variable pública de tipo **float** que llamaremos **speedMultiplier**. Esta variable será la velocidad a la que se multiplicará la velocidad de la pelota cada vez que colisione con una de las palas.
+
+Podríamos hacer que subiese la velocidad también al chocar con las barras, pero si probáis esto veréis que el **GameFeel** no es el mismo y puede parecer injusto que de repente la pelota salgo algo más *disparada* de lo que el usuario espera tras chocar con una pared superior o inferior. 
+
+De todas formas sentíos libres de probar lo que queráis y dejar el juego a vuestro completo gusto.
+
+:::info[Sobre el GameFeel]
+El **GameFeel** es la sensación que tiene el jugador al jugar a un juego. Esto incluye la velocidad, la física, la animación y muchos otros aspectos del juego. Un buen **GameFeel** hace que el juego sea más divertido y agradable de jugar.
+:::
+
+```csharp title="Ball.cs"
+
+using UnityEngine;
+
+public class Ball : MonoBehaviour
+{
+    public float speed = 5f;
+    public Rigidbody2D rb;
+    private Vector2 startPos;
+    // highlight-next-line
+    public float speedMultiplier = 0.1f; // This is set in the inspector
+
+    ...
+     /* El resto del código del Script*/
+    ...
+
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.CompareTag("Player"))
+        {
+            rb.linearVelocity *= 1 + speedMultiplier;
+        }
+    }
+}
+```
+
+Fijaos que lo que estamos haciendo es multiplicar la velocidad del Rigidbody2D de la pelota cuándo colisiona con alguno de los elementos tagueados con **Player**. Esto hará que la velocidad de la pelota aumente cada vez que colisione con una de las palas.
+
+Si no os funciona, aseguraos de que la pala tiene la etiqueta **Player**. Para ello, seleccionamos la pala en la jerarquía y en el componente **Tag** seleccionamos la etiqueta **Player** (si no existe, la creamos).
+
+Vamos a aprovechar que estamos editando este Script para solucionar el posible error que nos encontrábamos antes de tener de repente un rebote completamente horizontal de la pelota.
+
+Para ello, vamos a añadir el siguiente código al Script y ahora explicamos en qué consiste y cuándo utilizarlo:
+
+```csharp
+    private void VelocityFix()
+    {
+        float velocidadDelta = 0.5f; // Velocidad que queremos que aumente la bola
+        float velocidadMinima = 0.2f; // Velocidad mínima que queremos que tenga la bola
+
+        if (Mathf.Abs(rb.linearVelocityX) < velocidadMinima) // Si la velocidad de la bola en el eje x es menor que la mínima
+        {
+            velocidadDelta = Random.value < 0.5f ? velocidadDelta : -velocidadDelta; // Elegimos un valor aleatorio entre -0.5 y 0.5
+            rb.linearVelocity = new Vector2(rb.linearVelocityX + velocidadDelta, rb.linearVelocityY); // Aumentamos la velocidad de la bola
+        }
+
+        if (Mathf.Abs(rb.linearVelocityY) < velocidadMinima) // Si la velocidad de la bola en el eje y es menor que la mínima
+        {
+            velocidadDelta = Random.value < 0.5f ? velocidadDelta : -velocidadDelta; // Elegimos un valor aleatorio entre -0.5 y 0.5
+            // Otra forma de aumentar la velocidad (esta vez en el eje y)
+            rb.linearVelocity += new Vector2(0f, velocidadDelta); // Aumentamos la velocidad de la bola
+        }
+    }
+```
+
+Esta función se encargará de comprobar si la velocidad de la pelota es menor que un valor mínimo y si es así, aumentará la velocidad de la pelota en una dirección aleatoria. Esto hará que la pelota no rebote de forma horizontal indefinidamente y que la velocidad de la pelota aumente con el tiempo.
+
+La cuestión ahora es, en qué momento llamamos a esta función. Debemos tener en cuenta que en nuestro juego el problema está cuándo la pelota deja de tener velocidad en Y mínima, es decir, si la pelota se queda rebotando entre las dos palas y las mismas, sin moverse, no pueden hacer que la dirección de la pelota cambie. 
+
+El caso en el que la pelota se queda rebotando entre las dos paredes superior e inferior es muy improbable, pero lo tenemos en cuenta en el método por si acaso, pero no lo vamos a utilizar de momento.
+
+Partiendo de estos problemas y posibles soluciones, el momento de llamar a este método entonces es cuándo el movimiento es casi completamente horizontal y la peltoa está rebotando entre las dos palas, por lo que incluiremos la llamada a este método en el método **OnCollisionEnter2D()** y, en concreto, justo después de aumentar la velocidad de la pelota al chocar con una pala. De esta forma, si la pelota se queda rebotando entre las dos palas, la velocidad de la pelota aumentará y cambiará de dirección.
+
+El código completo del método **OnCollisionEnter2D()** quedaría así:
+
+```csharp title="Ball.cs"
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.CompareTag("Player"))
+        {
+            rb.linearVelocity *= 1 + speedMultiplier;
+            VelocityFix(); // Llamamos a la función para arreglar la velocidad de la bola
+        }
+    }
+```
+
+:::tip[Sobre el Mathf.Abs()]
+La función **Mathf.Abs()** nos permite obtener el valor absoluto de un número. Esto es útil para comprobar si un número es mayor o menor que otro número sin importar si es positivo o negativo. En este caso, estamos utilizando **Mathf.Abs()** para comprobar si la velocidad de la pelota en el eje X o Y es menor que un valor mínimo. 
+Esto nos permite asegurarnos de que la velocidad de la pelota es mayor que un valor mínimo y evitar que la pelota rebote de forma horizontal indefinidamente.
+::: 
+
+Ya tenemos una versión PVP y una versión PVE del juego funcionando. Ahora vamos a añadir un menú de inicio y un menú de fin de partida para que el juego sea más completo y tenga un mejor aspecto.
+
+## Menú de inicio y fin de partida
+
+### Creando varias escenas
+
+Antes de ponernos a crear los menús, vamos a plantearnos que hay que crear varias escenas para poder tener un menú de inicio y un menú de fin de partida.
+
+Además, tendría sentido crear una escena diferente para la versión PVP y otra para la versión PVE, así simplemente, dependiendo de la versión que queramos jugar, cargamos una escena u otra.
+
+Vamos a hacer esto lo primero, si hemos seguido hasta ahora el ejemplo deberíamos tener una única escena llamada *SampleScene* o algo por el estilo si no la hemos renombrado. 
+
+Vamos a renombrarla como PVP y vamos a desactivar el Script de **IAPlayer** de la pala derecha, dejando activado el de **Player**.
+
+Una vez hecho esto, desde el menú de **Assets** nos vamos a la carpeta **Scenes** y seleccionando nuestra escena, pulsamos **control + D** para duplicarla y renombramos la copia como PVE. 
+
+Hacemos doble click sobre la escena PVE recién renombrada y ahora en la jerarquía debería de aparecernos el nombre de la escena recién seleccionada. 
+
+Vamos de nuevo al GameObject de la pala derecha y esta vez activamos el Script de **IAPlayer** dejando desactivado su contraparte, el de **Player**.
+
+Con estos simples cambios ya tenemos una escena para jugar PVP y otra para jugar PVE.
+
+A continuación vamos a crear la escena para el menú principal.
+
+### Creando el menú principal
+
+Vamos a irnos a la carpeta de **Assets** y de nuevo, a la subcarpeta de **Scenes** y en ella haremos clic derecho y seleccionaremos **Create -> Scene -> Scene** y la renombraremos como *MainMenu* o algo por el estilo.
+
+Una vez hecho esto hacemos doble clic sobre la escena recién creada y esto nos la cargará en la jerarquía. Deberíamos estar ante una escena vacía con una cámara por defecto y poco más como cuándo inciamos el proyecto.
+
+Ahora lo que queremos ahcer es generar una UI a partir de un Canvas y con un título y un par de botones, uno para jugar una partida PVP y otro para jugar una partida PVE. 
+
+El cómo posicionar los elementos o la parte visual la dejo completamente a vuestra elección, lo importante de este menú es hacer que cada uno de los botones cargue su correspondiente escena.
+
+Para ello, vamos a crear un Script llamado **MainMenu** y lo abrimos con el editor de código. Este Script se encargará de gestionar el menú principal y de cargar las escenas correspondientes al pulsar los botones.
+
+Simplemente necesitamos un método por cada acción de clic que queramos hacer. En este caso, vamos a crear dos métodos, uno para cargar la escena PVP y otro para cargar la escena PVE.
+
+Para poder trabajar con las escenas, debemos importar el espacio de nombres **UnityEngine.SceneManagement**. Esto nos permitirá utilizar la función **SceneManager.LoadScene()** para cargar las escenas.
+
+```csharp title="MainMenu.cs"
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class MainMenu : MonoBehaviour
+{
+    public void PlayerCPU()
+    {
+        // Load the CPU scene
+        SceneManager.LoadScene("PlayerCPU");
+    }
+
+    public void PVP()
+    {
+        // Load the PVP scene
+        SceneManager.LoadScene("PVP");
+    }
+}
+
+```
+
+:::info[Sobre el SceneManager]
+El **SceneManager** es una clase de Unity que nos permite gestionar las escenas del juego. Esto incluye cargar, descargar y cambiar entre escenas. En este caso, estamos utilizando **SceneManager.LoadScene()** para cargar las escenas correspondientes al pulsar los botones del menú.
+:::
+
+:::warning[Errores en este punto]
+Es posible que la consola de Unity comience a decirnos que hay algún error, esto es porque todavía no hemos añadido las escenas al array de escenas del proyecto, ahora lo solucionamos.
+:::
+

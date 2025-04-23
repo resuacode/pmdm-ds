@@ -735,6 +735,37 @@ Hay que tener en cuenta que en el punto del desarrollo que estamos ahora mismo p
 Para solucionarlo, podemos añadir una pequeña fuerza a la pelota al chocar con la pala para que no rebote de forma horizontal indefinidamente. Ya veremos en futuros ejemplos como se implementa esto.
 :::
 
+:::warning[Si tras el primer gol la pala derecha se va al medio]
+Como vamos a dejar de activar el Script de Player en la versión PVE debemos añadir una variable booleana para no resetear la posición de la pala derecha en la versión PVE, ya que si no intentará hacerlo pero como no tiene la posición inicial puede darnos un bug en el que tras el primer gol la pala derecha se posicione en la línea central.
+
+Algo así:
+```csharp title="GameManager.cs"
+using System;
+using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+
+...
+// highlight-next-line
+    public Boolean pvp;
+
+...
+
+    // This method is called to reset the ball and players to their starting positions
+    private void ReserPositions()
+    {
+        ball.GetComponent<Ball>().Reset();
+        playerLeft.GetComponent<Player>().Reset();
+        // highlight-next-line
+        if (pvp)
+        {
+            playerRight.GetComponent<Player>().Reset();
+        }
+    }
+}
+
+
 Ahora que la versión PVE está funcionando, puede ser que si le damos demasiada velocidad a la IA, la pelota no pueda pasar por la pala y no podamos marcar puntos. 
 
 Para evitar esto, podemos hacer varias cosas, como añadir un límite a la posición de la pala para que no se mueva más allá de un punto determinado. 
@@ -906,3 +937,30 @@ El **SceneManager** es una clase de Unity que nos permite gestionar las escenas 
 Con la UI creada y los métodos del Script creados, ahora simplemente debemos asignar el Script al Canvas y arrastrar los botones a los métodos correspondientes desde el editor. Para ello, seleccionamos el botón en la jerarquía y en el componente **Button** arrastramos el objeto **MainMenu** al campo **On Click()**. Luego seleccionamos el método que queremos que se ejecute al pulsar el botón.
 
 ![Button on click](../../../static/img/apuntes_unity/pong/button_onclick.png)
+
+Vamos a dar también la opción de cerrar el juego al pulsar el botón de Escape. Para ello, vamos a añadir el siguiente código al Script **MainMenu**:
+
+```csharp title="MainMenu.cs"
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
+    }
+```
+:::info[Sobre el Application.Quit()]
+El método **Application.Quit()** se encarga de cerrar la aplicación. Esto es útil para cerrar el juego al pulsar el botón de Escape. 
+
+Sin embargo, este método solo funciona en la versión compilada del juego y no en el editor de Unity. 
+
+Para probar que funciona la detección de la tecla podemos hacer un Log por consola:
+
+```csharp title="MainMenu.cs"
+    Debug.Log("Escape pressed, quitting the game...");
+```
+
+Vamos a añadir junto con esto un pequeño mensaje en el menú principal para indicar que pulsando escape se puede salir del juego:
+
+![MainMenu](../../../static/img/apuntes_unity/pong/mainmenu.png)
+

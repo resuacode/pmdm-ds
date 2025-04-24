@@ -971,3 +971,198 @@ Para ello hay que decidir tabién cuándo acaba una partida, esto lo dejo a vues
 
 ### Pantalla de ganador
 
+Para hacer que un jugador gane cuándo llegue a 5 puntos, vamos a añadir una función al Script **GameManager** que se encargue de comprobar si un jugador ha llegado a 5 puntos. Esta función basicamente comprobará después de cada punto si algunio de los jugadores ha llegado  (o ha sobrepasado el límite de puntos, esto lo hacemos así para evitar bugs que puedan hacer que la partida no termine). Si es así, llamaremos a un método que se encargará de cargar la escena de fin de partida y mostrar el mensaje correspondiente.
+
+Antes de montar la escena nueva simplemente cambiaremos el valor de una variable llamada winner y la asignaremos según quién gane sacando el ganador por consola mediante un Log. 
+
+```csharp title="GameManager.cs"
+using System;
+using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+    public GameObject ball, playerLeft, playerRight;
+    public int leftPlayerScore, rightPlayerScore;
+    public TMPro.TextMeshProUGUI playerLeftScoreText, playerRightScoreText;
+    public bool pvp;
+
+// highlight-next-line
+    private string winner;
+    // highlight-next-line
+    [SerializeField] private int pointsToWin = 5;
+
+    // This method is called when the ball enters the goal area (the trigger collider)
+    public void GoalScored(bool isPlayerLeft)
+    {
+        if (isPlayerLeft)
+        {
+            leftPlayerScore++;
+            playerLeftScoreText.text = leftPlayerScore.ToString();
+        }
+        else
+        {
+            rightPlayerScore++;
+            playerRightScoreText.text = rightPlayerScore.ToString();
+        }
+        // highlight-next-line
+        CheckWinner();
+        ReserPositions();
+    }
+
+// highlight-start
+    public void CheckWinner()
+    {
+        if(leftPlayerScore >= pointsToWin)
+        {
+            winner = "Left Player";
+            Debug.Log(winner);
+        } else if (rightPlayerScore >= pointsToWin && pvp)
+        {
+            winner = "Right Player";
+            Debug.Log(winner);
+        } else if(rightPlayerScore >= pointsToWin && !pvp)
+        {
+            winner = "CPU";
+            Debug.Log(winner);
+        }
+    }
+
+    
+    public string GetWinner()
+    {
+        return winner;
+    }
+// highlight-end
+
+    // This method is called to reset the ball and players to their starting positions
+    private void ReserPositions()
+    {
+        ball.GetComponent<Ball>().Reset();
+        playerLeft.GetComponent<Player>().Reset();
+        if (pvp)
+        {
+            playerRight.GetComponent<Player>().Reset();
+        }
+    }
+}
+```
+
+Tras esto podemos jugar un par de partidas para comprobar que el ganador se muestra correctamente por consola.
+
+Si todo va bien podemos empezar a crear la pantalla de fin de partida, creamos una nueva escena **acordándonos de incluirla en la lista de Build** y la renombramos como **WinnerScene** o algo por el estilo.
+
+A esta nueva escena añadiremos simplemente un texto que inicializaremos a cualquier valor inicial porque la idea será que dependiendo del valor de la variable winner del **GameManager** se muestre un texto u otro.
+
+También incluiremos un botón para volver al menú prinicpal y así poder jugar una nueva partida tras finalizar la interior. 
+
+Nuestra escena queda algo parecido a esto:
+
+![WinnerScene](../../../static/img/apuntes_unity/pong/WinnerScene.png)
+
+Al canvas de esta escena vamos a añadir un Script llamado **WinnerScene** y lo abrimos con el editor de código. Este Script se encargará de gestionar la escena de fin de partida y de mostrar el mensaje correspondiente al ganador.
+
+Además de contener la función para cargar de nuevo el menú principal, también vamos a añadir una función que se encargue de mostrar el mensaje del ganador. Para ello, vamos a crear una variable pública de tipo **TextMeshProUGUI** que llamaremos **winnerText**. Esta variable contendrá la referencia al texto que muestra el ganador y la arrastraremos desde el editor al script para asignarla una vez tengamos el Script añadido al Canvas.
+
+```csharp title="WinnerScene.cs"
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class WinnerScene : MonoBehaviour
+{
+    private GameManager gameManager; // This is used to store the GameManager
+    public TMPro.TextMeshProUGUI winnerText; // This is used to store the winner text and is set in the inspector
+
+    // This method is called when the game starts
+    void Start()
+    {
+        gameManager = FindAnyObjectByType<GameManager>();// This gets the GameManager
+        winnerText.text = gameManager.GetComponent<GameManager>().GetWinner() + " wins!"; // This gets the winner text from the GameManager
+    }
+
+    public void LoadMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu"); // This loads the MainMenu scene
+    }
+}
+```
+
+Cómo véis, estamos accediendo a la variable winner del **GameManager** y la mostramos en el texto de la escena. 
+
+Para ello, simplemente accedemos al componente **GameManager** y llamamos al método **GetWinner()** que nos devuelve el valor de la variable winner.
+
+Sin embargo, no podemos acceder al GameManager porque está en otra escena, antes de poder probar esto debemos hacer que el GameManager *"sobreviva"* al cambio de escena. Para ello, vamos a añadir el siguiente código al Script **GameManager**:
+
+```csharp title="GameManager.cs"
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject); // This makes the GameManager survive the scene change
+    }
+```
+
+:::info[Sobre el DontDestroyOnLoad]
+El método **DontDestroyOnLoad()** se encarga de hacer que un objeto no se destruya al cambiar de escena. Esto es útil para hacer que el **GameManager** sobreviva al cambio de escena y podamos acceder a él desde otras escenas.
+:::
+
+Con esto, el **GameManager** no se destruirá al cambiar de escena y podremos acceder a él desde la escena de fin de partida.
+
+Esto nos permitirá acceder a la variable winner y mostrar el mensaje del ganador en la pantalla de fin de partida. 
+
+Vamos a modificar también el método **CheckWinner()** para que cargue la escena que acabamos de crear tras comprobar si hay un ganador. Para ello añadimos la siguiente línea después de cada opción de ganador:
+
+```csharp title="GameManager.cs"
+    SceneManager.LoadScene("WinnerScene"); // This loads the WinnerScene scene
+```
+
+Hay que acordarse de añadir también el espacio de nombres **UnityEngine.SceneManagement** al principio del Script para poder utilizar la función **SceneManager.LoadScene()**.
+
+El método nos quedaría así:
+```csharp title="GameManager.cs"
+    public void CheckWinner()
+    {
+        if(leftPlayerScore >= pointsToWin)
+        {
+            winner = "Left Player";
+            Debug.Log(winner);
+            SceneManager.LoadScene("WinnerScene"); // This loads the WinnerScene scene
+        } else if (rightPlayerScore >= pointsToWin && pvp)
+        {
+            winner = "Right Player";
+            Debug.Log(winner);
+            SceneManager.LoadScene("WinnerScene"); // This loads the WinnerScene scene
+        } else if(rightPlayerScore >= pointsToWin && !pvp)
+        {
+            winner = "CPU";
+            Debug.Log(winner);
+            SceneManager.LoadScene("WinnerScene"); // This loads the WinnerScene scene
+        }
+    }
+```
+
+Una vez hecho esto ya lo podemos probar. Si todo va bien, al finalizar la partida deberíamos ver el mensaje del ganador en la pantalla de fin de partida y al pulsar el botón de volver al menú principal deberíamos volver al menú principal.
+
+Para que lo del botón funcione debemos acordarnos de asignar la función al evento de clic del botón que creamos en la escena, de la misma forma que hicimos anteriormente con los del menú principal. 
+
+El problema que tenemos ahora, es que si volvemos a jugar tras finalizar una partida, el GameManager de la partida anterior sigue existiendo, por ello, vamos a hacer que cuándo volvemos al menú principal destruyamos antes el GameManager de la partida anterior. Para ello, vamos a añadir el siguiente código al Script **MainMenu**:
+
+```csharp title="MainMenu.cs"
+   public void LoadMainMenu()
+    {
+        // highlight-next-line
+        Destroy(FindAnyObjectByType<GameManager>()); // This destroys the GameManager of the previous game
+        SceneManager.LoadScene("MainMenu"); // This loads the MainMenu scene
+    }
+```
+
+:::info[Sobre el Destroy]
+El método **Destroy()** se encarga de destruir un objeto en la escena. Esto es útil para destruir el **GameManager** de la partida anterior y evitar que haya dos GameManagers en la escena al volver al menú principal.
+:::
+
+:::warning[Si no cambia el texto del ganador]
+Puede ser que os hayáis olvidado de arrastrar la referencia al texto del ganador al Script **WinnerScene**. Para ello, seleccionamos el objeto **WinnerScene** en la jerarquía y arrastramos el objeto de texto al campo **winnerText** desde el inspector.
+
+![WinnerText](../../../static/img/apuntes_unity/pong/WinnerText.png)
+:::
+
+Ahora ya debería de funcionar, debéis de probar que funciona todo correctamente jugando hasta que un jugador gané, pulsando en volver al menú principal y volviendo a jugar, si toda esta secuencia funciona sin problemas ya tenéis una versión funcional del pong.
+
+![WinnerScene 2](../../../static/img/apuntes_unity/pong/WinnerScene2.png)

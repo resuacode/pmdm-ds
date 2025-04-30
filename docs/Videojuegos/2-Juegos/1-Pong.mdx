@@ -1175,3 +1175,31 @@ Ahora que tenemos una primera versión del juego funcional vamos a aprender cóm
 Una **Build** es una versión compilada del juego que se puede ejecutar en un dispositivo. Esto incluye todos los archivos necesarios para ejecutar el juego, como los scripts, las imágenes, los sonidos y otros recursos. En Unity, podemos crear una Build para diferentes plataformas, como Windows, Android, iOS y WebGL.
 :::
 
+Vamos a empezar creando una Build para Windows. Para ello, nos vamos a **File -> Build Profiles** (o pulsamos **control + shift + B**) y se nos abrirá la ventana de **Build Profiles**. 
+
+En esta ventana podríamos directamente crear una Build para Windows o cambiar de plataforma seleccionando otra y pulsando sobre el botón de **Switch Platform**.
+
+Sin embargo, en lugar de hacerlo rápido, vamos a crearnos un perfil de Build para Windows. Para ello, pulsamos sobre el botón de **Add Build Profile**.
+
+![Build Profile](../../../static/img/apuntes_unity/pong/build_profile_1.png)
+
+En la ventana de **Platform Browser** seleccionamos **Windows** y pulsamos sobre el botón de **Add Build Profile**. Esto nos creará un nuevo perfil de Build para Windows.
+
+![Build Profile 2](../../../static/img/apuntes_unity/pong/build_profile_2.png)
+
+Con el perfil creado, pulsamos en **Switch** para cambiar a él y podemos pulsar en **Customize Player Settings** para cambiar la configuración de la Build. Esto nos abrirá la ventana de **Player Settings** donde podemos cambiar el nombre del juego, el icono, la resolución y otros aspectos de la Build.
+
+![Build Profile 3](../../../static/img/apuntes_unity/pong/build_profile_3.png)
+
+Dentro de las Player Settings es interesante modificar el nombre del juego, el icono y la resolución. Para ello, en la sección de **Player** podemos cambiar el nombre del juego en el campo **Product Name** y el icono en el campo **Icon**. También podemos cambiar la resolución en la sección de **Resolution and Presentation**.
+
+Si hacemos una primera Build con la información por defecto nos daremos cuenta de que dependiendo de la pantalla dónde ejecutemos el juego puede ser que el juego no se vea correctamente. Esto es porque la resolución por defecto es 16:9 y si la pantalla no tiene esta resolución, el juego no se verá correctamente. 
+
+Para solucionarlo, podemos cambiar la resolución a **1920x1080** o a la resolución que queramos.
+
+![Build Profile 4](../../../static/img/apuntes_unity/pong/build_profile_4.png)
+
+Con esta configuración ya podríamos exportar el juego, podemos configurar el resto de opciones a nuestro gusto. 
+
+### Haciendo una build para Android
+

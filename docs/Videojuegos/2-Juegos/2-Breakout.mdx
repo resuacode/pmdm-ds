@@ -20,7 +20,7 @@ Empezaremos creando el escenario del juego, para ello, hay varios tutoriales que
 
 Sin embargo, en esta versión intentaremos crear casi todo con figuras básicas de Unity, para ello, comenzaremos delimitando el escenario por los laterales y en la parte superior utilizando 3 rectángulos 2D posicionados justo en los límiites de la cámara, de la siguiente forma:
 
-![Escenario breakout 1](/static/img/apuntes_unity/breakout/escenario1.png)
+![Escenario breakout 1](../../../static/img/apuntes_unity/breakout/escenario1.png)
 
 :::tip[Organiza el escenario]
 Para organizar el escenario, es recomendable crear un objeto vacío llamado "Scenario" o "Walls" y agrupar los 3 rectángulos dentro de él. Esto nos permitirá moverlos y organizarlos mejor en la jerarquía.
@@ -36,7 +36,7 @@ Con los bloques creados, vamos a seleccionarlos todos y añadirles un BoxCollide
 
 También vamos a crear un nuevo tag llamado "block" para poder identificar los bloques en el código. Para ello, vamos a la ventana de tags y layers, y añadimos un nuevo tag llamado "block". Luego, seleccionamos todos los bloques y les asignamos este tag.
 
-![Escenario breakout 2](/static/img/apuntes_unity/breakout/escenario2.png)
+![Escenario breakout 2](../../../static/img/apuntes_unity/breakout/escenario2.png)
 
 :::tip[Organiza los bloques]
 Para organizar los bloques, es recomendable crear un objeto vacío llamado "Blocks" y agrupar todos los bloques dentro de él. Esto nos permitirá moverlos y organizarlos mejor en la jerarquía.
@@ -54,11 +54,11 @@ Con los tres elementos creados, vamos a seleccionarlos y agruparlos en un objeto
 Con la paleta creada, vamos a añadirle un BoxCollider 2D para que pueda colisionar con la bola. Para ello, seleccionamos la paleta y en el inspector, añadimos un nuevo componente de tipo Box Collider 2D. Esto nos permitirá detectar las colisiones entre la paleta y la bola.
 
 Podemos ajustar el tamaño del BoxCollider 2D para que se ajuste al tamaño de la paleta. Para ello, seleccionamos el BoxCollider 2D y ajustamos el tamaño en el inspector. También podemos ajustar la posición del BoxCollider 2D para que se ajuste al tamaño de la paleta. Para ello, seleccionamos el BoxCollider 2D y ajustamos la posición en el inspector.
-![Escenario breakout 3](/static/img/apuntes_unity/breakout/playerCollider.png)
+![Escenario breakout 3](../../../static/img/apuntes_unity/breakout/playerCollider.png)
 
 Ahora vamos con la pelota, para ello, vamos a crear un nuevo objeto 2D de tipo círculo y vamos a posicionarlo un poco por encima de la paleta pero sin centrarla del todo. Además, vamos a hacer que sea hija del GameObject **Player** en la Jerarquía. Esto lo hacemos para que al iniciar la partida más adelante podamos lanzar la pelota desde la posición que elija el jugador. 
 
-![Escenario breakout 3](/static/img/apuntes_unity/breakout/escenario3.png)
+![Escenario breakout 3](../../../static/img/apuntes_unity/breakout/escenario3.png)
 
 Una vez creada la pelota, vamos a añadirle un Rigidbody 2D para que pueda moverse y colisionar con los bloques. Para ello, seleccionamos la pelota y en el inspector, añadimos un nuevo componente de tipo Rigidbody 2D. Esto nos permitirá detectar las colisiones entre la bola y los bloques.
 

@@ -300,7 +300,7 @@ Ahora, para hacer que el número de bloques disminuya cada vez que la bola choqu
         {
             Destroy(collision.gameObject); // Destruimos el bloque
             rb.linearVelocity *= velocityMultiplier; // Aumentamos la velocidad de la bola
-            // hihglight-next-line
+        // highlight-next-line
             GameManager.Instance.BlockDestroyed(); // Restamos un bloque
         }
         VelocityFix(); // Corregimos la velocidad de la bola

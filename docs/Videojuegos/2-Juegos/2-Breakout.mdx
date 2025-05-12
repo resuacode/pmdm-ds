@@ -1,0 +1,117 @@
+# Breakout
+
+El videojuego Breakout es un clásico de los videojuegos, lanzado por Atari en 1976. Es un juego de arcade que consiste en controlar una paleta para hacer rebotar una bola y destruir bloques en la pantalla. El objetivo es eliminar todos los bloques sin dejar que la bola caiga al suelo.
+
+También es conocido por ser uno de los primeros juegos en utilizar gráficos de píxeles y por su jugabilidad adictiva. A lo largo de los años, ha habido muchas versiones y variaciones del juego, pero la mecánica básica sigue siendo la misma.
+
+Años más tarde, salió también el Arkanoid, que es una versión más moderna y compleja de Breakout, con nuevos elementos de juego y power-ups. Arkanoid se lanzó en 1986 y fue un gran éxito en las salas de arcade, convirtiéndose en un clásico por derecho propio.
+
+Vamos a hacer nuestra versión de este juego en Unity 6.
+
+## Creando el escenario
+
+Partiremos de un proyecto nuevo en Unity 2D, y lo primero que haremos será crear un nuevo proyecto en blanco. Para ello, abrimos Unity Hub y creamos un nuevo proyecto 2D. Una vez creado el proyecto, lo abrimos y nos aparecerá la pantalla de bienvenida de Unity.
+
+Una vez creado el proyecto seleccionaremos la disposición de ventanas que más nos guste para trabajar y nosotros comenzaremos cambiando el fondo de la cámara a un color sólido oscuro, da igual el que elijáis pero tened en cuenta que después deben distinguirse bien los bloques de colores típicos del juego.
+
+También sería interesante en la pantalla de **Game** seleccionar una resolución apropiada para ir viendo como queda el escenario, nosotros utilizaremos FullHD en horizontal.
+
+Empezaremos creando el escenario del juego, para ello, hay varios tutoriales que podemos seguir que nos ayudarán creando el escenario a partir de Sprites 2D. Podéis seguirlos sin problema, al final de esta sección anclaremos varios interesantes. 
+
+Sin embargo, en esta versión intentaremos crear casi todo con figuras básicas de Unity, para ello, comenzaremos delimitando el escenario por los laterales y en la parte superior utilizando 3 rectángulos 2D posicionados justo en los límiites de la cámara, de la siguiente forma:
+
+![Escenario breakout 1](/static/img/apuntes_unity/breakout/escenario1.png)
+
+:::tip[Organiza el escenario]
+Para organizar el escenario, es recomendable crear un objeto vacío llamado "Scenario" o "Walls" y agrupar los 3 rectángulos dentro de él. Esto nos permitirá moverlos y organizarlos mejor en la jerarquía.
+:::
+
+Una vez creadas y posicionadas debemos añadirle un BoxCollider2D para que la pelota pueda rebotar contra las paredes. Para ello, seleccionamos los 3 rectángulos y en el inspector, añadimos un nuevo componente de tipo Box Collider 2D. Esto nos permitirá detectar las colisiones entre la bola y las paredes.
+
+A continuarción, crearemos varios bloques de diferentes colores posicionándolos en la escena de forma que ocupen una cuadrilla de ancho y media de alto más o menos, intentando reducir un poco el ancho para que se vea la separación entre ellos. 
+
+Para crear estos bloques simplemente seguiremos añadiendo cuadrados 2D y cambiando su color, para ello, seleccionamos el cuadrado y en el inspector, en la parte de Sprite Renderer, seleccionamos el color que queramos. Comenzaremos con una fila con diferentes colores que más adelante utilizaremos para crear prefabs. 
+
+Con los bloques creados, vamos a seleccionarlos todos y añadirles un BoxCollider 2D, para que puedan colisionar con la bola. Para ello, seleccionamos todos los bloques y en el inspector, añadimos un nuevo componente de tipo Box Collider 2D. Esto nos permitirá detectar las colisiones entre la bola y los bloques.
+
+También vamos a crear un nuevo tag llamado "block" para poder identificar los bloques en el código. Para ello, vamos a la ventana de tags y layers, y añadimos un nuevo tag llamado "block". Luego, seleccionamos todos los bloques y les asignamos este tag.
+
+![Escenario breakout 2](/static/img/apuntes_unity/breakout/escenario2.png)
+
+:::tip[Organiza los bloques]
+Para organizar los bloques, es recomendable crear un objeto vacío llamado "Blocks" y agrupar todos los bloques dentro de él. Esto nos permitirá moverlos y organizarlos mejor en la jerarquía.
+:::
+
+:::tip[Mover los bloques en la escenar]
+Para mover los bloques y que ocupen siempre la misma distancia entre ellos es más fácil posicionarlos si los movemos manteniendo la tecla Control pulsada, lo cual hará que el objeto se mueva en pasos de 1 cuadrícula. Esto nos permitirá alinear los bloques de forma más sencilla.
+:::
+
+Con esto, ya tenemos el escenario básico del juego. Ahora vamos a crear la bola y la paleta.
+
+Para crear la paleta, vamos a crear un nuevo objeto 2D de tipo cuadrado y lo posicionamos en la parte inferior de la pantalla. Luego, le cambiamos el tamaño para que sea más ancho que alto, vamos a añadir también dos círculos 2D a los extremos de la paleta para que se vea más realista. Para ello, creamos dos objetos 2D de tipo círculo y los posicionamos en los extremos de la paleta. Luego, le cambiamos el tamaño para que sean más pequeños que la paleta.
+
+Con los tres elementos creados, vamos a seleccionarlos y agruparlos en un objeto vacío que llamaremos "Player". Para ello, seleccionamos los tres objetos y hacemos clic derecho en la jerarquía y seleccionamos "Create Empty Parent". Luego, le cambiamos el nombre al objeto vacío a "Player". Esto nos permitirá mover la paleta y los círculos juntos como un solo objeto.
+Con la paleta creada, vamos a añadirle un BoxCollider 2D para que pueda colisionar con la bola. Para ello, seleccionamos la paleta y en el inspector, añadimos un nuevo componente de tipo Box Collider 2D. Esto nos permitirá detectar las colisiones entre la paleta y la bola.
+
+Podemos ajustar el tamaño del BoxCollider 2D para que se ajuste al tamaño de la paleta. Para ello, seleccionamos el BoxCollider 2D y ajustamos el tamaño en el inspector. También podemos ajustar la posición del BoxCollider 2D para que se ajuste al tamaño de la paleta. Para ello, seleccionamos el BoxCollider 2D y ajustamos la posición en el inspector.
+![Escenario breakout 3](/static/img/apuntes_unity/breakout/playerCollider.png)
+
+Ahora vamos con la pelota, para ello, vamos a crear un nuevo objeto 2D de tipo círculo y vamos a posicionarlo un poco por encima de la paleta pero sin centrarla del todo. Además, vamos a hacer que sea hija del GameObject **Player** en la Jerarquía. Esto lo hacemos para que al iniciar la partida más adelante podamos lanzar la pelota desde la posición que elija el jugador. 
+
+![Escenario breakout 3](/static/img/apuntes_unity/breakout/escenario3.png)
+
+Una vez creada la pelota, vamos a añadirle un Rigidbody 2D para que pueda moverse y colisionar con los bloques. Para ello, seleccionamos la pelota y en el inspector, añadimos un nuevo componente de tipo Rigidbody 2D. Esto nos permitirá detectar las colisiones entre la bola y los bloques.
+
+También vamos a añadir un nuevo componente de tipo Circle Collider 2D para que la pelota pueda colisionar con los bloques. Esto nos permitirá detectar las colisiones entre la bola y los bloques.
+
+Con esto, ya tenemos el escenario básico del juego. Ahora vamos a crear el script que controlará la paleta y la bola.
+
+## Creando el script de la paleta
+
+Vamos a hacer el Rigidbody2D de la paleta **Kinematic** para que no se vea afectada por la gravedad y no se mueva al colisionar con la bola.
+
+Crearemos un Script vacío llamado "PlayerController" y lo añadiremos al GameObject **Player**. Este script se encargará de controlar la paleta. 
+
+A diferencia de en lo desarrollado en el Pong para el movimiento, esta vez vamos a hacer que el movimiento sea modificando el **transform.position** de la paleta, ya que es más sencillo y no necesitamos un movimiento suave.
+
+Además, vamos a limitar el movimiento de la pala poniéndole límites en su eje X en lugar de detectándo las collisiones con los límites de la pantalla (simplemente por practicar). Para ello, vamos a crear una variariable llamada "bound" que será la mitad del ancho de la cámara, y luego limitaremos el movimiento de la pala a esos límites.
+
+Para ello, como siempre, vamos a organizar bien el proyecto y crear una carpeta para los Scripts, y una vez dentro, vamos acrear y abrir el script y vamos a añadir el siguiente código:
+
+```csharp title="PlayerController.cs"
+using UnityEngine;
+
+public class Player : MonoBehaviour
+{
+    [SerializeField] private float speed;
+    /*
+    Los límites definidos con bound nos hacen falta debido a que el jugador se puede salir de la pantalla
+    debido a que su rigidbody es quinemático, por lo que no se ve afectado por la gravedad ni puede colisionar
+    con objetos estáticos.
+    */
+    [SerializeField] private float bound = 6.8f; // x axis bound 
+
+
+    // Update is called once per frame
+    void Update()
+    {
+        PlayerMovement();
+    }
+
+    void PlayerMovement()
+    {
+        float moveInput = Input.GetAxisRaw("Horizontal");
+        // Controlaríamos el movimiento de la siguiente forma de no ser el rigidbody quinemático
+        // transform.position += new Vector3(moveInput * speed * Time.deltaTime, 0f, 0f);
+
+        Vector2 playerPosition = transform.position;
+        // Mathf.Clamp nos permite limitar un valor entre un mínimo y un máximo
+        playerPosition.x = Mathf.Clamp(playerPosition.x + moveInput * speed * Time.deltaTime, -bound, bound);
+        transform.position = playerPosition;
+    }
+}
+```
+
+:::info[Sobre los bounds]
+Los límites de movimiento dependen del escenario, por lo que si cambias la resolución de la cámara o el tamaño de la pantalla, tendrás que ajustar los límites.
+:::

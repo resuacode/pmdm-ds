@@ -115,3 +115,103 @@ public class Player : MonoBehaviour
 :::info[Sobre los bounds]
 Los límites de movimiento dependen del escenario, por lo que si cambias la resolución de la cámara o el tamaño de la pantalla, tendrás que ajustar los límites.
 :::
+
+Ya podemos mover al jugador, ahora vamos a hacer que pueda lanzar la pelota, para ello, vamos a crear un Script para la misma, que se lo asignaremos. 
+
+En este script vamos a incluir un método que cuándo el jugador pulse la tecla espacio, la pelota se lance, pero debemos tener cuidado de hacer que esto se desactive en cuánto se lance, si no, podríamos relanzarla cuándo ya no toca. 
+
+Además, hay que asegurarse de que la pelota deja de ser hija del objeto del jugador tras ser lanzada, de lo contrariop odríamos mover la pelota con las flechas haciendo que siga el movimiento del jugador y sería algo injusto e injugable.
+
+Vamos a realizar todo esto dentro de un método llamado **Launch** que se ejecutará cuándo el jugador pulse la tecla espacio.
+
+Vamos con el código:
+
+```csharp title="Ball.cs"
+using UnityEngine;
+
+public class Ball : MonoBehaviour
+{
+    [SerializeField] private Vector2 initialSpeed;
+    private Rigidbody2D rb;
+    private bool isMoving = false; // Para evitar que la bola se mueva antes de que el jugador la lance
+    // Start is called before the first frame update
+    void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        Launch(); // Lanzamos la bola
+    }
+
+
+    private void Launch()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && !isMoving) // Si pulsamos la barra espaciadora y la bola no se est� moviendo
+        {
+            isMoving = true; // La bola ya se est� moviendo
+            transform.parent = null; // Desvinculamos la bola del jugador
+            rb.linearVelocity = initialSpeed; // Le asignamos una velocidad inicial a la bola
+        }
+    }
+}
+
+```
+
+:::info[Sobre el Rigidbody2D]
+El Rigidbody2D de la bola debe ser dinámico para que pueda moverse y colisionar con los bloques. Si lo hacemos quinemático, no se moverá al lanzarla.
+:::
+
+Ahora vamos a añadir el script a la bola y le asignamos la velocidad inicial que queramos, por ejemplo, 5 en el eje X y 10 en el eje Y.
+Esto hará que la bola se mueva hacia arriba y a la derecha al lanzarla. También podemos ajustar la velocidad en el inspector para que se ajuste a nuestras necesidades.
+
+Si probamos a lanzar la bola, veremos que se mueve y o bien cae, lo cual significa que debemos de hacer que no le afecte la gravedad a su Rigidbody2D, y si esto ya lo hemos hecho, lo normal es que se lance y tras chocar con un bloque o una pared comience a frenarse. 
+
+Esto último es normal ya que todavía no le hemos asignado un material de física, por lo que vamos a crear uno nuevo y lo asignamos al Rigidbody2D de la bola. Para ello, creamos un nuevo material de física 2D y lo asignamos al Rigidbody2D de la bola. Esto nos permitirá ajustar la fricción y el rebote de la bola.
+
+Para ello, creamos un nuevo material de física 2D y lo llamamos "BallMaterial". Luego, en el inspector, ajustamos la fricción a 0 y el rebote a 1. Esto hará que la bola no se detenga al chocar con los bloques y las paredes.
+
+Con el material creado y asignado vamos ahora a hacer que la bola destruya los bloques al chocar con ellos. Para ello, volvemos al Script de la bola y añadimos el siguiente código:
+
+```csharp title="Ball.cs"
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("block")) // Si colisionamos con un bloque
+        {
+            Destroy(collision.gameObject); // Destruimos el bloque
+            rb.linearVelocity *= velocityMultiplier; // Aumentamos la velocidad de la bola
+        }
+        VelocityFix(); // Corregimos la velocidad de la bola
+    }
+```
+
+Con esto, la bola destruirá los bloques al chocar con ellos. También podemos ajustar la velocidad de la bola al destruir un bloque, para que sea más rápida. Para ello, creamos una variable llamada "velocityMultiplier" y la multiplicamos por la velocidad de la bola al destruir un bloque. Esto hará que la bola sea más rápida al destruir un bloque.
+
+Más adelante debemos poner un límite a este aumento de velocidad para que no se vuelva demaisado rápida, pero por ahora lo dejaremos así.
+
+Vamos a añadir también el método **VelocityFix** que se encargará de corregir la velocidad de la bola al chocar con un bloque o una pared. Esto es necesario porque si la bola choca con un bloque o una pared, puede que la velocidad no sea la correcta y la bola se quede atascada. Para ello, vamos a añadir el siguiente código:
+
+```csharp title="Ball.cs"
+  private void VelocityFix()
+  {
+      float velocidadDelta = 0.5f; // Velocidad que queremos que aumente la bola
+      float velocidadMinima = 0.2f; // Velocidad m�nima que queremos que tenga la bola
+
+      if (Mathf.Abs(rb.linearVelocity.x) < velocidadMinima) // Si la velocidad de la bola en el eje x es menor que la m�nima
+      {
+          velocidadDelta = Random.value < 0.5f ? velocidadDelta : -velocidadDelta; // Elegimos un valor aleatorio entre -0.5 y 0.5
+          rb.linearVelocity = new Vector2(rb.linearVelocity.x + velocidadDelta, rb.linearVelocity.y); // Aumentamos la velocidad de la bola
+      }
+
+      if (Mathf.Abs(rb.linearVelocity.y) < velocidadMinima) // Si la velocidad de la bola en el eje y es menor que la m�nima
+      {
+          velocidadDelta = Random.value < 0.5f ? velocidadDelta : -velocidadDelta; // Elegimos un valor aleatorio entre -0.5 y 0.5
+          // Otra forma de aumentar la velocidad (esta vez en el eje y)
+          rb.linearVelocity += new Vector2(0f, velocidadDelta); // Aumentamos la velocidad de la bola
+      }
+  }
+    
+```
+

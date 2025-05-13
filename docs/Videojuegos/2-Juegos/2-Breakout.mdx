@@ -306,3 +306,319 @@ Ahora, para hacer que el número de bloques disminuya cada vez que la bola choqu
         VelocityFix(); // Corregimos la velocidad de la bola
     }
 ```
+
+Ya podemos ver en el inspector, con el GameManager seleccionado, como al jugar se va actualizando el número de bloques restantes.
+
+Ahora vamos a hacer que si la bola cae por debajo del escenario se reinicie el nivel, más adelante modificaremos este comportamiento para que se pierda una vida, pero por ahora simplemente reiniciaremos el nivel.    
+
+Para esto, vamos a duplicar la barra superior y la vamos a poner en la parte inferior de la pantalla, pero fuera de la vista de la cámara. Además, vamos a hacer que su BoxCollider2D sea un Trigger, para que no colisione con la bola y la paleta.
+
+Podemos también cambiarle el color al Sprite de la barra inferior para diferenciarlo claramente en la escena. Además, vamos a añadirle un nuevo tag llamado "BottomWall" para poder identificarlo en el código.
+
+![Bottom Wall](../../../static/img/apuntes_unity/breakout/bottomWall.png)
+
+Por último, vamos a añadir el siguiente código al Script de la bola para que si detecta la colisión con el trigger de la barra inferior, llame al método **ReloadScene** del GameManager. 
+```csharp title="Ball.cs"
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("BottomWall")) // Si colisionamos con la barra inferior
+        {
+            GameManager.Instance.ReloadScene(); // Recargamos la escena
+        }
+    }
+``` 
+
+Con esto, ya tenemos la mecánica básica del juego. Ahora vamos a añadir un sistema de puntuación y un número de vidas.
+
+## Añadiendo puntuación y vidas
+
+Antes de nada, vamos a añadir un Canvas para gestionar la UI desde él, y vamos a añadirle un nuevo Script llamado "UIManager". Este script se encargará de gestionar la UI del juego, como la puntuación y el número de vidas.
+
+Además, vamos a añadir un texto para mostrar la puntuación y vamos a crear 5 imágenes de UI con un png de un corazón tipo pixel art que dejaremos en la carpeta de Sprites. 
+Las posicionamos en nuestro canvas y les ponemos un color que destaque sobre el fondo, al igual que al texto.
+
+Añadiremos 5 pero luego gestionaremos la cantidad con la que empezaremos el juego desde el GameManager. Vamos a aprovechar la barra superior para posicionar los elementos de UI de forma que queden siempre visibles:
+
+![UI](../../../static/img/apuntes_unity/breakout/ui.png)
+
+:::tip[Si no se ven los elementos de UI]
+Chequea que el color de los elementos sea el correcto y no esté en el mismo color que el fondo.
+
+Fíjate también que el "Order in Layer" de los elementos de UI sea mayor que el de los elementos del escenario, si no, no se verán.
+:::
+
+Ahora, vamos a empezaar con el Script que añadimos previamente al Canvas, el UIManager. Este script se encargará de gestionar la UI del juego, como la puntuación y el número de vidas.
+Vamos a añadir el siguiente código al Script:
+
+```csharp title="UIManager.cs"
+using UnityEngine;
+
+public class UIManager : MonoBehaviour
+{
+    [SerializeField] TMPro.TextMeshProUGUI text;
+    [SerializeField] private GameObject[] lifes;
+    [SerializeField] GameManager gameManager;
+
+    void Start()
+    {
+        gameManager = GameManager.Instance;
+        gameManager.LoadBlocks();
+        SetScore(gameManager.points);
+        SetLifes(gameManager.vidas);
+    }
+
+    public void AddScore(int score)
+    {
+
+        int points = int.Parse(text.text);
+        points += score;
+        text.text = points.ToString();
+    }
+
+    public void ResetScore()
+    {
+        text.text = "0";
+    }
+
+    public void SetScore(int score)
+    {
+        text.text = score.ToString();
+    }
+
+    public void SetLifes(int vidas)
+    {
+        foreach (var life in lifes)
+        {
+            life.SetActive(false);
+        }
+        for (int i = 0; i < vidas; i++)
+        {
+            lifes[i].SetActive(true);
+        }
+    }
+
+    public void LoseLife()
+    {
+        for (int i = lifes.Length - 1; i > 0; i--)
+        {
+            if (lifes[i].activeSelf)
+            {
+                lifes[i].SetActive(false);
+                break;
+            }
+        }
+    }
+
+    public void AddLife()
+    {
+        for (int i = 0; i < lifes.Length; i++)
+        {
+            if (!lifes[i].activeSelf)
+            {
+                lifes[i].SetActive(true);
+                break;
+            }
+        }
+    }
+
+
+}
+```
+
+Vamos a explicar el código del UIManager paso a paso: 
+
+- Primero, añadimos las librerías necesarias para poder usar el TextMeshPro y el GameManager.
+- Luego, creamos una variable privada de tipo TextMeshProUGUI para poder acceder al texto de la puntuación y otra para las vidas. Estas variables veremos en la captura cómo debemos de arrastrarlas desde los elementos de la jerarquía para inicializarlas, es importante mantener el orden de las vidas en el array para luego que se muestren correctamente.
+
+![UIManager](../../../static/img/apuntes_unity/breakout/uiManagerInspector.png)
+
+- En el método Start, recuperamos la instancia del GameManager y llamamos al método **LoadBlocks** para cargar el número de bloques restantes. Luego, llamamos al método **SetScore** para inicializar la puntuación y al método **SetLifes** para inicializar el número de vidas.
+- En el método **AddScore**, añadimos la puntuación al texto de la UI.
+- En el método **ResetScore**, reiniciamos la puntuación a 0.
+- En el método **SetScore**, establecemos la puntuación en el texto de la UI.
+- En el método **SetLifes**, establecemos el número de vidas en la UI. Este método se encarga de activar o desactivar las imágenes de las vidas según el número de vidas que tenga el jugador. Primero las desactiva todas y luego activa las que corresponden al número de vidas para asegurarnos de que se muestran las imágenes en el orden correcto.
+- En el método **LoseLife**, desactivamos la imagen de la vida que corresponde al número de vidas restantes. Este método se llama desde el GameManager cuando el jugador pierde una vida.
+- En el método **SetLifes**, desactivamos todas las imágenes de las vidas y luego activamos las que corresponden al número de vidas restantes. Este método se llama desde el GameManager cuando el jugador gana o pierde una vida.
+- En el método **AddLife**, activamos la imagen de la vida que corresponde al número de vidas restantes. Este método se llama desde el GameManager cuando el jugador gana una vida.
+
+Cómo has podido observar, estamos llamando a varios métodos del GameManager que todavía no tenemos desarrollados, vamos con ello. 
+
+Vamos a gestionar las vidas y la puntuación desde el GameManager, por lo que vamos a añadir el siguiente código resaltado:
+
+```csharp title="GameManager.cs"
+using UnityEngine;
+using UnityEngine.SceneManagement; // Para poder usar SceneManager
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance { get; private set; }
+
+    private int blocksLeft; // Bloques restantes en la escena
+
+    // highlight-start
+    public int vidas = 3;
+
+    [SerializeField] private int pointsPerBlock = 10; // Puntos por bloque
+    public int points = 0; // Puntos actuales
+
+
+    // highlight-end
+
+
+    private void Awake()
+    {
+        // Patrón Singleton
+        if (Instance != null && Instance != this) // Si ya existe una instancia de GameManager
+        {
+            Destroy(gameObject); // Destruimos el objeto
+        }
+        else // Si no existe una instancia de GameManager
+        {
+            Instance = this; // La creamos
+            DontDestroyOnLoad(gameObject); // No se destruirá al cargar una nueva escena
+        }
+    }
+
+    // highlight-start
+
+    public void LoadBlocks()
+    {
+        /* FindGameObjectsWithTag nos permite obtener todos los objetos con una etiqueta determinada
+         y nos los devuelve en un array de GameObjects
+        */
+        blocksLeft = GameObject.FindGameObjectsWithTag("block").Length; // Obtenemos el número de bloques en la escena
+        Debug.Log("Blocks left: " + blocksLeft);
+    }
+
+    // highlight-end
+
+    public void BlockDestroyed()
+    {
+        blocksLeft--; // Restamos un bloque
+        // highlight-next-line
+        FindAnyObjectByType<UIManager>().AddScore(pointsPerBlock); // Añadimos puntos
+        points += pointsPerBlock; // Añadimos puntos
+        if (blocksLeft <= 0) // Si no quedan bloques
+        {
+            Debug.Log("Level completed!");
+            LoadNextLevel(); // Cargamos el siguiente nivel
+        }
+    }
+
+    private void LoadNextLevel()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1); // Cargamos la siguiente escena
+    }
+
+    public void ReloadScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // Recargamos la escena actual
+    }
+
+    // highlight-start
+    public void LoseLife()
+    {
+        
+        vidas--; // Restamos una vida
+        FindAnyObjectByType<UIManager>().LoseLife();
+        if (vidas <= 0)
+        {
+            Debug.Log("Game Over!");
+            SceneManager.LoadScene("GameOver");
+            // TODO: Modificar GameOver para retry
+        } else {
+            ResetLevel(); // Recargamos la escena
+        }       
+    }
+    // highlight-end
+    // highlight-start
+
+    public void AddLife()
+    {
+        vidas++; // Añadimos una vida
+        FindAnyObjectByType<UIManager>().AddLife();
+    }
+    // highlight-end
+
+    // highlight-start
+    public void ResetLevel()
+    {
+        FindAnyObjectByType<Player>().ResetPlayer(); // Reseteamos la posición del jugador
+        FindAnyObjectByType<Ball>().ResetBall(); // Reseteamos la posición de la bola
+    }
+    // highlight-end
+}
+```
+
+:::warning[El GameOver]
+Todavía no hemos creado la escena de GameOver, por lo que si la bola cae y se pierde la partida, se cargará una escena que no existe y dará un error. Para evitar esto, podemos comentar el código de la línea 70 a la 73.
+:::
+
+Hemos añadido un método para añadir y para quitar una vida tanto a nivel lógico como en la UI llamando a los métodos del UIManager.
+
+Además, hemos modificado el método **LoadBlocks** para que se llame desde el GameManager y no desde el Start del GameManager, ya que si el GameManager sobrevive al cambio de escena, el método Start no se volverá a ejecutar.
+
+También hemos añadido un método para resetear el nivel que solo reposiciona la bola y la pelota, que se llama tras perder una vida.
+
+Ya podemos eliminar el método **Start** del GameManager, ya que no lo necesitamos.
+
+Debemos añadir también a nuestros Scripts de la bola y el jugador los métodos que hemos llamado desde el GameManager para resetear la posición de ambos objetos.
+
+Para ello debemos recoger en el start sus positiciones iniciales dentro de un Vector2:
+
+```csharp title="Ball.cs"
+    private Vector2 initialPosition;
+    // Start is called before the first frame update
+    void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        initialPosition = transform.position; // Guardamos la posición inicial de la bola
+    }
+
+    public void ResetBall()
+    {
+        rb.velocity = Vector2.zero; // Reiniciamos la velocidad de la bola
+        transform.position = initialPosition; // Reiniciamos la posición de la bola
+        transform.parent = FindAnyObjectByType<Player>().transform; // Hacemos que la bola sea hija del jugador
+        isMoving = false; // La bola ya no se está moviendo
+    }
+```
+
+```csharp title="Player.cs"
+    private Vector2 initialPosition;
+    // Start is called before the first frame update
+    void Start()
+    {
+        PlayerMovement();
+        initialPosition = transform.position; // Guardamos la posición inicial de la pala
+    }
+
+    public void ResetPlayer()
+    {
+        transform.position = initialPosition; // Reiniciamos la posición de la pala
+    }
+```
+
+Con esto, si probamos, ya podemos jugar y se van añadiendo puntos y las vidas se inician correctamente, pero debemos modificar los métodos a los que se llama al perder una vida en la detección de la colisión con el trigger:
+
+```csharp title="Ball.cs"
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("BottomWall")) // Si colisionamos con la barra inferior
+        {
+            // GameManager.Instance.ReloadScene(); // Recargamos la escena
+            GameManager.Instance.LoseLife(); // Restamos una vida
+        }
+    }
+```
+
+:::warning[Si la bola no vuelve a su posición inicial]
+Asegúrate de que la pala está tagueada con el tag "Player" y que las posiciones iniciales se están recogiendo correctamente.
+:::
+
+## Dándole vida al juego
+
+Ya tenemos un nivel casi funcional, vamos a darle un poco de vida al juego con un par de efectos de sonido cuándo la bola choca y cuándo perdemos una vida, para ello, vamos a añadir unos cuantos clips de SFX gratuitos. 
+
+Podéis encontrar algunos en [Freesound](https://freesound.org/) o en [Mixkit](https://mixkit.co/).
+

@@ -17,7 +17,7 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'resuadam2', // Usually your GitHub org/user name.
+  organizationName: 'resuacode', // Usually your GitHub org/user name.
   projectName: 'pmdm-ds', // Usually your repo name.
 
   onBrokenLinks: 'warn',
@@ -73,7 +73,7 @@ const config: Config = {
           label: 'Inicio',
         },
         {
-          href: 'https://github.com/resuadam2',
+          href: 'https://github.com/resuacode',
           label: 'GitHub',
           position: 'right',
         },
@@ -96,16 +96,16 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/resuadam2',
+              href: 'https://github.com/resuacode',
             },
             {
               label: 'YouTube',
-              href: 'https://www.youtube.com/@resuadam2',
+              href: 'https://www.youtube.com/@resuacode',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} resuadam2 by Daniel Resúa.<br>Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} resuacode by Daniel Resúa.<br>Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,

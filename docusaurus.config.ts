@@ -10,10 +10,10 @@ const config: Config = {
   favicon: 'img/favicon_io/favicon32.png',
 
   // Set the production url of your site here
-  url: 'https://resuacode.es/pmdm-ds/',
+  url: 'https://resuacode.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl: '/pmdm-ds/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.

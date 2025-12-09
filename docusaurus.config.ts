@@ -10,7 +10,7 @@ const config: Config = {
   favicon: 'img/favicon_io/favicon32.png',
 
   // Set the production url of your site here
-  url: 'https://resuadam2-pmdm.vercel.app/',
+  url: 'https://resuacode.es/pmdm-ds/',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',

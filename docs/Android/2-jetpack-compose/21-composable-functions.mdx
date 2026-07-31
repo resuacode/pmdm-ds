@@ -111,22 +111,22 @@ En el ejemplo anterior, se utiliza la función `stringResource()` para obtener u
 
 ## Temas en Jetpack Compose
 
-Jetpack Compose utiliza el sistema de temas de Android para aplicar estilos coherentes a la interfaz de usuario. Puedes definir un tema personalizado utilizando la función `provideAppTheme()` y aplicarlo a tu aplicación utilizando el modificador `MaterialTheme`.
+En proyectos Compose actuales se usa **Material 3**. Puedes personalizar colores, tipografía y formas y aplicarlos con `MaterialTheme`.
 
 ```kotlin
 @Composable
 fun MyApp() {
     MaterialTheme(
-        colors = lightColors(),
-        typography = Typography,
-        shapes = Shapes
+        colorScheme = lightColorScheme(),
+        typography = Typography(),
+        shapes = Shapes()
     ) {
         Greeting()
     }
 }
 ```
 
-En el ejemplo anterior, se define un tema personalizado con colores, tipografía y formas personalizadas, y se aplica a la aplicación utilizando el modificador `MaterialTheme`.
+En el ejemplo anterior se aplica un tema Material 3 con `colorScheme`, tipografía y formas. Más detalle en la sección de [Material Design](./25-material-design.mdx).
 
 ## Ejemplos de funciones componibles
 

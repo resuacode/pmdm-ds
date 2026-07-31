@@ -408,9 +408,11 @@ Para ello, utilizamos la propiedad **linearVelocity** del **Rigidbody2D** de la 
 :::info[Sobre el Input.GetAxisRaw()]
 La función **Input.GetAxisRaw()** nos permite obtener la entrada del jugador de forma más precisa y rápida. Esta función devuelve un valor entre -1 y 1, donde -1 representa la entrada negativa (hacia abajo) y 1 representa la entrada positiva (hacia arriba).
 Esto nos permite mover la pala hacia arriba y hacia abajo de forma más precisa y rápida.
+
+En este tutorial usamos el **Input Manager** clásico. El **Input System** moderno se menciona en [Scripting](../1-Unity/9-Scripting.mdx); no es necesario cambiarlo para completar Pong.
 :::
 
-:::nota[Input.GetAxisRaw() vs Input.GetAxis()]
+:::tip[Input.GetAxisRaw() vs Input.GetAxis()]
 La función **Input.GetAxis()** nos permite obtener la entrada del jugador de forma más suave y gradual. Esta función devuelve un valor entre -1 y 1, donde -1 representa la entrada negativa (hacia abajo) y 1 representa la entrada positiva (hacia arriba).
 Sin embargo, esta función puede ser un poco más lenta y menos precisa que **Input.GetAxisRaw()**.
 

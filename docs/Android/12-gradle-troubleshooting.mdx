@@ -1,0 +1,85 @@
+# Guía: dependencias Gradle y problemas en Android Studio
+
+Cuando en el curso añadas librerías (Retrofit, kotlinx.serialization, Room, DataStore, Media3…), sigue este flujo. Cada unidad concreta detalla **qué** pegar; aquí está el **cómo** y qué hacer si Sync falla.
+
+## Paso a paso genérico
+
+1. **Identifica la versión de Kotlin** del proyecto: ábrelo en `gradle/libs.versions.toml` (clave `kotlin`) o en el `build.gradle.kts` del proyecto. Plugins como **KSP** y **kotlinx.serialization** deben ser compatibles con esa versión.
+2. **Añade plugins** en el sitio correcto:
+   - Declaración con versión: normalmente el `build.gradle.kts` raíz (`apply false`) o entradas en el version catalog.
+   - Aplicación sin versión: el `build.gradle.kts` del módulo `app`.
+3. **Añade librerías** preferiblemente en `gradle/libs.versions.toml` y referéncialas con `implementation(libs.…)` / `ksp(libs.…)`. Si el proyecto aún no usa catalog, puedes usar `implementation("grupo:artefacto:versión")` en el módulo `app`.
+4. **Sync Project with Gradle Files** (elefante Gradle / banner *Sync Now*).
+5. Comprueba que los **imports** del código de ejemplo se resuelven (sin subrayado rojo).
+6. Si la librería necesita permisos o configuración (`INTERNET`, cleartext, etc.), edita `AndroidManifest.xml`.
+
+:::tip[Versiones del wizard]
+Usa como referencia las versiones que traiga el proyecto creado con el wizard actual de Android Studio o el BOM de Compose. Los números de los apuntes son orientativos: si el IDE sugiere otra versión estable, acéptala siempre que sea coherente con tu Kotlin/AGP.
+:::
+
+## Version Catalog (ejemplo)
+
+```toml title="gradle/libs.versions.toml"
+[versions]
+retrofit = "2.11.0"
+okhttp = "4.12.0"
+kotlinxSerializationJson = "1.7.3"
+room = "2.6.1"
+datastore = "1.1.1"
+media3 = "1.5.1"
+
+[libraries]
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
+media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
+```
+
+Los números anteriores son ejemplos; ajústalos a lo estable en el momento del curso.
+
+## Problemas habituales (síntoma → qué mirar)
+
+### Gradle Sync failed / Could not resolve dependency
+- Sin red o proxy del aula bloqueando Maven Central / Google Maven.
+- Versión inexistente o tipazo en el alias (`libs.androidx.room.runtime` mal escrito).
+- Repositorios: en settings de Gradle deben estar `google()` y `mavenCentral()`.
+
+### Incompatibilidad Kotlin ↔ KSP / serialization
+- El artefacto KSP lleva la versión de Kotlin en el nombre (`2.0.21-1.0.27` → Kotlin `2.0.21`).
+- El plugin `org.jetbrains.kotlin.plugin.serialization` debe usar **la misma versión de Kotlin** que el proyecto (mejor alinearlo vía catalog, sin pin suelto antiguo tipo `1.8.10` si tu Kotlin es 2.x).
+- Consulta la tabla de compatibilidad de [KSP](https://github.com/google/ksp/releases).
+
+### Plugin not found / Unresolved reference tras Sync
+- Plugin declarado en el proyecto pero **no aplicado** en el módulo `app`.
+- Falta `id("com.google.devtools.ksp")` o `alias(libs.plugins.…)` mal escrito.
+- Tras Sync, **Build → Rebuild Project**.
+
+### Duplicate class / conflicto de versiones
+- Has pinneado una librería Compose a mano **y** usas Compose BOM: quita el pin y deja que el BOM elija.
+- Dos convertidores Retrofit incompatibles a la vez (p. ej. Gson + serialization mal configurados).
+
+### KSP vs kapt
+- En este curso usamos **KSP** para Room. No mezcles `kapt(…room.compiler)` y `ksp(…)` en el mismo módulo.
+- Si un tutorial viejo usa kapt, sustitúyelo por KSP y el plugin correspondiente.
+
+### Compose compiler / “Please use a matching Kotlin version”
+- En proyectos recientes el compilador de Compose va con el plugin `org.jetbrains.kotlin.plugin.compose` (misma versión que Kotlin).
+- Evita `kotlinCompilerExtensionVersion` suelto en proyectos nuevos creados con el wizard actual.
+
+### Acciones de recuperación rápidas
+1. **File → Sync Project with Gradle Files**.
+2. **File → Invalidate Caches… → Invalidate and Restart** (si el IDE “se queda pillado”).
+3. En terminal del proyecto: `./gradlew --stop` y vuelve a sincronizar.
+4. Como último recurso (con el proyecto cerrado): borrar la carpeta `.gradle` **del proyecto** (no la global del usuario) y Sync de nuevo.
+
+## Enlaces útiles
+
+- [Añadir dependencias en Android](https://developer.android.com/build/dependencies?hl=es-419)
+- [Version catalogs](https://docs.gradle.org/current/userguide/platforms.html)
+- [Compose BOM](https://developer.android.com/develop/ui/compose/bom)
+- [KSP releases](https://github.com/google/ksp/releases)

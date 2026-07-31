@@ -32,16 +32,20 @@ En Android, cada actividad tiene una serie de métodos que se invocan en funció
 - `onStop()`: Se llama cuando la actividad ya no es visible para el usuario.
 - `onDestroy()`: Se llama cuando la actividad es destruida y liberada de la memoria.
 
-## Ejemplo de ciclo de vida de una actividad
+## Ejemplo de ciclo de vida de una actividad (Compose)
 
-A continuación, se muestra un ejemplo del ciclo de vida de una actividad en Android:
+En este curso las apps usan Jetpack Compose. La actividad suele extender `ComponentActivity` y montar la UI con `setContent { }` (no con layouts XML ni `setContentView`).
 
 ```kotlin
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
         Log.d("MainActivity", "onCreate")
+        setContent {
+            MaterialTheme {
+                Text("Hola, Compose")
+            }
+        }
     }
 
     override fun onStart() {
@@ -71,7 +75,11 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-En el ejemplo anterior, se define una actividad `MainActivity` con los métodos del ciclo de vida más comunes. Cada método imprime un mensaje de registro en la consola para indicar en qué estado se encuentra la actividad.
+Los callbacks del ciclo de vida siguen siendo los mismos. En Compose, si necesitas reaccionar a cambios de ciclo de vida desde un composable (por ejemplo liberar un reproductor), puedes combinar `LocalLifecycleOwner` con `DisposableEffect` o APIs de Lifecycle.
+
+:::info[Views / XML]
+`AppCompatActivity` + `setContentView(R.layout…)` es el patrón clásico con Views. Lo verás en código antiguo, pero en este módulo la UI se construye con Compose.
+:::
 
 ## Imagen del ciclo de vida de una actividad
 

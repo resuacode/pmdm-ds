@@ -26,7 +26,15 @@ Para implementar la capa de UI en una arquitectura MVVM en una aplicación Andro
 
 3. **Definir la View**: Define la interfaz de usuario de tu aplicación utilizando Jetpack Compose. Por ejemplo, puedes definir una función componible que muestre los datos de un usuario en la pantalla.
 
-4. **Conectar el ViewModel con la View**: Conecta el ViewModel con la View para que la View pueda mostrar los datos del ViewModel. Puedes utilizar `rememberViewModel` para crear una instancia del ViewModel en la View y `viewModel` para acceder a los datos del ViewModel.
+4. **Conectar el ViewModel con la View**: En Compose obtén el ViewModel con la función `viewModel()` (`androidx.lifecycle.viewmodel.compose`) y observa su estado (por ejemplo un `StateFlow`) con `collectAsStateWithLifecycle()` o `collectAsState()`.
+
+```kotlin
+@Composable
+fun UserScreen(viewModel: UserViewModel = viewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    Text(text = uiState.name)
+}
+```
 
 ## Ejemplo de implementación
 

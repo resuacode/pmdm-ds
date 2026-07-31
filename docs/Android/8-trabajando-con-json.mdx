@@ -7,32 +7,37 @@ Para ello, vamos a utilizar la librería `kotlinx.serialization` que nos permite
 
 ## Dependencias
 
-Para poder utilizar `kotlinx.serialization` en nuestro proyecto, necesitamos añadir las siguientes dependencias en nuestro archivo `build.gradle.kts`:
+### Paso a paso
 
-```kotlin
+1. Mira la versión de **Kotlin** de tu proyecto (`libs.versions.toml` o plugins del root).
+2. Añade el plugin de serialization con **la misma versión de Kotlin** (no uses un pin antiguo tipo `1.8.10` si tu Kotlin es 2.x).
+3. Añade `kotlinx-serialization-json` en el módulo `app`.
+4. Si usas Retrofit, añade el converter de Jake Wharton y OkHttp.
+5. **Sync Project with Gradle Files**.
+6. Si falla, [guía de problemas Gradle](./12-gradle-troubleshooting.mdx) (sobre todo Kotlin ↔ plugin serialization).
+
+```kotlin title="build.gradle.kts (módulo app)"
 plugins {
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
+    // Misma versión que el plugin de Kotlin del proyecto
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 dependencies {
-    // Kotlin serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 }
 ```
 
-:::warning[Importante, sobre las versiones]
-Es posible que tengas que cambiar la versión de `kotlinx-serialization-json` por la que esté disponible en el momento de leer este documento.
-Si estás utilizando Android Studio, es probable que el propio IDE te sugiera la versión correcta.
+En el version catalog / plugins del proyecto, alinea el plugin de serialization con la versión de Kotlin del wizard (p. ej. 2.0.x), sin fijar a mano una Kotlin 1.8 antigua.
+
+:::tip[Versiones]
+Los números de `kotlinx-serialization-json` son orientativos. Si Android Studio sugiere otra estable compatible con tu Kotlin, úsala. Detalle de Sync/conflictos: [guía Gradle](./12-gradle-troubleshooting.mdx).
 :::
 
-También es interesante modificar las dependencias de Retrofit para que utilice `kotlinx.serialization` en lugar de Scalars. Para ello, añadimos la siguiente dependencia:
+También es interesante configurar Retrofit para que use `kotlinx.serialization` en lugar de Scalars:
 
 ```kotlin
-// Retrofit with Kotlin serialization Converter
-
 implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
-implementation("com.squareup.okhttp3:okhttp:4.11.0")
-
+implementation("com.squareup.okhttp3:okhttp:4.12.0")
 ```
 
 ## Crear una clase de datos que represente el JSON

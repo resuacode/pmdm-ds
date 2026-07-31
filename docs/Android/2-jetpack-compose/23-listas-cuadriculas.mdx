@@ -161,7 +161,7 @@ En Jetpack Compose, puedes mostrar listas de elementos en forma de cuadrículas 
 ```kotlin
 @Composable
 fun CuadriculaVertical() {
-    LazyVerticalGrid(cells = GridCells.Fixed(3)) {
+    LazyVerticalGrid(columns = GridCells.Fixed(3)) {
         items(100) { index ->
             Text(text = "Elemento $index")
         }
@@ -169,12 +169,12 @@ fun CuadriculaVertical() {
 }
 ```
 
-En el ejemplo anterior, se define un componente `CuadriculaVertical` que muestra una cuadrícula de 100 elementos en 3 columnas utilizando `LazyVerticalGrid`. El método `items()` de `LazyVerticalGrid` se utiliza para generar los elementos de la cuadrícula en función de un rango de índices.
+En el ejemplo anterior, `LazyVerticalGrid` muestra 100 elementos en 3 columnas. El parámetro correcto es `columns` (la API antigua `cells` ya no se usa).
 
 ```kotlin
 @Composable
 fun CuadriculaHorizontal() {
-    LazyHorizontalGrid(cells = GridCells.Fixed(3)) {
+    LazyHorizontalGrid(rows = GridCells.Fixed(3)) {
         items(100) { index ->
             Text(text = "Elemento $index")
         }
@@ -182,5 +182,5 @@ fun CuadriculaHorizontal() {
 }
 ```
 
-En el ejemplo anterior, se define un componente `CuadriculaHorizontal` que muestra una cuadrícula de 100 elementos en 3 filas utilizando `LazyHorizontalGrid`. El método `items()` de `LazyHorizontalGrid` se utiliza para generar los elementos de la cuadrícula en función de un rango de índices.
+En el ejemplo anterior, `LazyHorizontalGrid` muestra 100 elementos en 3 filas mediante el parámetro `rows`.
 

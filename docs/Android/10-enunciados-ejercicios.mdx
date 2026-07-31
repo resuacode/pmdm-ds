@@ -15,6 +15,7 @@ En esta página encontraréis una serie de enunciados para ejercicios de ejemplo
 - [App de Pokedex](#app-de-pokedex)
 - [App genérica de un modelo de datos a elegir](#app-genérica-de-un-modelo-de-datos-a-elegir)
 - [App generadora de alarmas](#app-generadora-de-alarmas)
+- [App mini reproductor multimedia](#app-mini-reproductor-multimedia)
 
 
 ## App de contadores
@@ -273,3 +274,15 @@ Generar una app en la que podamos añadir una alarma o aviso para una fecha y ho
 Esta app puede ampliarse con niveles de importancia o tematizándola. 
 
 Puede ampliarse también para configurar notificaciones push cuándo suene una alarma o aviso.
+
+## App mini reproductor multimedia
+
+Práctica **ligera** para la unidad de [Multimedia](./5-multimedia.mdx). No hace falta API remota ni arquitectura compleja.
+
+Elaborar una app de una o dos pantallas que permita:
+
+1. Reproducir un **audio** incluido en `res/raw` (o `assets`) con botones **Play**, **Pause** y **Stop** (volver al inicio).
+2. Reproducir un **vídeo** corto (también en `raw` o una URL de demostración) con Media3 / ExoPlayer y los mismos controles básicos (puedes usar el controlador nativo de `PlayerView`).
+3. Liberar correctamente el reproductor al salir de la pantalla (`DisposableEffect` / `release()`).
+
+Criterios mínimos: la app compila, el audio se oye, el vídeo se ve, y no deja el audio sonando tras cerrar la Activity. Ampliaciones opcionales: barra de progreso, lista de pistas o una animación Compose al pulsar Play.

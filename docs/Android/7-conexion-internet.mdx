@@ -29,9 +29,10 @@ En este ejemplo, la función `start` es una suspend function que inicia un conte
 
 La función `delay` se utiliza para pausar la ejecución de la tarea durante un segundo.
 
-Para llamar a una suspend function desde una función principal, se utiliza la función `runBlocking`, que crea un bloque de código que ejecuta la tarea de forma síncrona. Por ejemplo, el siguiente código muestra cómo llamar a la función `start` desde una función principal:
+Para llamar a una `suspend` desde un `main` de consola o Kotlin Playground puedes usar `runBlocking` (bloquea el hilo hasta terminar). **En una app Android no uses `runBlocking` en el hilo principal**: lanza corrutinas con `viewModelScope`, `lifecycleScope` o `LaunchedEffect`.
 
 ```kotlin
+// Solo para demos de consola / Playground
 fun main() {
     runBlocking {
         Timer.start { count ->
@@ -41,7 +42,18 @@ fun main() {
 }
 ```
 
-En este ejemplo, la función `main` llama a la función `start` de forma síncrona utilizando `runBlocking`. La función `start` inicia un conteo en segundo plano y llama a un callback cada segundo con el valor actual del contador. 
+```kotlin
+// En un ViewModel de Android
+class TimerViewModel : ViewModel() {
+    fun start() {
+        viewModelScope.launch {
+            Timer.start { count -> /* actualizar StateFlow */ }
+        }
+    }
+}
+```
+
+En el ejemplo de consola, `runBlocking` espera a la corrutina. En Android, el alcance del ViewModel cancela el trabajo cuando el ViewModel se destruye. 
 
 Las corutinas en Android te permiten escribir código asíncrono de forma más sencilla y reactiva, sin tener que utilizar callbacks o interfaces de usuario complejas. Las corutinas se basan en el concepto de suspensión, que te permite pausar la ejecución de una tarea hasta que se complete una operación asíncrona.
 
@@ -186,13 +198,13 @@ Tampoco debemos preocuparnos de proporcionar un componente Dispatcher de forma e
 
 Para conectarse a internet en una aplicación Android con Jetpack Compose, puedes utilizar las siguientes opciones (existen más opciones, pero estas son las más comunes):  
 
-- **Retrofit**: Retrofit es una biblioteca de cliente HTTP para Android y Java que facilita la conexión a servicios web RESTful. Puedes utilizar Retrofit para realizar peticiones HTTP a un servidor y obtener los datos necesarios para tu aplicación.
+- **Retrofit**: Biblioteca de cliente HTTP para Android y Java que facilita la conexión a servicios web RESTful. Es la opción que usaremos en el curso.
 
-- **Ktor**: Ktor es un framework de cliente y servidor web en Kotlin que te permite crear aplicaciones web
+- **Ktor**: Framework de cliente y servidor web en Kotlin.
 
-- **Volley**: Volley es una biblioteca de red que facilita la conexión a servicios web en Android. Puedes utilizar Volley para realizar peticiones HTTP y gestionar las respuestas de forma sencilla.
+- **Volley**: Biblioteca de red más antigua de Google; la verás en material legado, pero **no** es el camino del curso.
 
-Vamos a centrarnos en la primera opción, Retrofit, que es una de las bibliotecas más utilizadas para conectarse a servicios web en Android. 
+Vamos a centrarnos en **Retrofit**. 
 
 ![DataLayer](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-getting-data-internet/img/76551dbe9fc943aa_960.png?hl=es-419)
 
@@ -271,18 +283,34 @@ Este permiso permite que la aplicación se conecte a internet y realice peticion
 
 ### Importar las dependencias de Retrofit
 
-Para utilizar Retrofit en una aplicación Android, primero debes importar las dependencias de Retrofit en el archivo `build.gradle` del módulo de la aplicación. Puedes hacerlo añadiendo las siguientes líneas al archivo `build.gradle`:
+#### Paso a paso
 
-```kotlin
+1. Abre `gradle/libs.versions.toml` (o el `build.gradle.kts` del módulo `app` si aún no usas catalog).
+2. Añade Retrofit (y el convertidor que vayas a usar: scalars al principio, Gson o kotlinx.serialization después).
+3. Pulsa **Sync Now**.
+4. Añade el permiso `INTERNET` en el manifest (apartado anterior).
+5. Si Sync falla, consulta la [guía de problemas Gradle](./12-gradle-troubleshooting.mdx).
+
+```kotlin title="build.gradle.kts (módulo app) — ejemplo directo"
 dependencies {
-    // Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    // Retrofit with Scalar Converter
-    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+    // Comprueba en Maven Central la última estable; el número es orientativo
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-scalars:2.11.0")
+    // Más adelante: converter-gson o kotlinx.serialization
 }
 ```
 
-Estas líneas importan las dependencias de Retrofit y el convertidor de escalares en la aplicación. El convertidor de escalares se utiliza para convertir las respuestas del servidor en cadenas de texto.
+```toml title="O con version catalog"
+# [versions] retrofit = "2.11.0"
+# [libraries] retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+```
+
+Estas líneas importan Retrofit y el convertidor de escalares (respuestas como `String`). Para JSON estructurado verás Gson o kotlinx.serialization en la unidad siguiente.
+
+:::warning[Si Sync falla con Retrofit]
+- “Could not resolve”: red del aula o versión mal escrita → [guía Gradle](./12-gradle-troubleshooting.mdx).
+- Asegúrate de tener `google()` y `mavenCentral()` en los repositorios.
+:::
 
 ### Definir la interfaz de servicio web
 
@@ -325,14 +353,15 @@ val retrofit = Retrofit.Builder()
 ```
 
 :::warning[Para usar Gson en tu proyecto]
-Para utilizar Gson en tu proyecto, debes importar la dependencia de Gson en el archivo `build.gradle` del módulo de la aplicación. Puedes hacerlo añadiendo la siguiente línea al archivo `build.gradle`:
+Añade el convertidor de Gson (incluye Gson). Versión orientativa; acepta la que sugiera el IDE si es estable:
 
 ```kotlin
 dependencies {
-    // Gson
-    implementation("com.google.code.gson:gson:2.8.8")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 }
 ```
+
+Si Sync falla, ver [guía Gradle](./12-gradle-troubleshooting.mdx).
 :::
 
 En este ejemplo, se crea una instancia de Retrofit con la URL base `https://api.example.com` y el convertidor de JSON de Gson.
@@ -643,7 +672,8 @@ La api de la que se obtienen las preguntas es la siguiente: [Open Trivia Databas
 
 - [Documentación de Retrofit](https://square.github.io/retrofit/)
 - [Documentación de Ktor](https://ktor.io/)
-- [Documentación de Volley](https://developer.android.com/training/volley)
+- [Documentación de Volley](https://developer.android.com/training/volley) *(legado; no es el camino del curso)*
+- [Guía de dependencias y Sync en este curso](./12-gradle-troubleshooting.mdx)
 - [Documentación de CoroutineScope](https://kotlinlang.org/docs/coroutines-basics.html)
 - [Documentación de LaunchedEffect](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#LaunchedEffect(kotlin.coroutines.CoroutineScope,%20kotlin.coroutines.CoroutineStart,%20kotlin.Function0))
 - [Documentación de DisposableEffect](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#DisposableEffect(kotlin.coroutines.CoroutineScope,%20kotlin.Function0))

@@ -1,0 +1,139 @@
+# Multimedia en Android
+
+Esta unidad cubre de forma **ligera** el resultado de aprendizaje de integrar contenidos multimedia (audio, vídeo y animaciones básicas) en una app Android con Compose. El objetivo es ejemplificar, no profundizar en streaming, edición ni captura avanzada.
+
+## Conceptos
+
+En una app multimedia suelen intervenir:
+
+- **Fuentes**: recursos empaquetados (`res/raw`, `assets`), archivos locales o URLs.
+- **Reproductores**: APIs que decodifican y reproducen audio/vídeo.
+- **Ciclo de vida**: liberar el reproductor al salir de la pantalla (`onDispose` / `onDestroy`) para no gastar batería ni dejar audio en segundo plano sin control.
+- **Permisos**: para recursos en `raw`/`assets` no hace falta permiso de red; para URLs remotas sí (`INTERNET`). Cámara y almacenamiento externo quedan fuera del alcance de esta unidad (CameraX existe para captura).
+
+## Audio con MediaPlayer (ejemplo mínimo)
+
+`MediaPlayer` sirve para reproducir un audio local de forma sencilla. Coloca un fichero, por ejemplo `res/raw/sonido.mp3`.
+
+```kotlin
+@Composable
+fun AudioDemo(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val player = remember {
+        MediaPlayer.create(context, R.raw.sonido)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            player.release()
+        }
+    }
+
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Button(onClick = { player.start() }) { Text("Play") }
+        Button(onClick = { if (player.isPlaying) player.pause() }) { Text("Pause") }
+        Button(onClick = {
+            player.pause()
+            player.seekTo(0)
+        }) { Text("Stop") }
+    }
+}
+```
+
+:::tip[Ciclo de vida]
+`DisposableEffect` + `release()` evita fugas cuando el composable desaparece. Encaja con lo visto en [ciclo de vida](./3-ciclo-vida-app.mdx).
+:::
+
+## Vídeo con Media3 / ExoPlayer (ejemplo mínimo)
+
+La vía recomendada hoy es **AndroidX Media3** (sucesor de ExoPlayer). Muestra el vídeo con `PlayerView` (vista clásica) dentro de Compose mediante `AndroidView`.
+
+### Paso a paso: dependencias Media3
+
+1. Añade las librerías en el módulo `app` (catalog o directas).
+2. **Sync Project with Gradle Files**.
+3. Si Sync falla (versión, repositorios…): [guía Gradle](./12-gradle-troubleshooting.mdx).
+4. Para un MP4 en `res/raw`, no hace falta permiso extra; para URL `https://…` añade `INTERNET`.
+
+```kotlin
+dependencies {
+    // Versiones orientativas; acepta la estable del IDE
+    implementation("androidx.media3:media3-exoplayer:1.5.1")
+    implementation("androidx.media3:media3-ui:1.5.1")
+}
+```
+
+```kotlin
+@Composable
+fun VideoDemo(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            val uri = RawResourceDataSource.buildRawResourceUri(R.raw.demo)
+            setMediaItem(MediaItem.fromUri(uri))
+            prepare()
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { exoPlayer.release() }
+    }
+
+    Column(modifier = modifier) {
+        AndroidView(
+            factory = { ctx ->
+                PlayerView(ctx).apply {
+                    player = exoPlayer
+                    useController = true
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = { exoPlayer.play() }) { Text("Play") }
+            Button(onClick = { exoPlayer.pause() }) { Text("Pause") }
+            Button(onClick = {
+                exoPlayer.pause()
+                exoPlayer.seekTo(0)
+            }) { Text("Stop") }
+        }
+    }
+}
+```
+
+:::warning[Problemas típicos con Media3]
+- **Unresolved reference ExoPlayer / PlayerView**: Sync incompleto o falta `media3-ui`.
+- **Pantalla negra**: URI incorrecta, `prepare()` no llamado, o el `PlayerView` no tiene tamaño (`fillMaxWidth` + ratio).
+- Más ayuda genérica de Gradle: [guía](./12-gradle-troubleshooting.mdx).
+:::
+
+## Animaciones ligeras en Compose
+
+Sin librerías extra, Compose permite animar estado de UI:
+
+```kotlin
+var visible by remember { mutableStateOf(true) }
+
+AnimatedVisibility(visible = visible) {
+    Text("¡Hola!")
+}
+
+val size by animateDpAsState(if (visible) 100.dp else 40.dp, label = "size")
+Box(Modifier = Modifier.size(size).background(MaterialTheme.colorScheme.primary))
+```
+
+Útil para feedback visual (mostrar/ocultar paneles, transiciones simples). No sustituye un motor de animación complejo.
+
+## CameraX (solo mención)
+
+**CameraX** es la API Jetpack para captura de foto/vídeo. Queda fuera de la práctica de esta unidad; si en un proyecto lo necesitas, parte de la [documentación oficial de CameraX](https://developer.android.com/media/camera/camerax).
+
+## Recursos
+
+- [MediaPlayer](https://developer.android.com/reference/android/media/MediaPlayer)
+- [AndroidX Media3](https://developer.android.com/media/media3)
+- [Animaciones en Compose](https://developer.android.com/develop/ui/compose/animation?hl=es-419)
+- [Guía Gradle / Sync](./12-gradle-troubleshooting.mdx)
+- Práctica: [Mini reproductor multimedia](./10-enunciados-ejercicios.mdx#app-mini-reproductor-multimedia)

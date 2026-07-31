@@ -50,7 +50,11 @@ En este curso, vamos a utilizar la arquitectura MVVM (Modelo-Vista-ViewModel) pa
 
 En la arquitectura MVVM, la vista es responsable de mostrar la interfaz de usuario, el ViewModel es responsable de manejar la lógica de presentación y el modelo es responsable de la lógica de negocio y acceso a datos. El ViewModel actúa como un intermediario entre la vista y el modelo, lo que facilita la separación de responsabilidades y la reutilización de código. 
 
-La arquitectura MVVM es una arquitectura popular en Android y es compatible con las bibliotecas y herramientas de Jetpack, como LiveData, ViewModel y Room. Utilizaremos estas bibliotecas y herramientas en nuestro curso para crear aplicaciones Android modernas y eficientes.   
+La arquitectura MVVM es una arquitectura popular en Android y encaja bien con Jetpack: **ViewModel**, **StateFlow** / Flow, Room, DataStore, etc. En este curso expondremos el estado de la UI con **StateFlow** (y lo observaremos desde Compose con `collectAsState` / `collectAsStateWithLifecycle`).
+
+:::tip[LiveData]
+`LiveData` sigue existiendo y aparece en muchos tutoriales antiguos. Es una opción válida, pero en este módulo priorizamos **StateFlow** junto a corrutinas.
+:::   
 
 :::info[Video explicación de la arquitectura MVVM]
 <iframe width="560" height="315" src="https://www.youtube.com/embed/Af72QxiHRh0?si=RtYClOSgTyUT39dQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>

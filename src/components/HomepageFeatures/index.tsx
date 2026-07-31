@@ -1,68 +1,92 @@
-import clsx from 'clsx';
+import Link from '@docusaurus/Link';
 import Heading from '@theme/Heading';
+
 import styles from './styles.module.css';
 
-type FeatureItem = {
+type Track = {
+  label: string;
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<'svg'>>;
-  description: JSX.Element;
+  description: string;
+  to: string;
+  tone: 'android' | 'games';
 };
 
-const FeatureList: FeatureItem[] = [
+const tracks: Track[] = [
   {
-    title: 'Apuntes y ejemplos',
-    Svg: require('@site/static/img/main/left.svg').default,
-    description: (
-      <>
-        Apuntes de teoría y ejemplos prácticos para entender los conceptos.
-      </>
-    ),
+    label: 'Bloque 1',
+    title: 'Android con Kotlin y Compose',
+    description:
+      'Desde Kotlin y la UI con Jetpack Compose hasta red, JSON, Room y multimedia.',
+    to: '/docs/Android/indice',
+    tone: 'android',
   },
   {
-    title: 'Ejercicios prácticos',
-    Svg: require('@site/static/img/main/center.svg').default,
-    description: (
-      <>
-        Todos los ejercicios que vamos planteando y realizando en clase resueltos paso a paso.
-      </>
-    ),
-  },
-  {
-    title: 'Vídeos explicativos',
-    Svg: require('@site/static/img//main/right.svg').default,
-    description: (
-      <>
-        Encontrarás vídeos explicativos en mi canal de YouTube.<br />
-        <a href="https://www.youtube.com/@resuadam2">¡Suscríbete!</a>
-      </>
-    ),
+    label: 'Bloque 2',
+    title: 'Videojuegos con Unity 6',
+    description:
+      'Editor, scripting en C#, físicas 2D y prácticas guiadas como Pong y Breakout.',
+    to: '/docs/Videojuegos/indice',
+    tone: 'games',
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
-  return (
-    <div className={clsx('col col--4')}>
-      <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
-      </div>
-      <div className="text--center padding-horiz--md">
-        <Heading as="h3">{title}</Heading>
-        <p>{description}</p>
-      </div>
-    </div>
-  );
-}
-
 export default function HomepageFeatures(): JSX.Element {
   return (
-    <section className={styles.features}>
-      <div className="container">
-        <div className="row">
-          {FeatureList.map((props, idx) => (
-            <Feature key={idx} {...props} />
-          ))}
+    <>
+      <section className={styles.tracks} aria-labelledby="tracks-heading">
+        <div className="container">
+          <Heading as="h2" id="tracks-heading" className={styles.sectionTitle}>
+            Elige por dónde continuar
+          </Heading>
+          <p className={styles.sectionLead}>
+            Dos recorridos claros. Entra al índice de cada bloque cuando quieras.
+          </p>
+          <div className={styles.trackGrid}>
+            {tracks.map((track) => (
+              <Link
+                key={track.to}
+                className={`${styles.track} ${styles[track.tone]}`}
+                to={track.to}>
+                <span className={styles.trackLabel}>{track.label}</span>
+                <span className={styles.trackTitle}>{track.title}</span>
+                <span className={styles.trackDesc}>{track.description}</span>
+                <span className={styles.trackCta}>Abrir índice</span>
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className={styles.resources} aria-labelledby="resources-heading">
+        <div className="container">
+          <Heading as="h2" id="resources-heading" className={styles.sectionTitle}>
+            También en clase
+          </Heading>
+          <p className={styles.sectionLead}>
+            Los vídeos de las sesiones viven en YouTube; el código de ejemplo, en
+            GitHub.
+          </p>
+          <div className={styles.resourceLinks}>
+            <a
+              className={styles.resourceLink}
+              href="https://www.youtube.com/@resuacode"
+              target="_blank"
+              rel="noopener noreferrer">
+              Canal de YouTube
+            </a>
+            <a
+              className={styles.resourceLink}
+              href="https://github.com/resuacode"
+              target="_blank"
+              rel="noopener noreferrer">
+              GitHub
+            </a>
+            <Link className={styles.resourceLink} to="/docs/intro">
+              Guía del módulo
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

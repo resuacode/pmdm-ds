@@ -4,6 +4,9 @@
 # Production
 /build
 
+# Generated section PDFs (regenerated on each build)
+/static/pdf/*.pdf
+
 # Generated files
 .docusaurus
 .cache-loader

@@ -1,22 +1,47 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * Tipografía: Bricolage Grotesque (marca/titulares) + Figtree (cuerpo).
+ * Dirección: bosque / tinta + acento ámbar (móvil + juego), sin morados genéricos.
  */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
-/* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #184e30;
-  --ifm-color-primary-dark: #16462b;
-  --ifm-color-primary-darker: #144229;
-  --ifm-color-primary-darkest: #113722;
-  --ifm-color-primary-light: #1a5635;
-  --ifm-color-primary-lighter: #1c5a37;
-  --ifm-color-primary-lightest: #1f653e;
+  --pmdm-ink: #0c1f17;
+  --pmdm-forest: #145c3a;
+  --pmdm-leaf: #1f8a55;
+  --pmdm-mist: #e8f2ec;
+  --pmdm-paper: #f4f7f5;
+  --pmdm-amber: #e8a317;
+  --pmdm-amber-deep: #c4860a;
+  --pmdm-slate: #2a3b34;
+
+  --ifm-font-family-base: 'Figtree', system-ui, sans-serif;
+  --ifm-heading-font-family: 'Bricolage Grotesque', 'Figtree', sans-serif;
+  --ifm-font-color-base: #1a2e26;
+  --ifm-background-color: var(--pmdm-paper);
+  --ifm-navbar-background-color: rgba(244, 247, 245, 0.88);
+  --ifm-footer-background-color: var(--pmdm-ink);
+  --ifm-footer-color: #c5d4cc;
+  --ifm-footer-link-color: #e8f2ec;
+  --ifm-footer-title-color: #fff;
+
+  --ifm-color-primary: #145c3a;
+  --ifm-color-primary-dark: #125233;
+  --ifm-color-primary-darker: #114e30;
+  --ifm-color-primary-darkest: #0e4028;
+  --ifm-color-primary-light: #166641;
+  --ifm-color-primary-lighter: #176a43;
+  --ifm-color-primary-lightest: #1b7a4e;
+  --ifm-code-font-size: 95%;
+  --ifm-button-border-radius: 0.55rem;
+  --docusaurus-highlighted-code-line-bg: rgba(20, 92, 58, 0.08);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
+  --pmdm-paper: #0a1611;
+  --pmdm-mist: #13251c;
+  --ifm-background-color: #0a1611;
+  --ifm-navbar-background-color: rgba(10, 22, 17, 0.9);
+  --ifm-font-color-base: #d7e6de;
   --ifm-color-primary: #3ddc84;
   --ifm-color-primary-dark: #27d675;
   --ifm-color-primary-darker: #25ca6f;
@@ -24,8 +49,64 @@
   --ifm-color-primary-light: #55e093;
   --ifm-color-primary-lighter: #61e29b;
   --ifm-color-primary-lightest: #84e9b1;
+  --docusaurus-highlighted-code-line-bg: rgba(61, 220, 132, 0.12);
 }
 
-.hero__title {
-  font-size: 2.5rem;
+html {
+  scroll-behavior: smooth;
+}
+
+.navbar {
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(20, 92, 58, 0.08);
+  box-shadow: none;
+}
+
+.navbar__title {
+  font-family: var(--ifm-heading-font-family);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.navbar__link {
+  font-weight: 500;
+}
+
+.footer {
+  border-top: 3px solid var(--pmdm-amber);
+}
+
+.footer__title {
+  font-family: var(--ifm-heading-font-family);
+}
+
+.button {
+  font-family: var(--ifm-heading-font-family);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  font-family: var(--ifm-heading-font-family);
+  letter-spacing: -0.02em;
+}
+
+.theme-doc-sidebar-container {
+  border-right: 1px solid rgba(20, 92, 58, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

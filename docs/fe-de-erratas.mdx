@@ -1,6 +1,6 @@
 # Fe de erratas
 
-Esta página recoge los errores de contenido corregidos en los apuntes en la revisión de **septiembre de 2026**, ordenados por bloque y por tema. Si en algún momento estudiasteis con la versión anterior de una página, aquí podéis ver qué ha cambiado y por qué.
+Esta página recoge los errores de contenido corregidos en los apuntes en las revisiones de **agosto y septiembre de 2026**, ordenados por bloque y por tema. Si en algún momento estudiasteis con la versión anterior de una página, aquí podéis ver qué ha cambiado y por qué.
 
 Para cada errata se indica lo que decían los apuntes y lo que es correcto. Se distinguen dos tipos:
 
@@ -161,6 +161,11 @@ No se incluyen las faltas de ortografía ni las secciones nuevas que se han aña
 - 🔄 Presentaba `LiveData` como la opción recomendada. **Correcto:** con Compose se recomienda exponer el estado con `StateFlow`.
 - ❌ Recomendaba MVC o MVP para apps pequeñas. Con Compose, la recomendación de Google es MVVM también en apps pequeñas.
 
+### [Multimedia en Android](./Android/5-multimedia.mdx)
+
+- ❌ El ejemplo de animación usaba `Box(Modifier = ...)`, que **no compila**: el parámetro se llama `modifier`, en minúscula.
+- 🔄 Media3 1.5.1 → 1.11.1. La URI del vídeo de `res/raw` se construye ahora con `android.resource://<paquete>/<id>`.
+
 ### [La capa de UI](./Android/6-capa-ui.mdx)
 
 - ❌ Mencionaba una función `rememberViewModel` que **no existe**. **Correcto:** el ViewModel se obtiene con `viewModel()`.
@@ -199,6 +204,11 @@ No se incluyen las faltas de ortografía ni las secciones nuevas que se han aña
 ### [Ejercicios](./Android/10-enunciados-ejercicios.mdx)
 
 - 🔄 Las APIs de Breaking Bad y Harry Potter (potterapi.com) ya no existen, y la de Studio Ghibli ha cambiado de dirección.
+
+### [Guía: dependencias Gradle y problemas en Android Studio](./Android/12-gradle-troubleshooting.mdx)
+
+- 🔄 **Decía** que la versión de KSP lleva siempre la de Kotlin en el nombre. **Correcto:** era así hasta KSP 2.2; desde KSP 2.3 su versión es independiente de la de Kotlin.
+- 🔄 Se han actualizado las versiones del catálogo de ejemplo (Retrofit 3.0.0, Room 2.8.5, DataStore 1.2.1...) y se ha sustituido OkHttp suelto por el convertidor oficial `converter-kotlinx-serialization`.
 
 ---
 
@@ -245,7 +255,6 @@ No se incluyen las faltas de ortografía ni las secciones nuevas que se han aña
 - ❌ El ejemplo `RotarCubo` rotaba 1 grado por frame, lo que depende de los FPS. Se ha multiplicado por `Time.deltaTime`.
 - ❌ Hablaba de "la clase Log". **Correcto:** es el método `Log` de la clase `Debug`.
 - 🔄 En Unity 6 los scripts se crean con **Create → Scripting → MonoBehaviour Script**, y la plantilla ya no incluye `System.Collections`.
-- 🔄 Los proyectos de Unity 6 usan por defecto el **Input System**. Para usar la clase `Input` hay que poner **Active Input Handling** en **Both**.
 
 ### [UI](./Videojuegos/1-Unity/11-UI.mdx)
 
@@ -301,7 +310,6 @@ No se incluyen las faltas de ortografía ni las secciones nuevas que se han aña
 - ❌ El script `Player` mezclaba `rb.velocity` y `rb.linearVelocity` en la misma línea.
 - ❌ `Destroy(FindAnyObjectByType<GameManager>())` destruía solo el **componente** GameManager, no el objeto. **Correcto:** `Destroy(FindAnyObjectByType<GameManager>().gameObject)`.
 - 🔄 En Unity 6, TextMeshPro ya no se instala desde el Package Manager: viene incluido y solo hay que importar los *TMP Essentials*.
-- 🔄 Hay que activar **Active Input Handling → Both** para poder usar el Input Manager en Unity 6.
 
 ### [Breakout](./Videojuegos/2-Juegos/2-Breakout.mdx)
 

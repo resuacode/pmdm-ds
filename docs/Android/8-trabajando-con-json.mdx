@@ -7,6 +7,15 @@ Para ello, vamos a utilizar la librería `kotlinx.serialization` que nos permite
 
 ## Dependencias
 
+### Paso a paso
+
+1. Mira la versión de **Kotlin** de tu proyecto (entrada `kotlin` de `gradle/libs.versions.toml`).
+2. Añade el plugin de serialización con **la misma versión de Kotlin** (no uses un pin antiguo tipo `1.8.10` si tu Kotlin es 2.x).
+3. Añade `kotlinx-serialization-json` en el módulo `app`.
+4. Si usas Retrofit, añade su convertidor oficial `converter-kotlinx-serialization`.
+5. **Sync Project with Gradle Files**.
+6. Si falla, consulta la [guía de problemas Gradle](./12-gradle-troubleshooting.mdx) (sobre todo Kotlin ↔ plugin de serialización).
+
 Para poder utilizar `kotlinx.serialization` en nuestro proyecto necesitamos dos cosas: el **plugin** de serialización de Kotlin, que genera en tiempo de compilación el código para convertir nuestras clases, y la **librería** `kotlinx-serialization-json`.
 
 En el archivo `gradle/libs.versions.toml`:
@@ -53,7 +62,7 @@ dependencies {
 :::warning[Importante, sobre las versiones]
 El plugin de serialización **debe tener la misma versión que Kotlin**. Por eso, en lugar de escribir su versión, reutilizamos la entrada `kotlin` que Android Studio ya crea en el catálogo de versiones.
 
-Las versiones de las librerías indicadas son las estables en el momento de escribir estos apuntes. Android Studio subraya las dependencias que tienen una versión más reciente disponible.
+Las versiones de las librerías indicadas son las estables en el momento de escribir estos apuntes. Android Studio subraya las dependencias que tienen una versión más reciente disponible. Detalle de Sync y conflictos: [guía Gradle](./12-gradle-troubleshooting.mdx).
 :::
 
 El convertidor `converter-kotlinx-serialization` es el oficial de Retrofit (disponible desde la versión 2.11). En muchos tutoriales antiguos aparece en su lugar `com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter`, que era la librería externa que se usaba antes y que ya no es necesaria.

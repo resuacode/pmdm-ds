@@ -5,22 +5,43 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
+
 import styles from './index.module.css';
 
 function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className="container">
-        <Heading as="h1" className="hero__title">
-          {siteConfig.title}
+    <header className={styles.hero}>
+      <div className={styles.heroBackdrop} aria-hidden="true" />
+      <div className={styles.heroGrid} aria-hidden="true" />
+      <div className={styles.heroVisual} aria-hidden="true">
+        <div className={styles.deviceFrame}>
+          <div className={styles.deviceScreen}>
+            <span className={styles.deviceBar} />
+            <span className={styles.deviceBlock} />
+            <span className={styles.deviceBlockShort} />
+            <span className={styles.deviceOrb} />
+          </div>
+        </div>
+        <div className={styles.playShape} />
+      </div>
+      <div className={clsx('container', styles.heroInner)}>
+        <p className={styles.brand}>PMDM</p>
+        <Heading as="h1" className={styles.heroTitle}>
+          Apps Android y videojuegos, en un solo módulo
         </Heading>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/intro">
-            ¡Empieza por aquí!
+        <p className={styles.heroLead}>
+          Material del curso de Programación Multimedia y Dispositivos Móviles:
+          Kotlin, Jetpack Compose y Unity 6.
+        </p>
+        <div className={styles.ctaGroup}>
+          <Link className={styles.ctaPrimary} to="/docs/intro">
+            Empieza por aquí
+          </Link>
+          <Link className={styles.ctaGhost} to="/docs/Android/indice">
+            Android
+          </Link>
+          <Link className={styles.ctaGhost} to="/docs/Videojuegos/indice">
+            Unity
           </Link>
         </div>
       </div>
@@ -33,7 +54,7 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title={`Módulo: ${siteConfig.title}`}
-      description="Página con el material del módulo de programación">	
+      description="Material del módulo PMDM: Android con Kotlin y Compose, y videojuegos con Unity.">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

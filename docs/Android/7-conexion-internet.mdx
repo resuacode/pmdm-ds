@@ -24,6 +24,7 @@ En este ejemplo, la función `start` es una suspend function que inicia un conte
 Una función `suspend` solo puede llamarse desde una corrutina. En un programa de consola podemos crear una con `runBlocking`, que bloquea el hilo hasta que termina:
 
 ```kotlin
+// Solo para demos de consola / Playground
 fun main() {
     runBlocking {
         Timer.start { count ->
@@ -32,6 +33,21 @@ fun main() {
     }
 }
 ```
+
+En una app Android, en cambio, el mismo código se lanzaría así desde un ViewModel:
+
+```kotlin
+// En un ViewModel de Android
+class TimerViewModel : ViewModel() {
+    fun start() {
+        viewModelScope.launch {
+            Timer.start { count -> /* actualizar StateFlow */ }
+        }
+    }
+}
+```
+
+En el ejemplo de consola, `runBlocking` espera a la corrutina. En Android, el alcance del ViewModel cancela el trabajo cuando el ViewModel se destruye. 
 
 En Android **nunca** usaremos `runBlocking`, sino los ámbitos de corrutinas (*coroutine scopes*) que nos proporciona Jetpack y que se cancelan automáticamente cuando dejan de ser necesarios:
 
@@ -125,13 +141,13 @@ Las corrutinas de `LaunchedEffect`, `rememberCoroutineScope` y `viewModelScope` 
 
 Para conectarse a internet en una aplicación Android con Jetpack Compose, puedes utilizar las siguientes opciones (existen más opciones, pero estas son las más comunes):  
 
-- **Retrofit**: Retrofit es una biblioteca de cliente HTTP para Android y Java que facilita la conexión a servicios web RESTful. Puedes utilizar Retrofit para realizar peticiones HTTP a un servidor y obtener los datos necesarios para tu aplicación.
+- **Retrofit**: Biblioteca de cliente HTTP para Android y Java que facilita la conexión a servicios web RESTful. Es la opción que usaremos en el curso.
 
 - **Ktor Client**: Ktor es un framework de JetBrains, escrito en Kotlin, para crear clientes y servidores web. Su cliente HTTP es una alternativa a Retrofit muy usada en proyectos Kotlin Multiplatform.
 
-- **Volley**: Volley es una biblioteca de red de Google, más antigua, que facilita la conexión a servicios web en Android. Hoy en día apenas se usa en proyectos nuevos.
+- **Volley**: Volley es una biblioteca de red de Google, más antigua, que facilita la conexión a servicios web en Android. La verás en material antiguo, pero hoy en día apenas se usa en proyectos nuevos y no es la que usaremos en el curso.
 
-Vamos a centrarnos en la primera opción, Retrofit, que es una de las bibliotecas más utilizadas para conectarse a servicios web en Android. 
+Vamos a centrarnos en **Retrofit**. 
 
 ![DataLayer](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-getting-data-internet/img/76551dbe9fc943aa_960.png?hl=es-419)
 
@@ -222,6 +238,14 @@ Por seguridad, a partir de Android 9 las apps solo pueden conectarse por defecto
 
 ### Importar las dependencias de Retrofit
 
+#### Paso a paso
+
+1. Abre `gradle/libs.versions.toml` (o el `build.gradle.kts` del módulo `app` si aún no usas catalog).
+2. Añade Retrofit y el convertidor que vayas a usar (Scalars para las primeras pruebas, Gson o kotlinx.serialization para JSON), como se muestra a continuación.
+3. Pulsa **Sync Now**.
+4. Añade el permiso `INTERNET` en el manifest (apartado anterior).
+5. Si Sync falla, consulta la [guía de problemas Gradle](./12-gradle-troubleshooting.mdx).
+
 Para utilizar Retrofit, primero debemos añadir sus dependencias. En los proyectos actuales de Android Studio, las versiones se centralizan en el archivo `gradle/libs.versions.toml`:
 
 ```toml title="libs.versions.toml"
@@ -256,6 +280,11 @@ dependencies {
 ```
 
 La primera dependencia es Retrofit. Las otras dos son **convertidores**: el de Gson transforma el JSON de la respuesta en objetos de Kotlin (e incluye ya la librería Gson), y el de escalares (*scalars*) devuelve la respuesta como un `String` sin transformar, lo cual es útil para hacer las primeras pruebas.
+
+:::warning[Si Sync falla con Retrofit]
+- “Could not resolve”: red del aula o versión mal escrita → [guía Gradle](./12-gradle-troubleshooting.mdx).
+- Asegúrate de tener `google()` y `mavenCentral()` en los repositorios.
+:::
 
 ### Definir la interfaz de servicio web
 
@@ -303,6 +332,10 @@ val retrofit: Retrofit = Retrofit.Builder()
 
 :::warning[La URL base debe terminar en `/`]
 Retrofit lanza una excepción si la URL base no termina con una barra. Además, las rutas de las anotaciones (`@GET("users")`) no deben empezar por `/`, ya que en ese caso se ignoraría la parte de la ruta incluida en la URL base.
+:::
+
+:::tip[Ubicación de la instancia de Retrofit en el proyecto]
+La instancia de Retrofit suele ubicarse en un archivo Kotlin en el paquete de datos, network o servicios del proyecto para mantener una estructura limpia y organizada.
 :::
 
 :::tip[Convertidores de Retrofit]
@@ -557,7 +590,8 @@ La api de la que se obtienen las preguntas es la siguiente: [Open Trivia Databas
 
 - [Documentación de Retrofit](https://square.github.io/retrofit/)
 - [Documentación del cliente de Ktor](https://ktor.io/docs/client-create-new-application.html)
-- [Documentación de Volley](https://developer.android.com/training/volley)
+- [Documentación de Volley](https://developer.android.com/training/volley) *(legado; no es el camino del curso)*
+- [Guía de dependencias y Sync en este curso](./12-gradle-troubleshooting.mdx)
 - [Corrutinas de Kotlin en Android](https://developer.android.com/kotlin/coroutines?hl=es-419)
 - [Efectos secundarios en Compose (LaunchedEffect, rememberCoroutineScope...)](https://developer.android.com/develop/ui/compose/side-effects?hl=es-419)
 - [La capa de datos](https://developer.android.com/topic/architecture/data-layer?hl=es-419)

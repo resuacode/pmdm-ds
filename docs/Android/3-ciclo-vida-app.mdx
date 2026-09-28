@@ -36,9 +36,9 @@ En Android, cada actividad tiene una serie de métodos que se invocan en funció
 - `onStop()`: Se llama cuando la actividad ya no es visible para el usuario.
 - `onDestroy()`: Se llama cuando la actividad es destruida y liberada de la memoria.
 
-## Ejemplo de ciclo de vida de una actividad
+## Ejemplo de ciclo de vida de una actividad (Compose)
 
-A continuación, se muestra un ejemplo del ciclo de vida de una actividad en Android:
+En este curso las apps usan Jetpack Compose. La actividad suele extender `ComponentActivity` y montar la UI con `setContent { }` (no con layouts XML ni `setContentView`).
 
 ```kotlin
 private const val TAG = "MainActivity"
@@ -84,12 +84,18 @@ class MainActivity : ComponentActivity() {
 
 En el ejemplo anterior, se define una actividad `MainActivity` con los métodos del ciclo de vida más comunes. Cada método imprime un mensaje de registro en el **Logcat** de Android Studio para indicar en qué estado se encuentra la actividad. Podemos filtrar los mensajes escribiendo `tag:MainActivity` en el buscador del Logcat.
 
-En una app con Compose, la actividad hereda de `ComponentActivity` y en `onCreate` llama a `setContent { }` con el composable raíz de la app, en lugar de cargar un layout XML con `setContentView`. La llamada a `enableEdgeToEdge()` hace que la app se dibuje de borde a borde, detrás de las barras del sistema, que es el comportamiento obligatorio a partir de Android 15.
+La llamada a `enableEdgeToEdge()` hace que la app se dibuje de borde a borde, detrás de las barras del sistema, que es el comportamiento obligatorio a partir de Android 15.
 
 :::warning[Cambios de configuración]
 Cuando cambia la configuración del dispositivo (por ejemplo, al **girar la pantalla**, cambiar el idioma o activar el modo oscuro), Android **destruye y vuelve a crear la actividad**: se llama a `onPause`, `onStop`, `onDestroy` y de nuevo a `onCreate`, `onStart` y `onResume`. Todo el estado que estuviera guardado en la actividad o en un `remember` se pierde.
 
 Por eso guardaremos el estado de la interfaz en `rememberSaveable` o, mejor aún, en un **ViewModel**, que sobrevive a estos cambios de configuración.
+:::
+
+En Compose, si necesitas reaccionar a cambios de ciclo de vida desde un composable (por ejemplo, liberar un reproductor de audio, como veremos en [Multimedia](./5-multimedia.mdx)), puedes combinar `LocalLifecycleOwner` con `DisposableEffect` o APIs de Lifecycle.
+
+:::info[Views / XML]
+`AppCompatActivity` + `setContentView(R.layout…)` es el patrón clásico con Views. Lo verás en código antiguo, pero en este módulo la UI se construye con Compose.
 :::
 
 ## Imagen del ciclo de vida de una actividad

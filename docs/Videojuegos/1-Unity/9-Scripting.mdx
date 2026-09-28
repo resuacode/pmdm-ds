@@ -229,7 +229,7 @@ El **Input** en Unity se utiliza para detectar la entrada del usuario, como el t
 Unity tiene actualmente **dos sistemas** de entrada:
 
 - El **Input Manager** antiguo, basado en la clase `Input` (`Input.GetKeyDown`, `Input.GetAxis`...). Es muy sencillo de usar y es el que aparece en la mayoría de tutoriales.
-- El **Input System**, un paquete más moderno y flexible, que es el que Unity recomienda y el que viene instalado por defecto en los proyectos creados con las plantillas de Unity 6.
+- El **Input System**, un paquete más moderno y flexible, que es el que Unity recomienda para proyectos nuevos y que, según la plantilla y la versión del editor, puede venir ya instalado.
 
 :::warning[InvalidOperationException al usar `Input`]
 Si en un proyecto de Unity 6 usamos la clase `Input` y al darle al Play aparece el error *"InvalidOperationException: You are trying to read Input using the UnityEngine.Input class, but you have switched active Input handling to Input System package in Player Settings"*, significa que el proyecto solo tiene activado el sistema nuevo.
@@ -365,11 +365,11 @@ La entrada táctil en Unity es una parte fundamental del desarrollo de videojueg
 
 ### El Input System
 
-El **Input System** es el sistema de entrada moderno de Unity. Se distribuye como un paquete (**Input System**) que, en los proyectos creados con las plantillas de Unity 6, ya viene instalado. Si no lo está, se puede instalar desde **Window → Package Manager**.
+El **Input System** es el sistema de entrada moderno de Unity. Se distribuye como un paquete (**Input System**) que, dependiendo de la plantilla con la que creemos el proyecto, puede venir ya instalado. Si no lo está, se puede instalar desde **Window → Package Manager**.
 
 Su principal ventaja es que separa las **acciones** del juego (moverse, saltar, disparar...) de los **controles** concretos que las activan (teclas, botones del mando, pantalla táctil...). Así, el código solo pregunta "¿se ha pulsado saltar?", y la misma acción funciona con teclado, mando o pantalla táctil sin cambiar el código.
 
-Las plantillas de Unity 6 incluyen un asset llamado **InputSystem_Actions** con acciones ya configuradas, como `Move`, `Look`, `Jump` o `Attack`. Haciendo doble clic sobre él se abre el editor de acciones, donde podemos ver y modificar qué controles activan cada acción. Estas acciones son las **acciones del proyecto** (*project-wide actions*) y se pueden usar desde cualquier script:
+Cuando el proyecto incluye el Input System, las plantillas de Unity 6 añaden un asset llamado **InputSystem_Actions** con acciones ya configuradas, como `Move`, `Look`, `Jump` o `Attack`. Haciendo doble clic sobre él se abre el editor de acciones, donde podemos ver y modificar qué controles activan cada acción. Estas acciones son las **acciones del proyecto** (*project-wide actions*) y se pueden usar desde cualquier script:
 
 ```csharp
 using UnityEngine;
@@ -421,7 +421,7 @@ if (Mouse.current.leftButton.isPressed)
 ```
 
 :::tip[¿Qué sistema usar?]
-En los juegos paso a paso de estos apuntes usamos el Input Manager clásico por su sencillez, activando **Both** en *Active Input Handling*. Para proyectos nuevos, y especialmente si queremos que el juego funcione con mando o en móvil, es recomendable usar el Input System.
+En los tutoriales de este curso (Pong, Breakout y los ejemplos de scripting) usamos el Input Manager clásico (`Input.GetAxis`, `GetAxisRaw`...) por sencillez; no hace falta conocer el Input System para seguir las prácticas. Si al usar la clase `Input` aparece el error `InvalidOperationException` descrito más arriba, basta con poner **Both** en *Active Input Handling*. Para proyectos nuevos, y especialmente si queremos que el juego funcione con mando o en móvil, es recomendable usar el Input System.
 
 Más información en la [documentación del Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@latest).
 :::

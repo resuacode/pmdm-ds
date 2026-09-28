@@ -26,6 +26,13 @@ Room se compone de tres componentes principales:
 
 ### 1. Agregar las dependencias de Room
 
+#### Paso a paso
+
+1. Declara el plugin **KSP** en el proyecto (`apply false`), preferiblemente vía `libs.versions.toml`.
+2. Aplica el plugin KSP en el módulo `app`.
+3. Añade Room (`runtime`, `ktx`) y el compilador con `ksp(…)`.
+4. **Sync Now**. Si falla, consulta la [guía Gradle](./12-gradle-troubleshooting.mdx) (Kotlin ↔ KSP, kapt vs KSP).
+
 Para utilizar Room en una aplicación Android con Jetpack Compose, primero debemos agregar las dependencias necesarias. Room utiliza **KSP** (*Kotlin Symbol Processing*), una herramienta que analiza las anotaciones de nuestro código (`@Entity`, `@Dao`...) y genera en tiempo de compilación el código que accede realmente a la base de datos.
 
 En el archivo `gradle/libs.versions.toml`:
@@ -67,6 +74,10 @@ dependencies {
 
 :::warning[Sobre la versión de KSP]
 Hasta la versión 2.2, la versión de KSP tenía que coincidir con la de Kotlin (por ejemplo, `2.0.21-1.0.27` para Kotlin `2.0.21`), y era una fuente habitual de errores de compilación. A partir de KSP 2.3 la versión ya no depende de la de Kotlin. Si en un proyecto antiguo aparece un error de KSP al compilar, lo primero es comprobar esta compatibilidad.
+:::
+
+:::warning[No mezclar kapt y KSP]
+Si un tutorial antiguo usa `kapt` para Room, en este curso usa solo `ksp`. Mezclar ambos suele dar errores confusos.
 :::
 
 
@@ -661,11 +672,16 @@ DataStore tiene dos implementaciones:
     - Permite almacenar y recuperar datos de preferencias más complejos.
     - Requiere un esquema definido.
 
-Para utilizar DataStore en una aplicación Android, debemos agregar las dependencias necesarias en el archivo `build.gradle.kts` del módulo de la aplicación:
+#### Paso a paso (Preferences DataStore)
+
+1. Añade la dependencia en el módulo `app` (catalog o directa).
+2. Sync Project with Gradle Files.
+3. Crea el repositorio / extensión `preferencesDataStore` como en los ejemplos siguientes.
+4. Si Sync falla: [guía Gradle](./12-gradle-troubleshooting.mdx).
 
 ```kotlin
 dependencies {
-    // DataStore
+    // DataStore (o con catálogo: implementation(libs.androidx.datastore.preferences))
     implementation("androidx.datastore:datastore-preferences:1.2.1")
 }
 ```

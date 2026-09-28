@@ -1,0 +1,313 @@
+# Fe de erratas
+
+Esta página recoge los errores de contenido corregidos en los apuntes en la revisión de **septiembre de 2026**, ordenados por bloque y por tema. Si en algún momento estudiasteis con la versión anterior de una página, aquí podéis ver qué ha cambiado y por qué.
+
+Para cada errata se indica lo que decían los apuntes y lo que es correcto. Se distinguen dos tipos:
+
+- ❌ **Error**: la explicación era incorrecta o el código no compilaba o no funcionaba.
+- 🔄 **Desactualizado**: era correcto en versiones anteriores, pero la API o la herramienta ha cambiado.
+
+No se incluyen las faltas de ortografía ni las secciones nuevas que se han añadido.
+
+---
+
+## Bloque 1: Kotlin
+
+### [El lenguaje Kotlin](./Android/1-sobre-kotlin/1-sobre-kotlin.mdx)
+
+- ❌ **Decía** que Kotlin fue desarrollado por JetBrains y Google en 2011.
+  **Correcto:** Kotlin es de JetBrains, que lo presentó en 2011 (versión 1.0 en 2016). Google lo adoptó como lenguaje oficial de Android en 2017 y desde 2019 Android es *Kotlin-first*.
+
+### [Variables y tipos de datos](./Android/1-sobre-kotlin/11-variables-tipos-datos.mdx)
+
+- ❌ **Decía** que, a diferencia de Java, en Kotlin las cadenas son inmutables.
+  **Correcto:** en Java las `String` también son inmutables.
+- ❌ **Decía** que las cadenas se pueden declarar con comillas simples o dobles.
+  **Correcto:** las cadenas (`String`) solo usan comillas dobles; las comillas simples son para un único carácter (`Char`).
+- ❌ **Decía** que `===` devuelve `true` al comparar dos cadenas iguales porque son iguales en contenido y referencia, sin más explicación.
+  **Correcto:** en ese ejemplo coincide la referencia porque el compilador reutiliza el mismo literal, pero con cadenas creadas en tiempo de ejecución puede ser `false`. Para comparar textos se usa siempre `==`.
+- ❌ El ejemplo de conversión de tipos declaraba dos veces las variables `texto` y `numero` en el mismo bloque, lo que **no compila**. Se han renombrado y se ha añadido `toIntOrNull()`.
+- ❌ **Decía** que los tipos primitivos son los mismos que en Java.
+  **Correcto:** en Kotlin todo es un objeto (`Int`, `Double`...), aunque el compilador los convierte a primitivos de la JVM cuando puede.
+- ❌ **Decía** que las constantes `const` deben estar en un objeto o en un *companion object*.
+  **Correcto:** también pueden declararse en el nivel superior de un archivo.
+- ❌ Llamaba "lista mutable" a `listOf()`. **Correcto:** es una lista de **solo lectura**.
+
+### [Expresiones vs. sentencias](./Android/1-sobre-kotlin/12-expresiones-vs-sentencias.mdx)
+
+- ❌ Presentaba el `if` únicamente como sentencia.
+  **Correcto:** en Kotlin `if`, `when` y `try` son **expresiones** y devuelven un valor (`val x = if (a > b) a else b`). Por eso Kotlin no tiene operador ternario.
+- ❌ **Decía** que Kotlin es un lenguaje funcional. **Correcto:** es multiparadigma (orientado a objetos y funcional).
+
+### [Funciones y lambdas](./Android/1-sobre-kotlin/13-funciones-lambdas.mdx)
+
+- ❌ **Decía** que, para modificar un parámetro dentro de una función, hay que declararlo como `var`.
+  **Correcto:** los parámetros son siempre de solo lectura y no se pueden declarar `var`; hay que copiarlos en una variable local.
+- ❌ La explicación de qué lambda indicaba los tipos (`suma` o `resta`) estaba al revés.
+
+### [Null safety](./Android/1-sobre-kotlin/14-null-safety.mdx)
+
+- ❌ El ejemplo de los operadores `?.`, `?:` y `!!` declaraba tres veces la variable `longitud`, lo que **no compila**.
+- ❌ **Decía** que los tipos nulables se inicializan "con la función `null`". **Correcto:** `null` es un valor, no una función.
+
+### [Clases y objetos](./Android/1-sobre-kotlin/21-poo.mdx)
+
+- 🔄 Usaba `capitalize()`, obsoleta desde Kotlin 1.5. **Correcto:** `replaceFirstChar { it.uppercase() }`.
+- ❌ **Decía** que con `private set` la propiedad no se puede ni leer ni modificar desde fuera.
+  **Correcto:** con `private set` se puede **leer** desde fuera (el getter es público), pero solo se puede **modificar** desde dentro de la clase.
+- ❌ **Decía** que `:` es una palabra clave. **Correcto:** es un símbolo; además, las clases son `final` por defecto y la clase base debe ser `open`.
+
+### [Objetos anónimos](./Android/1-sobre-kotlin/22-objetos-anonimos.mdx)
+
+- ❌ Llamaba "objeto anónimo" a `object Configuracion { ... }`.
+  **Correcto:** un `object` con nombre es una **declaración de objeto** (un singleton). Los objetos anónimos son las **expresiones de objeto**, sin nombre: `object : Interfaz { ... }`.
+- ❌ **Decía** que los objetos anónimos pueden tener constructores. **Correcto:** ni los objetos anónimos ni los `object` pueden tener constructores.
+
+### [Data classes](./Android/1-sobre-kotlin/23-data-classes.mdx)
+
+- ❌ **Decía** que las propiedades de una data class son siempre de solo lectura.
+  **Correcto:** pueden declararse con `var`, aunque lo recomendable es usar `val` y crear copias con `copy()`.
+- ❌ **Decía** que para crear un objeto de una data class se usa la palabra clave `data`. **Correcto:** se crea con su constructor, como cualquier otra clase.
+
+### [Enum classes](./Android/1-sobre-kotlin/24-enum-classes.mdx)
+
+- 🔄 Usaba `toUpperCase()`, obsoleta. **Correcto:** `uppercase()` / `lowercase()`.
+- ❌ **Decía** que las enumeraciones pueden heredar de clases. **Correcto:** solo pueden implementar interfaces (ya heredan de `Enum`).
+
+### [Genéricos](./Android/1-sobre-kotlin/25-genericos.mdx)
+
+- ❌ El ejemplo de varianza `class Caja<in T>(val contenido: T)` **no compila**: un parámetro `in` no puede usarse en una propiedad `val`, que es una posición de salida. Se ha sustituido por las interfaces `Productor<out T>` y `Consumidor<in T>`.
+- ❌ La función `fun <T : Number> sumar(a: T, b: T): T = a + b` **no compila**, porque `Number` no define el operador `+`. **Correcto:** convertir con `toDouble()` y devolver un `Double`.
+
+### [Sealed classes](./Android/1-sobre-kotlin/26-sealed-classes.mdx)
+
+- ❌ Daba como ventaja la "extensibilidad" por tener subclases anidadas.
+  **Correcto:** la ventaja es justo la contraria: la jerarquía está **cerrada**, nadie puede añadir subclases fuera del módulo, y por eso el compilador puede comprobar que un `when` cubre todos los casos.
+
+### [Scope functions](./Android/1-sobre-kotlin/31-scope-functions.mdx)
+
+- ❌ **Decía** que `also` se diferencia de `apply` en que "se utiliza con un objeto como argumento en lugar de un receptor".
+  **Correcto:** ambas devuelven el propio objeto; la diferencia es que en `apply` el objeto es `this` y en `also` es `it`. La que recibe el objeto como argumento es `with`.
+
+### [Arrays](./Android/1-sobre-kotlin/41-arrays.mdx), [Listas](./Android/1-sobre-kotlin/42-listas.mdx), [Maps](./Android/1-sobre-kotlin/43-maps.mdx) y [Sets](./Android/1-sobre-kotlin/44-sets.mdx)
+
+- ❌ **Decía** que los arrays son inmutables. **Correcto:** tienen tamaño fijo, pero sus elementos se pueden modificar.
+- ❌ Llamaba "inmutables" a las colecciones creadas con `listOf()`, `mapOf()` y `setOf()`. **Correcto:** son de **solo lectura**.
+- ❌ Las secciones de listas, maps y sets "de tipos primitivos" usaban funciones que **no existen** en la librería estándar de Kotlin: `intListOf`, `doubleListOf`, `booleanListOf`, `intMapOf`, `doubleMapOf`, `booleanMapOf`, `intSetOf`, `doubleSetOf` y `booleanSetOf`. Se han eliminado.
+- ❌ Las operaciones de conjuntos `symmetricDifference()`, `containsAny()`, `isSubset()`, `isSuperset()` e `isDisjoint()` **no existen** en Kotlin. Se han sustituido por las equivalentes reales: `union`, `intersect`, `subtract`, `containsAll`, `any { it in otro }` y `none { it in otro }`.
+
+### [Corrutinas](./Android/1-sobre-kotlin/51-corrutinas.mdx)
+
+- ❌ La mayoría de ejemplos llamaban a `launch` y `async` directamente dentro de `suspend fun main()`, lo que **no compila**: estas funciones solo pueden llamarse dentro de un `CoroutineScope`. **Correcto:** usar `runBlocking` (en un `main` de consola) o `coroutineScope { }`.
+- ❌ El ejemplo de `launch` y `async` tenía dos funciones `main` y dos `obtenerDatos` en el mismo bloque.
+- ❌ El ejemplo de `CoroutineScope` tenía las llaves mal cerradas (`main` estaba dentro de la clase) y usaba `Dispatchers.Main`, que no existe en un programa de consola.
+- ❌ El ejemplo de `CoroutineExceptionHandler` declaraba el manejador pero no lo usaba.
+- ❌ El ejemplo de jerarquía de trabajos creaba `Job(parentJob)` y los pasaba a `launch`, que no es la forma habitual de crear corrutinas hijas. **Correcto:** una corrutina lanzada dentro de otra es automáticamente su hija.
+- ❌ **Decía** que el código síncrono se ejecuta en el hilo principal y el asíncrono "al mismo tiempo". **Correcto:** las corrutinas pueden avanzar de forma concurrente incluso en un único hilo, porque se suspenden sin bloquearlo.
+
+---
+
+## Bloque 2: Jetpack Compose
+
+### [Jetpack Compose](./Android/2-jetpack-compose/2-jetpack-compose.mdx) y [Funciones componibles](./Android/2-jetpack-compose/21-composable-functions.mdx)
+
+- ❌ **Decía** que las funciones componibles "devuelven un árbol de elementos". **Correcto:** no devuelven nada (`Unit`), sino que **emiten** la interfaz al ejecutarse.
+- ❌ Usaba `dimenResource()` para el tamaño de letra. **Correcto:** la función es `dimensionResource()` y devuelve un `Dp`, que no puede usarse como `fontSize` (que necesita `sp`).
+- ❌ Mencionaba una función `provideAppTheme()` que **no existe** y llamaba a `MaterialTheme` "modificador". **Correcto:** `MaterialTheme` es un composable.
+- 🔄 Usaba la API de Material 2 (`MaterialTheme(colors = lightColors())`). **Correcto en Material 3:** `MaterialTheme(colorScheme = lightColorScheme())`.
+- 🔄 `Divider` ahora es `HorizontalDivider` / `VerticalDivider`.
+- ❌ Usaba `Modifier.align()` fuera de un contenedor, lo que **no compila**: solo está disponible dentro de `Column`, `Row` o `Box`. Además, los valores se escriben con mayúscula y prefijo: `Alignment.CenterHorizontally`, no `centerHorizontally`.
+- ❌ `Alignment(0.25f, 0.75f)` **no existe**. **Correcto:** `BiasAlignment(horizontalBias, verticalBias)`, con valores entre -1 y 1.
+- ❌ Las descripciones de `SpaceAround` y `SpaceEvenly` eran imprecisas y no dejaban clara la diferencia: `SpaceAround` deja en los extremos la mitad de espacio que entre elementos y `SpaceEvenly` deja el mismo espacio en todas partes.
+- ❌ **Decía** que `Modifier.size(48.dp)` cambia el tamaño del texto. **Correcto:** cambia el espacio que ocupa el composable; el tamaño de letra se cambia con `fontSize`.
+- ❌ Llamaba "modificador" al parámetro `style` de `Text`, y "margen" al `padding`. En Compose no hay margen: el efecto depende del orden de los modificadores.
+
+### [Gestión del estado](./Android/2-jetpack-compose/22-state-management.mdx)
+
+- ❌ Usaba `observeAsState()` sobre un `mutableStateOf`. **Correcto:** `observeAsState()` es para `LiveData`. Un `MutableState` no necesita "observarse": basta con leer su `value` en un composable.
+- ❌ Creaba `mutableStateOf` dentro de composables sin `remember`, por lo que el contador volvía a 0 en cada recomposición.
+- ❌ **Decía** que el estado es inmutable y se actualiza con "la función `value`". **Correcto:** `MutableState` es mutable y `value` es una propiedad.
+- ❌ El ejemplo de elevación del estado pasaba un `MutableState` a los hijos. **Correcto:** se pasa el valor y una lambda para los eventos (flujo unidireccional de datos).
+- ❌ Comparaba la elevación del estado con la inyección de dependencias como si fueran alternativas; son conceptos distintos.
+- ❌ `flowOf(...).collectAsState()` sin valor inicial **no compila**. En Android se recomienda `collectAsStateWithLifecycle()`.
+
+### [Listas y cuadrículas](./Android/2-jetpack-compose/23-listas-cuadriculas.mdx)
+
+- ❌ El ejemplo de "scroll infinito" solo mostraba una lista vacía y no cargaba más elementos al llegar al final.
+- 🔄 `LazyVerticalGrid(cells = ...)` ahora es `columns = ...`, y en `LazyHorizontalGrid` es `rows = ...`.
+
+### [Navegación y rutas](./Android/2-jetpack-compose/24-navegacion-rutas.mdx)
+
+- ❌ Pasaba argumentos con `arguments = bundleOf(...)` dentro de `navigate { }`, que **no existe** en Navigation Compose.
+- 🔄 Las rutas se definían como `String`. Desde Navigation 2.8 se definen como clases `@Serializable` (navegación *type-safe*) y los argumentos se recuperan con `toRoute()`.
+
+### [Material Design](./Android/2-jetpack-compose/25-material-design.mdx)
+
+- ❌ `MaterialTheme.typography.title-large` **no es código válido** (un guion no puede formar parte de un nombre). **Correcto:** `titleLarge`.
+- 🔄 `lightColors()`, `primaryVariant` y `MaterialTheme(colors = ...)` son de Material 2. En Material 3: `lightColorScheme()`, `primaryContainer` y `MaterialTheme(colorScheme = ...)`.
+
+---
+
+## Bloque 3: Arquitectura y datos en Android
+
+### [Ciclo de vida de una app](./Android/3-ciclo-vida-app.mdx)
+
+- 🔄 El ejemplo usaba `AppCompatActivity` con `setContentView(R.layout...)`, propio de las apps con vistas XML. **Correcto con Compose:** `ComponentActivity` con `setContent { }`.
+- ❌ Llamaba "modificador" a `LocalContext.current`. **Correcto:** es un *CompositionLocal*.
+- 🔄 El ejemplo de Snackbar usaba la API de vistas (`Snackbar.make(view, ...)`). En Compose se usa `SnackbarHostState` dentro de un `Scaffold`.
+
+### [Arquitectura](./Android/4-arquitectura.mdx)
+
+- 🔄 Presentaba `LiveData` como la opción recomendada. **Correcto:** con Compose se recomienda exponer el estado con `StateFlow`.
+- ❌ Recomendaba MVC o MVP para apps pequeñas. Con Compose, la recomendación de Google es MVVM también en apps pequeñas.
+
+### [La capa de UI](./Android/6-capa-ui.mdx)
+
+- ❌ Mencionaba una función `rememberViewModel` que **no existe**. **Correcto:** el ViewModel se obtiene con `viewModel()`.
+
+### [Conexión a internet](./Android/7-conexion-internet.mdx)
+
+- ❌ Usaba `coroutineScope { launch { } }` directamente dentro de un composable, lo que **no compila** (`coroutineScope` es una función `suspend`). Además decía que era una función de Jetpack Compose, cuando es de `kotlinx.coroutines`. **Correcto:** `rememberCoroutineScope()` o `LaunchedEffect`.
+- ❌ Cancelaba la corrutina de un `LaunchedEffect` en un `DisposableEffect` con `coroutineContext.cancel()`. Es innecesario, porque `LaunchedEffect` ya se cancela solo, y además **no compila**: `coroutineContext` solo está disponible dentro de una función `suspend` o de una corrutina.
+- ❌ **Decía** que `LaunchedEffect` ejecuta la tarea "en segundo plano" con el dispatcher por defecto. **Correcto:** se ejecuta en el hilo principal (`Dispatchers.Main`), aunque sin bloquearlo mientras solo se llame a funciones `suspend`.
+- ❌ Faltaba la dependencia `converter-gson`, sin la cual **no compila** `GsonConverterFactory`.
+- ❌ La URL base no terminaba en `/`, y Retrofit lanza una excepción si no termina así.
+- ❌ En la *factory* del ViewModel: `APLICATION_KEY` (mal escrito) → `APPLICATION_KEY`, y `ViewModelFactory { }` → `viewModelFactory { }`.
+- ❌ `_state.asState()` **no existe**, y después se usaba `collectAsState()` sobre un `State`, que no es un `Flow`. **Correcto:** `MutableStateFlow` con `asStateFlow()`, y en la UI `collectAsStateWithLifecycle()`.
+- ❌ No se capturaban los errores de red, así que la app se cerraba sin conexión. Se ha añadido un estado de error con `try-catch`.
+- ❌ El `AndroidManifest.xml` de ejemplo incluía `usesCleartextTraffic` y un `network_security_config` inexistente, que no hacían falta.
+- 🔄 Retrofit 2.9.0 → 3.0.0.
+
+### [Conversión JSON a objetos](./Android/8-trabajando-con-json.mdx)
+
+- ❌ El plugin de serialización estaba en la versión `1.8.10`. **Correcto:** debe tener la misma versión que Kotlin.
+- 🔄 El conversor `com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter` ya no es necesario: Retrofit incluye el oficial `converter-kotlinx-serialization`.
+- ❌ `Gson.asConverterFactory(contentType)` **no existe**. **Correcto:** `GsonConverterFactory.create()`.
+- ❌ Un array de cadenas (`"skills": ["Java", "Kotlin"]`) se representaba con una clase `Skill`, lo que falla al deserializar. **Correcto:** `List<String>`.
+- ❌ Los ejemplos de Retrofit usaban un `okHttpClient` que no estaba definido.
+
+### [Persistencia de datos](./Android/9-persistencia-datos.mdx)
+
+- ❌ Colocaba `@ForeignKey` sobre la propiedad, algo que Room **no admite**. **Correcto:** se declara en `@Entity(foreignKeys = [...])`.
+- ❌ La entidad `User` no tenía `autoGenerate`, pero después se creaban usuarios sin `id` (`User(name = ..., email = ...)`), lo que **no compila**. **Correcto:** `@PrimaryKey(autoGenerate = true) val id: Int = 0`.
+- ❌ En el ViewModel, `usersRepository.getUsers().asFlow()` tenía una errata en el nombre y `asFlow()` sobraba (ya era un `Flow`). **Correcto:** convertirlo en `StateFlow` con `stateIn()`.
+- ❌ Los pasos para abrir el Database Inspector eran incorrectos. **Correcto:** **View → Tool Windows → App Inspection → Database Inspector**, con la app en ejecución.
+- ❌ En DataStore, `APLICATION_KEY` → `APPLICATION_KEY`, `userPreferencesRepository.userName` → `userNameFlow`, y la clase `UiState` no estaba definida.
+- ❌ El contenedor se declaraba `private lateinit`, pero después había que acceder a él desde la factory del ViewModel.
+- 🔄 KSP `2.0.21-1.0.27` y DataStore `1.0.0` estaban desactualizados. Desde KSP 2.3, su versión ya no depende de la de Kotlin.
+
+### [Ejercicios](./Android/10-enunciados-ejercicios.mdx)
+
+- 🔄 Las APIs de Breaking Bad y Harry Potter (potterapi.com) ya no existen, y la de Studio Ghibli ha cambiado de dirección.
+
+---
+
+## Bloque 4: Unity
+
+### [Introducción](./Videojuegos/1-Unity/1-Introduccion.mdx)
+
+- ❌ **Decía** que Godot es de código abierto "hasta el momento" y "mientras no cambie la idea de negocio". **Correcto:** su licencia MIT no se puede retirar para las versiones ya publicadas.
+
+### [Aprendiendo a usar Unity](./Videojuegos/1-Unity/2-Unity.mdx)
+
+- ❌ La lista de requisitos gráficos mezclaba APIs gráficas (DirectX, Vulkan...) con fabricantes de tarjetas (Nvidia, AMD, Intel).
+- 🔄 Las plantillas ya no son simplemente "2D" o "3D". En Unity 6 las habituales son **Universal 2D** y **Universal 3D**, con URP.
+- 🔄 Las herramientas de mover, rotar y escalar están en una barra flotante dentro de la vista de escena, no encima de la jerarquía.
+
+### [Packages](./Videojuegos/1-Unity/4-Packages.mdx)
+
+- 🔄 Los estados de los paquetes ya no son *Verified* y *Preview*, sino *Release*, *Pre-release*, *Experimental* y *Deprecated*.
+- ❌ **Decía** que `packages-lock.json` es el manifiesto del paquete. **Correcto:** registra las versiones exactas instaladas en el proyecto. El manifiesto de cada paquete es su `package.json`.
+
+### [Tags y Layers](./Videojuegos/1-Unity/5-TagsLayers.mdx)
+
+- ❌ `GameObject.FindObjectWithTag()` **no existe**. **Correcto:** `GameObject.FindWithTag()` o `GameObject.FindGameObjectsWithTag()`; para comparar, `CompareTag()`.
+- ❌ Hablaba de sub-etiquetas con `/` (por ejemplo, `Enemy/Goomba`). Los tags no tienen jerarquía: `CompareTag("Enemy")` no detecta un objeto con el tag `Enemy/Goomba`.
+- ❌ **Decía** que las capas 0 a 7 están reservadas. **Correcto:** las integradas son la 0, 1, 2, 4 y 5; la 3, la 6 y la 7 son de usuario.
+- ❌ **Decía** que las layers deciden qué se dibuja delante en 2D. **Correcto:** eso lo controlan los **Sorting Layers** y el **Order in Layer**.
+
+### [Cámaras](./Videojuegos/1-Unity/7-Camaras.mdx)
+
+- ❌ Listaba como opciones de **Renderer** *Skybox*, *Solid Color*, *Depth Only* y *Don't Clear*. Esas son las *Clear Flags* del pipeline antiguo. En URP, *Renderer* selecciona el renderer del pipeline.
+- ❌ **Decía** que *Render Shadows* necesita un componente Light en la cámara. **Correcto:** necesita alguna luz con sombras en la escena.
+- ❌ *Uninitializer* → **Uninitialized**.
+
+### [Físicas](./Videojuegos/1-Unity/8-Fisicas.mdx)
+
+- 🔄 *Drag* y *Angular Drag* se llaman en Unity 6 **Linear Damping** y **Angular Damping**; *Physic Material* ahora es **Physics Material**.
+- ❌ **Decía** que un objeto *Is Kinematic* sirve para que permanezca inmóvil. **Correcto:** no le afectan las fuerzas, pero se puede mover desde código o animaciones y empuja a los objetos dinámicos.
+- ❌ El ejemplo del cubo añadía un Box Collider al cubo y otro al plano. El cubo ya lo trae y el plano ya tiene un Mesh Collider.
+
+### [Scripting](./Videojuegos/1-Unity/9-Scripting.mdx)
+
+- ❌ **Decía** que `FixedUpdate()` se llama una vez por frame. **Correcto:** se llama a intervalos fijos (50 veces por segundo por defecto), por lo que en un frame puede ejecutarse varias veces o ninguna.
+- ❌ Describía `Awake()` y `Start()` igual. **Correcto:** `Awake()` se ejecuta al cargar el objeto aunque el script esté desactivado; `Start()`, antes del primer `Update()` y solo si está activado.
+- ❌ El ejemplo `RotarCubo` rotaba 1 grado por frame, lo que depende de los FPS. Se ha multiplicado por `Time.deltaTime`.
+- ❌ Hablaba de "la clase Log". **Correcto:** es el método `Log` de la clase `Debug`.
+- 🔄 En Unity 6 los scripts se crean con **Create → Scripting → MonoBehaviour Script**, y la plantilla ya no incluye `System.Collections`.
+- 🔄 Los proyectos de Unity 6 usan por defecto el **Input System**. Para usar la clase `Input` hay que poner **Active Input Handling** en **Both**.
+
+### [UI](./Videojuegos/1-Unity/11-UI.mdx)
+
+- ❌ La sección de UI Toolkit describía menús y objetos que **no existen** ("UI Toolkit Root", "UI Toolkit Document", "UI Toolkit View"). **Correcto:** se usa un objeto con **UIDocument**, archivos UXML y USS y el editor **UI Builder**. Además, no hay que instalarlo: viene integrado desde Unity 2021.2.
+- ❌ **Decía** que el Graphic Raycaster determina "qué layers se bloquearán". **Correcto:** detecta sobre qué elementos de la UI pulsa el usuario.
+- 🔄 El componente **Text** es *legacy*; se usa **Text - TextMeshPro**.
+
+### [Luces](./Videojuegos/1-Unity/12-Luces.mdx)
+
+- ❌ **Decía** que la iluminación precalculada se genera al hacer la build. **Correcto:** se genera en el editor con **Window → Rendering → Lighting → Generate Lighting**.
+
+### [Materiales, Shaders y Texturas](./Videojuegos/1-Unity/13-MaterialesShadersTexturas.mdx)
+
+- ❌ Los modos *Opaque*, *Cutout*, *Fade* y *Transparent* son del shader *Standard* del pipeline antiguo. En URP se usa **Surface Type** (*Opaque* / *Transparent*) y **Alpha Clipping**.
+
+### [Audio](./Videojuegos/1-Unity/14-Audio.mdx)
+
+- ❌ Los Audio Mixer Groups no se crean con **Create → Audio Mixer Group**. **Correcto:** se crean dentro de la ventana del Audio Mixer.
+- ❌ **Create → Audio → Audio Effect** **no existe**. Los efectos se añaden a un grupo del mixer (**Add Effect**) o como componentes (*Audio Reverb Filter*, etc.).
+- ❌ Usaba `Play()` para los efectos de sonido. **Correcto:** para efectos se usa `PlayOneShot()`, que permite que se solapen.
+
+### [Animaciones](./Videojuegos/1-Unity/15-Animaciones.mdx)
+
+- ❌ **Create → Animation Controller** → **Animator Controller**; **Windows → Animation → Animator** → **Window → Animation → Animator**.
+- ❌ No avisaba de que los clips creados en la ventana Animation no se reproducen en el componente **Animation** (*legacy*) salvo que se marquen como *Legacy*.
+
+### [Builds](./Videojuegos/1-Unity/16-Builds.mdx)
+
+- ❌ El botón **Open Scene List** → **Add Open Scenes**.
+- 🔄 La plataforma *WebGL* se llama **Web** en Unity 6.
+
+### [Corrutinas](./Videojuegos/1-Unity/17-Corrutinas.mdx)
+
+- ❌ La explicación podía dar a entender que las corrutinas se ejecutan en otro hilo. **Correcto:** se ejecutan en el hilo principal, repartidas entre varios frames.
+- ❌ `using UnityEngine.Awaitable;` **no compila**: `Awaitable` es una clase del espacio de nombres `UnityEngine`, no un espacio de nombres.
+- ❌ El ejemplo con `async` no gestionaba la destrucción del objeto durante un `await`. Se ha añadido `destroyCancellationToken`.
+
+### [Parallax](./Videojuegos/1-Unity/19-Parallax.mdx)
+
+- ❌ Ordenaba las capas del fondo con la posición en el eje Z. En 2D el orden de dibujado se controla con **Order in Layer** o los **Sorting Layers**.
+
+### [Coyote Time](./Videojuegos/1-Unity/20-CoyoteTime.mdx)
+
+- 🔄 `rb.velocity` → `rb.linearVelocity` en Unity 6.
+- ❌ **Decía** que el GroundCheck lo usa "el raycast". **Correcto:** se usa `Physics2D.OverlapCircle`. Además, el tag `Ground` no era necesario, porque se detecta por capa.
+
+---
+
+## Bloque 5: Juegos paso a paso y C#
+
+### [Pong](./Videojuegos/2-Juegos/1-Pong.mdx)
+
+- ❌ El script `Player` mezclaba `rb.velocity` y `rb.linearVelocity` en la misma línea.
+- ❌ `Destroy(FindAnyObjectByType<GameManager>())` destruía solo el **componente** GameManager, no el objeto. **Correcto:** `Destroy(FindAnyObjectByType<GameManager>().gameObject)`.
+- 🔄 En Unity 6, TextMeshPro ya no se instala desde el Package Manager: viene incluido y solo hay que importar los *TMP Essentials*.
+- 🔄 Hay que activar **Active Input Handling → Both** para poder usar el Input Manager en Unity 6.
+
+### [Breakout](./Videojuegos/2-Juegos/2-Breakout.mdx)
+
+- ❌ El bloque de código de la pala se titulaba `PlayerController.cs`, pero la clase era `Player`. En Unity el nombre del archivo y el de la clase deben coincidir.
+- 🔄 `rb.velocity` → `rb.linearVelocity` en `ResetBall()`.
+
+### [Sobre C#](./Videojuegos/3-CSharp/3-CSharp.mdx)
+
+- ❌ Clasificaba los tipos en "primitivos" y "de referencia" e incluía `array` como si fuera un tipo. **Correcto:** en C# se habla de tipos **por valor** (`int`, `float`, `struct` como `Vector3`...) y **por referencia** (`string`, clases, arrays...).

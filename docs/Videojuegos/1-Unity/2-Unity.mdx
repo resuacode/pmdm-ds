@@ -11,18 +11,20 @@
 
 Para descargar Unity no tenemos más que entrar en [la página de descarga oficial](https://unity.com/download) y descargar el instalador correspondiente a nuestro sistema operativo. 
 
-Adicionalmente debemos registrarnos en su web seleccionando la opción personal o estudiante, [desde aquí](https://unity.com/products), y gracias a estar logueados podremos después acceder a otros servicios de la compañía como son su tienda de Assets o su UVC (Unity Version Control). 
+Adicionalmente debemos registrarnos en su web y activar una licencia **Personal** (o la de **estudiante**, gratuita a través del programa [Unity Student](https://unity.com/products/unity-student)). Gracias a estar logueados podremos después acceder a otros servicios de la compañía como son su tienda de Assets o su UVC (Unity Version Control). 
 Aunque por supuesto, también podemos llevar un control de nuestros proyectos usando Git. 
 
-Las licencias personales son gratuitas y para pequeños grupos de desarrolladores también, aunque los planes de pago van cambiando con el tiempo, en general no vamos a tener muchas limitaciones con los planes gratuitos.
+La licencia Personal es gratuita para particulares y empresas con unos ingresos anuales inferiores a 200.000 dólares. Aunque las condiciones de los planes cambian con el tiempo, para aprender y para proyectos pequeños no tendremos limitaciones importantes con la licencia gratuita.
 
-Se puede instalar Unity en Windows, Linux o Mac siempre y cuando contemos también con una API gráfica como pueden ser las DirectX, Intel o AMD GPU, OpenGL, Vulkan, Nvidia o AMD GPUs a día de hoy. 
+Se puede instalar Unity en Windows, macOS o Linux (Ubuntu). Los requisitos concretos de sistema operativo y tarjeta gráfica de cada versión pueden consultarse en la [página de requisitos del sistema](https://docs.unity3d.com/Manual/system-requirements.html). 
 
 Una vez descargado el instalador, el programa que se nos ha instalado en el equipo es Unity Hub, un programa desde el cuál podremos gestionar los proyectos que tenemos almacenados y desde el cuál podremos alternar entre las diferentes versiones del editor que tengamos instaladas. 
 
 El asistente de instalación es bastante sencillo de entender, nos pedirá loguearnos para crear nuestra propia cuenta de desarrolladores de Unity lo que nos permitirá almacenar nuestro progreso y comprar complementos para nuestros juegos en la Asset Store. 
 
-Una vez instalado Unity Hub ya podremos empezar a crear nuestros propios proyectos. 
+Una vez instalado Unity Hub, desde su apartado **Installs** instalaremos una versión del editor. Es recomendable elegir siempre una versión **LTS** (*Long Term Support*) de **Unity 6**, que es la versión con la que están hechos estos apuntes. Durante la instalación podemos añadir **módulos**, como *Android Build Support* o *Web Build Support*, necesarios para exportar el juego a esas plataformas (se pueden añadir más adelante desde el propio Hub).
+
+Una vez instalado el editor ya podremos empezar a crear nuestros propios proyectos. 
 
 ## Creación de un proyecto en Unity
 
@@ -30,11 +32,11 @@ Para crear un proyecto en Unity, simplemente abrimos Unity Hub y seleccionamos l
 
 Una vez estamos en el menú de crear un nuevo proyecto, seleccionamos la versión de Unity que queremos utilizar, la carpeta donde queremos guardar el proyecto y el nombre del mismo.
 
-Además, podremos partir de alguna de las plantillas que nos ofrece Unity, como puede ser un proyecto en 2D o en 3D, un proyecto de AR o VR, un proyecto de renderizado de alta definición, etc.
+Además, deberemos partir de alguna de las plantillas que nos ofrece Unity. En Unity 6 las más habituales son **Universal 2D** y **Universal 3D**, que usan el *Universal Render Pipeline* (URP), el sistema de renderizado recomendado para la mayoría de proyectos y plataformas, incluidos los móviles. También hay plantillas para proyectos de AR o VR, de alta definición (HDRP), o plantillas de ejemplo con un juego ya empezado.
 
 ## Estructura de un proyecto
 
-Al crear un proyecto nuevo lo primero que tenemos que definir son 3 cosas, el **directorio** dónde se va a crear el proyecto, el **nombre** del mismo y si va a estar enfocado al **2D** o al **3D**. 
+Al crear un proyecto nuevo lo primero que tenemos que definir son 3 cosas, el **directorio** dónde se va a crear el proyecto, el **nombre** del mismo y la **plantilla**, que determina, entre otras cosas, si va a estar enfocado al **2D** o al **3D**. 
 
 Una vez seleccionado todo esto, tras pulsar en crear el nuevo proyecto, Unity Hub va a crear una nueva carpeta con el nombre de nuestro proyecto dentro de la carpeta que le indicamos y dentro de esta carpeta tendremos todos los archivos y librerías necesarios para el desarrollo de nuestro nuevo juego y que son los que necesita Unity para trabajar. 
 
@@ -90,7 +92,7 @@ La siguiente pestaña importante es la izquierda, es decir, la de **Hierarchy** 
 
 ![Jerarquía de un proyecto en Unity](../../../static/img/apuntes_unity/interfaz4.png)
 
-Justo encima de la pestaña de Jerarquía encontramos la barra de herramientas con la que podremos manejar los objetos del juego, con opciones como mover, escalar o rotar los mismos (en las versiones más actuales del editor estas opciones se han movido a dentro de la propia pestaña de escena, con buen criterio ya que son herramientas para interactuar con la misma). En el centro de esta barra encontramos también los botones de play y pausa del proyecto, los cuales nos sirven para ejecutar y probar nuestro juego mientras lo estamos desarrollando. 
+Las herramientas para manejar los objetos del juego, con opciones como mover, escalar o rotar los mismos, se encuentran en una barra flotante dentro de la propia pestaña de escena (en versiones antiguas del editor estaban en la barra superior). Sus atajos de teclado son **Q** (mano), **W** (mover), **E** (rotar), **R** (escalar), **T** (rect transform, muy útil en 2D) e **Y** (transformación combinada). En el centro de la barra superior del editor encontramos los botones de play y pausa del proyecto, los cuales nos sirven para ejecutar y probar nuestro juego mientras lo estamos desarrollando. 
 
 Al pulsar el **Play**, se nos cambia la pestaña de **Escena** por la de Juego o **Game** y se ejecuta el juego como tal para que lo probemos y debuguear antes de exportar una build del mismo, en esta pestaña podemos también modificar las resoluciones para probar como se ve en distintos dispositivos el juego. El color de la interfaz de Unity puede cambiarse mientras probamos el juego en la pestaña de Game para así saber que estamos probando el mismo y que los cambios que hagamos no se verán reflejados en el proyecto hasta que salgamos de este modo, esto nos sirve para probar cambios en tiempo de ejecución, pero no guarda dichos cambios a menos que pasemos la ejecución y los realicemos antes de darle a Play. 
 
@@ -100,7 +102,7 @@ El color del que se pone la interfaz mientras probamos el juego puede modificars
 
 ![Pantalla de Scene](../../../static/img/apuntes_unity/interfaz5.png)
 
-El jugeo corriendo con el playmode tint en un tono azul turquesa:
+El juego corriendo con el playmode tint en un tono azul turquesa:
 
 ![Pantalla de Game](../../../static/img/apuntes_unity/interfaz6.png)
 

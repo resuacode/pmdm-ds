@@ -30,9 +30,9 @@ val edad = 25
 
 En el ejemplo anterior, se declaran dos variables de forma implícita, una de tipo `String` llamada `nombre` y otra de tipo `Int` llamada `edad`.
 
-## Tipos de datos primitivos
+## Tipos de datos básicos
 
-En Kotlin, los tipos de datos primitivos son los mismos que en Java, pero con algunas diferencias en la forma en que se declaran.
+En Kotlin todo es un objeto: no existen tipos primitivos como tal a nivel de lenguaje (`int`, `double`...), sino clases como `Int` o `Double`. Aun así, el compilador los convierte a tipos primitivos de la JVM siempre que puede para que sean igual de eficientes que en Java.
 
 - **Byte**: Almacena números enteros de 8 bits.
 - **Short**: Almacena números enteros de 16 bits.
@@ -74,11 +74,17 @@ En Kotlin, la conversión de tipos se realiza de forma segura y explícita utili
 val numero: Int = 10
 val texto: String = numero.toString()
 
-val texto: String = "10"
-val numero: Int = texto.toInt()
+val otroTexto: String = "10"
+val otroNumero: Int = otroTexto.toInt()
+
+val noEsNumero = "hola".toIntOrNull() // null, en lugar de lanzar una excepción
 ```
 
-En el primer ejemplo, se convierte un número entero a una cadena de texto utilizando la función `toString()`. En el segundo ejemplo, se convierte una cadena de texto a un número entero utilizando la función `toInt()`.   
+En el primer ejemplo, se convierte un número entero a una cadena de texto utilizando la función `toString()`. En el segundo ejemplo, se convierte una cadena de texto a un número entero utilizando la función `toInt()`, que lanza una `NumberFormatException` si el texto no es un número válido. Si no estamos seguros del contenido, es preferible usar `toIntOrNull()`, que devuelve `null` en ese caso.
+
+:::info[Sin conversiones implícitas]
+A diferencia de Java, Kotlin no convierte automáticamente un tipo numérico en otro "más grande". Por ejemplo, no se puede asignar un `Int` a una variable `Long` sin llamar antes a `toLong()`.
+:::
 
 ## Sobre las variables mutables e inmutables
 
@@ -105,7 +111,7 @@ lista = mutableListOf(6, 7, 8, 9, 10) // Error de compilación
 
 En el ejemplo anterior, se modifica el elemento en la posición `0` de la lista `lista`, pero no se puede cambiar la referencia de la lista. Si se intenta asignar una nueva lista a la variable `lista`, se produce un error de compilación.
 
-Podemos ver también un ejemplo de lista mutable pero cuyo contenido no puede ser modificado.
+Podemos ver también un ejemplo de lista de solo lectura, cuyo contenido no puede ser modificado.
 
 ```kotlin
 val lista = listOf(1, 2, 3, 4, 5)
@@ -147,7 +153,7 @@ Más adelante veremos cómo manejar los valores nulos de forma segura en Kotlin.
 
 ## Sobre las variables declaradas como const
 
-En Kotlin, las variables se pueden declarar como `const` para indicar que su valor es constante en tiempo de compilación. Las variables `const` deben ser de tipo `val` y deben estar en el ámbito de un objeto o de un compañero de clase.
+En Kotlin, las variables se pueden declarar como `const` para indicar que su valor es constante en tiempo de compilación. Las constantes `const` deben ser `val`, de un tipo básico o `String`, y deben declararse en el nivel superior de un archivo, dentro de un `object` o dentro de un `companion object`.
 
 ```kotlin
 const val PI = 3.14159
@@ -157,7 +163,7 @@ En el ejemplo anterior, se declara una constante `PI` con un valor de `3.14159`.
 
 ## Sobre las Strings en Kotlin
 
-En Kotlin, las cadenas de texto se pueden declarar utilizando comillas simples (`'`) o comillas dobles (`"`). Las cadenas de texto declaradas con comillas simples son de tipo `Char`, mientras que las declaradas con comillas dobles son de tipo `String`.
+En Kotlin, las cadenas de texto se declaran con comillas dobles (`"`) y son de tipo `String`. Las comillas simples (`'`) se usan para un único carácter, de tipo `Char`.
 
 ```kotlin
 val caracter: Char = 'A'
@@ -176,9 +182,13 @@ println(texto1 == texto2) // true
 println(texto1 === texto2) // true
 ```
 
-En el ejemplo anterior, se comparan dos cadenas de texto `texto1` y `texto2` utilizando los operadores `==` y `===`. Ambas comparaciones devuelven `true` ya que las cadenas son iguales en contenido y referencia. 
+En el ejemplo anterior, se comparan dos cadenas de texto `texto1` y `texto2` utilizando los operadores `==` y `===`. Ambas comparaciones devuelven `true`: son iguales en contenido y, en este caso concreto, también en referencia, porque el compilador reutiliza el mismo literal `"Hola"` para las dos variables. Si las cadenas se construyen en tiempo de ejecución (por ejemplo, leyendo lo que escribe el usuario), `===` puede devolver `false` aunque el contenido sea el mismo. Por eso, para comparar textos **siempre** usaremos `==`.
 
-A diferencia de Java, en Kotlin las cadenas de texto son inmutables, lo que significa que una vez que se crea una cadena de texto, no se puede modificar su contenido. Para modificar una cadena de texto en Kotlin, se debe crear una nueva cadena con el contenido modificado.
+:::tip[`==` en Kotlin equivale a `equals()` en Java]
+En Java, `==` compara referencias y hay que usar `equals()` para comparar el contenido. En Kotlin, `==` llama internamente a `equals()`, y `===` es el que compara referencias.
+:::
+
+Al igual que en Java, en Kotlin las cadenas de texto son inmutables, lo que significa que una vez que se crea una cadena de texto, no se puede modificar su contenido. Para modificar una cadena de texto en Kotlin, se debe crear una nueva cadena con el contenido modificado.
 
 ```kotlin
 val texto = "Hola"
@@ -186,6 +196,14 @@ val nuevoTexto = texto + " Mundo"
 ```
 
 En el ejemplo anterior, se crea una nueva cadena de texto `nuevoTexto` concatenando la cadena `texto` con la cadena `" Mundo"`. La cadena `texto` no se modifica, sino que se crea una nueva cadena con el contenido modificado.    
+
+En Kotlin es más habitual usar **plantillas de cadena** (*string templates*) que concatenar con `+`:
+
+```kotlin
+val nombre = "Ana"
+val edad = 20
+println("Hola, $nombre. El año que viene tendrás ${edad + 1} años")
+```
 
 Sin embargo, si comparamos una string con un caracter, Kotlin no permite la comparación directa, ya que son tipos de datos diferentes.
 

@@ -1,157 +1,194 @@
-import CodeBlock from '@theme/CodeBlock';
-
 # Gestión de estado en Jetpack Compose
 
-Jetpack Compose es un marco de trabajo moderno para la creación de interfaces de usuario en aplicaciones Android. Con Compose, puedes crear interfaces de usuario de manera declarativa, lo que significa que puedes definir cómo se ve tu aplicación en función del estado de la misma.
+Con Compose definimos la interfaz de usuario de manera declarativa: describimos cómo se ve la pantalla **en función del estado** de la aplicación, y cuando el estado cambia, Compose vuelve a dibujar automáticamente las partes afectadas.
 
 ## Estado en Jetpack Compose
 
-En Jetpack Compose, el estado es una parte fundamental de la arquitectura de tu aplicación. 
+El estado representa cualquier información que puede cambiar a lo largo del tiempo y que afecta a la apariencia o al comportamiento de la interfaz: el valor de un contador, el texto escrito en un campo, la lista de elementos que se muestra, si un diálogo está abierto o no...
 
-El estado representa la información que puede cambiar a lo largo del tiempo y que afecta a la apariencia y el comportamiento de tu interfaz de usuario. 
-
-Puedes definir y observar el estado de tu aplicación de forma reactiva en Compose.
+Cuando un composable **lee** un estado y ese estado cambia, Compose vuelve a ejecutar ese composable para actualizar la pantalla. Este proceso se llama **recomposición**.
 
 :::info[Video introducción al manejo del estado en Compose]
 <iframe width="560" height="315" src="https://www.youtube.com/embed/R5o1aoUT78o?si=EkLkn1pirJROAgqc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 :::
 
-## Definición de estado
+## Definición de estado con `mutableStateOf`
 
-Puedes definir el estado de tu aplicación utilizando la función `mutableStateOf()` de Compose.
+Para que Compose sepa que un valor es un estado y pueda "observarlo", se crea con la función `mutableStateOf()`, que devuelve un objeto `MutableState<T>` con una propiedad `value`.
 
 ```kotlin
 val contador = mutableStateOf(0)
 ```
 
-En el ejemplo anterior, se define un estado `contador` con un valor inicial de `0`.
-
-## Observación de estado
-
-Puedes observar el estado de tu aplicación utilizando la función `observeAsState()` de Compose.
+En el ejemplo anterior, se define un estado `contador` con un valor inicial de `0`. Para leerlo o modificarlo se usa su propiedad `value`:
 
 ```kotlin
-val contadorState = contador.observeAsState()
-val contador = contadorState.value
+println(contador.value) // Lee el estado
+contador.value++        // Modifica el estado y provoca una recomposición
 ```
 
-En el ejemplo anterior, se observa el estado `contador` y se obtiene su valor actual.
+No hace falta llamar a ninguna función para "observar" el estado: basta con que un composable lea `contador.value` para que Compose lo tenga en cuenta.
 
-## Actualización de estado
+## Uso de `remember`
 
-Puedes actualizar el estado de tu aplicación utilizando la función `value` de Compose.
-
-```kotlin
-contador.value++
-```
-
-En el ejemplo anterior, se incrementa en uno el valor del estado `contador`.
-
-:::danger[¡Importante!]
-El estado en Compose es inmutable, por lo que debes utilizar la función `value` para actualizar el estado.
-
-Para que haya recomposición, la actualización del estado debe realizarse dentro de un evento de un componente `@Composable`.
-:::
-
-## Ejemplo completo
-
-```kotlin
-@Composable
-fun Contador() {
-    val contador = mutableStateOf(0)
-    val contadorState = contador.observeAsState()
-    
-    Button(onClick = { contador.value++ }) {
-        Text(text = "Contador: ${contadorState.value}")
-    }
-}
-```
-
-En el ejemplo anterior, se define un componente `Contador` que muestra un botón y un texto con el valor del estado `contador`. Al hacer clic en el botón, se incrementa en uno el valor del estado `contador`.
-
-## Tipos de estado
-
-En Jetpack Compose, puedes utilizar diferentes tipos de estado para gestionar la información de tu aplicación de forma reactiva.
-
-- `mutableStateOf()`: Crea un estado mutable que puede cambiar a lo largo del tiempo.
-- `remember`: Crea un estado que se mantiene entre recomposiciones.
-- `derivedStateOf()`: Crea un estado derivado a partir de otros estados.
-
-## Uso de remember
-
-La función `remember` de Compose te permite crear un estado que se mantiene entre recomposiciones.
+Cada recomposición vuelve a ejecutar la función composable desde el principio. Si creamos el estado directamente dentro del composable, en cada recomposición se crearía un estado nuevo con el valor inicial y el contador nunca pasaría de 0. Para evitarlo, usamos `remember`, que guarda el objeto entre recomposiciones:
 
 ```kotlin
 @Composable
 fun Contador() {
     val contador = remember { mutableStateOf(0) }
-    val contadorState = contador.observeAsState()
-    
+
     Button(onClick = { contador.value++ }) {
-        Text(text = "Contador: ${contadorState.value}")
+        Text(text = "Contador: ${contador.value}")
     }
 }
 ```
 
-En el ejemplo anterior, se utiliza la función `remember` para crear un estado `contador` que se mantiene entre recomposiciones.
+En el ejemplo anterior, se utiliza la función `remember` para que el estado `contador` se conserve entre recomposiciones. Al hacer clic en el botón, se incrementa el valor, Compose detecta el cambio y vuelve a dibujar el texto.
 
-## Uso de rememberSaveable
-
-La función `rememberSaveable` de Compose te permite crear un estado que se mantiene entre configuraciones.
-
-```kotlin
-@Composable
-fun Contador() {
-    val contador = rememberSaveable { mutableStateOf(0) }
-    val contadorState = contador.observeAsState()
-    
-    Button(onClick = { contador.value++ }) {
-        Text(text = "Contador: ${contadorState.value}")
-    }
-}
-```
-
-En el ejemplo anterior, se utiliza la función `rememberSaveable` para crear un estado `contador` que se mantiene entre configuraciones.
-
-:::tip[Remember vs RememberSaveable]
-La diferencia entre `remember` y `rememberSaveable` es que `rememberSaveable` guarda el estado en el `Bundle` de la actividad para que se pueda restaurar después de una recreación de la actividad.
-
-Esto es útil para guardar el estado de la aplicación cuando la actividad se destruye y se vuelve a crear, por ejemplo, al girar la pantalla.
+:::danger[¡Importante!]
+Un `mutableStateOf` creado dentro de un composable **siempre** debe ir envuelto en `remember` (o `rememberSaveable`). Android Studio muestra un error si lo olvidamos.
 :::
 
-## Uso de derivedStateOf
+### Delegación con `by`
 
-La función `derivedStateOf` de Compose te permite crear un estado derivado a partir de otros estados.
+Escribir `.value` continuamente resulta pesado. Con la palabra clave `by` podemos delegar la propiedad en el estado y trabajar con ella como si fuera una variable normal:
 
 ```kotlin
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 @Composable
 fun Contador() {
-    val contador = mutableStateOf(0)
-    val doble = derivedStateOf { contador.value * 2 }
-    
-    Button(onClick = { contador.value++ }) {
-        Text(text = "Contador: ${contador.value}, Doble: ${doble.value}")
+    var contador by remember { mutableStateOf(0) }
+
+    Button(onClick = { contador++ }) {
+        Text(text = "Contador: $contador")
     }
 }
 ```
 
-En el ejemplo anterior, se utiliza la función `derivedStateOf` para crear un estado `doble` que es el doble del estado `contador`.
+Fíjate en que ahora la variable se declara con `var` y en los dos `import`, necesarios para que funcione la delegación (Android Studio los añade automáticamente con `Alt + Enter`). Esta es la forma más habitual de declarar estado en un composable.
+
+:::tip[Estados de tipos primitivos]
+Para números existen versiones optimizadas que evitan convertir el valor en un objeto: `mutableIntStateOf(0)`, `mutableFloatStateOf(0f)`, `mutableLongStateOf(0L)` y `mutableDoubleStateOf(0.0)`. Android Studio sugiere usarlas cuando escribimos `mutableStateOf(0)`.
+:::
+
+## Uso de `rememberSaveable`
+
+`remember` conserva el estado entre recomposiciones, pero **no** cuando la actividad se destruye y se vuelve a crear, cosa que ocurre, por ejemplo, al girar la pantalla o al cambiar de modo claro a oscuro. Para esos casos está `rememberSaveable`:
+
+```kotlin
+@Composable
+fun Contador() {
+    var contador by rememberSaveable { mutableIntStateOf(0) }
+
+    Button(onClick = { contador++ }) {
+        Text(text = "Contador: $contador")
+    }
+}
+```
+
+:::tip[remember vs rememberSaveable]
+La diferencia entre `remember` y `rememberSaveable` es que `rememberSaveable` guarda el estado en el `Bundle` de la actividad para que se pueda restaurar después de una recreación de la actividad.
+
+Solo puede guardar tipos que quepan en un `Bundle` (números, `String`, `Boolean`, clases `@Parcelize`...). Para estado más complejo o que debe sobrevivir más tiempo, usaremos un **ViewModel**.
+:::
+
+## Uso de `derivedStateOf`
+
+La función `derivedStateOf` crea un estado que se calcula a partir de otros estados. Es útil cuando el estado de origen cambia muy a menudo pero el resultado cambia pocas veces, ya que así evitamos recomposiciones innecesarias.
+
+```kotlin
+@Composable
+fun ListaConBotonSubir(listState: LazyListState) {
+    val mostrarBotonSubir by remember {
+        derivedStateOf { listState.firstVisibleItemIndex > 0 }
+    }
+
+    if (mostrarBotonSubir) {
+        Button(onClick = { /* Volver arriba */ }) { Text("Subir") }
+    }
+}
+```
+
+En el ejemplo anterior, la posición de la lista cambia continuamente mientras el usuario se desplaza, pero `mostrarBotonSubir` solo cambia (y provoca una recomposición) cuando pasa de `true` a `false` o viceversa.
+
+Para cálculos sencillos no hace falta `derivedStateOf`: basta con calcular el valor directamente en el composable (`val doble = contador * 2`).
+
+## Listas como estado
+
+Si guardamos una `MutableList` normal en un `mutableStateOf`, Compose **no** detecta que se añaden o eliminan elementos, porque la lista sigue siendo el mismo objeto. Tenemos dos opciones:
+
+```kotlin
+// Opción 1: una lista observable por Compose
+val tareas = remember { mutableStateListOf<String>() }
+tareas.add("Nueva tarea") // Provoca recomposición
+
+// Opción 2: una lista de solo lectura que sustituimos por otra nueva
+var tareas by remember { mutableStateOf(listOf<String>()) }
+tareas = tareas + "Nueva tarea" // Nueva lista: provoca recomposición
+```
+
+La segunda opción es la que usaremos con los ViewModel, ya que trabajar con datos inmutables hace que el estado sea más predecible.
+
+## Elevación del estado (*state hoisting*)
+
+Un composable que guarda su propio estado es cómodo, pero difícil de reutilizar y de probar, porque nadie desde fuera puede leer ni modificar ese estado. La **elevación del estado** consiste en sacar el estado del composable y sustituirlo por dos parámetros:
+
+- `valor: T`: el valor actual que debe mostrar.
+- `onValorChange: (T) -> Unit`: una función (lambda) a la que llama cuando se produce un evento que debería cambiar el valor.
+
+```kotlin
+@Composable
+fun PantallaContador() {
+    var contador by rememberSaveable { mutableIntStateOf(0) }
+
+    Column {
+        ContadorTexto(contador = contador)
+        ContadorBoton(onIncrementar = { contador++ })
+    }
+}
+
+@Composable
+fun ContadorTexto(contador: Int, modifier: Modifier = Modifier) {
+    Text(text = "Contador: $contador", modifier = modifier)
+}
+
+@Composable
+fun ContadorBoton(onIncrementar: () -> Unit, modifier: Modifier = Modifier) {
+    Button(onClick = onIncrementar, modifier = modifier) {
+        Text(text = "Incrementar")
+    }
+}
+```
+
+En el ejemplo anterior, el estado vive en `PantallaContador` y se comparte con sus hijos. `ContadorTexto` y `ContadorBoton` no tienen estado propio (son *stateless*): reciben el dato que tienen que mostrar y avisan de los eventos mediante lambdas.
+
+Este patrón se conoce como **flujo unidireccional de datos** (*Unidirectional Data Flow*, UDF): **el estado baja** del padre a los hijos como parámetros y **los eventos suben** de los hijos al padre como llamadas a lambdas.
+
+Es exactamente el mismo patrón que usan los componentes de Material, como `TextField(value = texto, onValueChange = { texto = it })`.
+
+:::warning[No pases `MutableState` a los hijos]
+Aunque es posible pasar un `MutableState<Int>` a un composable hijo para que lo modifique directamente, no es una buena práctica: el hijo puede cambiar el estado de cualquier forma y se pierde el control de quién lo modifica. Es preferible pasar el valor y una lambda.
+:::
 
 ## Flows en Kotlin
 
-En Kotlin, un `Flow` es una secuencia de valores que se emiten de forma asíncrona y reactiva. Los `Flow` te permiten trabajar con datos de forma reactiva y gestionar la concurrencia de forma sencilla.
+Cuando el estado no vive en la interfaz sino en capas inferiores (un ViewModel, una base de datos...), no se usa `mutableStateOf`, sino **Flows**.
 
-Puedes crear un `Flow` utilizando la función `flowOf()` de Kotlin.
+Un `Flow` es una secuencia de valores que se emiten de forma asíncrona a lo largo del tiempo. Por ejemplo, Room puede devolver un `Flow<List<Usuario>>` que emite una nueva lista cada vez que cambia la tabla.
 
 ```kotlin
-val numeros = flowOf(1, 2, 3, 4, 5)
+val numeros: Flow<Int> = flow {
+    for (i in 1..5) {
+        delay(1000)
+        emit(i) // Emite un valor cada segundo
+    }
+}
 ```
 
-En el ejemplo anterior, se crea un `Flow` `numeros` con los valores `1, 2, 3, 4, 5`.
-
-## Observación de Flows
-
-Puedes observar un `Flow` utilizando la función `collect()` de Kotlin.
+Un `Flow` no hace nada hasta que alguien lo recoge con `collect()`, que es una función `suspend` y por tanto debe llamarse desde una corrutina:
 
 ```kotlin
 numeros.collect { numero ->
@@ -159,104 +196,66 @@ numeros.collect { numero ->
 }
 ```
 
-En el ejemplo anterior, se observa el `Flow` `numeros` y se imprime cada valor que se emite.
-
-## Transformación de Flows
-
-Puedes transformar un `Flow` utilizando operadores como `map`, `filter`, `flatMap`, etc.
+Los flows se pueden transformar con operadores similares a los de las colecciones, como `map` o `filter`:
 
 ```kotlin
 val cuadrados = numeros.map { numero -> numero * numero }
 val pares = numeros.filter { numero -> numero % 2 == 0 }
 ```
 
-En el ejemplo anterior, se utilizan los operadores `map` y `filter` para transformar el `Flow` `numeros`.
+### StateFlow
+
+Un `StateFlow` es un tipo especial de flow que **siempre tiene un valor actual** y emite cada nuevo valor a quien lo esté observando. Es la forma recomendada de exponer el estado de la interfaz desde un ViewModel:
+
+```kotlin
+data class ContadorUiState(val contador: Int = 0)
+
+class ContadorViewModel : ViewModel() {
+    private val _uiState = MutableStateFlow(ContadorUiState())
+    val uiState: StateFlow<ContadorUiState> = _uiState.asStateFlow()
+
+    fun incrementar() {
+        _uiState.update { it.copy(contador = it.contador + 1) }
+    }
+}
+```
+
+La versión mutable (`_uiState`) es privada para que solo el ViewModel pueda modificarla, y hacia fuera se expone una versión de solo lectura (`uiState`). La función `update` modifica el valor de forma segura aunque se llame desde varios hilos a la vez.
 
 ## Flows en Jetpack Compose
 
-En Jetpack Compose, puedes utilizar Flows para gestionar la información de tu aplicación de forma reactiva.
-
-Puedes convertir un `Flow` en un estado observable utilizando la función `collectAsState()` de Compose.
-
-```kotlin
-val numeros = flowOf(1, 2, 3, 4, 5)
-val numerosState = numeros.collectAsState()
-```
-
-En el ejemplo anterior, se convierte el `Flow` `numeros` en un estado observable `numerosState`.
-
-## Elevación del estado
-
-En Jetpack Compose, puedes elevar el estado de un componente para compartirlo con otros componentes.
-
-Esto te permite gestionar el estado de tu aplicación de forma centralizada y compartirlo entre diferentes partes de tu interfaz de usuario.
+Para usar un flow en un composable, lo convertimos en un estado de Compose con `collectAsStateWithLifecycle()`:
 
 ```kotlin
 @Composable
-fun Contador() {
-    val contador = remember { mutableStateOf(0) }
-    ContadorBoton(contador)
-    ContadorTexto(contador)
-}
+fun PantallaContador(viewModel: ContadorViewModel = viewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-@Composable
-fun ContadorBoton(contador: MutableState<Int>) {
-    Button(onClick = { contador.value++ }) {
-        Text(text = "Incrementar")
+    Column {
+        ContadorTexto(contador = uiState.contador)
+        ContadorBoton(onIncrementar = viewModel::incrementar)
     }
 }
-
-@Composable
-fun ContadorTexto(contador: MutableState<Int>) {
-    Text(text = "Contador: ${contador.value}")
-}
 ```
 
-En el ejemplo anterior, se eleva el estado `contador` del componente `Contador` para compartirlo con los componentes `ContadorBoton` y `ContadorTexto`.
+`collectAsStateWithLifecycle()` recoge el flow mientras la app está visible y deja de hacerlo cuando pasa a segundo plano, ahorrando recursos. Requiere la dependencia `androidx.lifecycle:lifecycle-runtime-compose`. La función `viewModel()` requiere `androidx.lifecycle:lifecycle-viewmodel-compose`.
 
-De esta forma, el estado `contador` se gestiona de forma centralizada en el componente `Contador` y se comparte con los componentes hijos. Y ambos se recomponen cuando el estado cambia.
+Si el flow no es un `StateFlow` (no tiene valor actual), hay que indicar un valor inicial: `flow.collectAsStateWithLifecycle(initialValue = emptyList())`.
 
-Esto también facilita la reutilización de los componentes y la separación de las preocupaciones en tu aplicación. Además de facilitar la prueba y el mantenimiento del código.
-
-:::info[Elevación del estado vs. Inyección de dependencias]
-La elevación del estado es una técnica común en Jetpack Compose para compartir el estado entre componentes.
-
-Otra técnica común es la inyección de dependencias, que consiste en pasar el estado como argumento a los componentes que lo necesitan.
-
-Ambas técnicas tienen sus ventajas y desventajas, y la elección entre ellas depende del diseño y la arquitectura de tu aplicación.
+:::info[`collectAsState` vs `collectAsStateWithLifecycle`]
+También existe `collectAsState()`, que funciona igual pero sigue recogiendo el flow aunque la app esté en segundo plano. En Android se recomienda `collectAsStateWithLifecycle()`.
 :::
 
 ## Conclusión
 
-La gestión de estado es una parte fundamental de la arquitectura de tu aplicación en Jetpack Compose.
-
-Con Compose, puedes definir, observar y actualizar el estado de tu aplicación de forma reactiva y declarativa.
-
-Los Flows te permiten trabajar con datos de forma reactiva y gestionar la concurrencia de forma sencilla en Kotlin.
-
-## Ejemplo de gestión del estado básica en una app de Contador
-
-```kotlin
-@Composable
-fun Contador() {
-    val contador = remember { mutableStateOf(0) }
-    val contadorState = contador.observeAsState()
-    
-    Button(onClick = { contador.value++ }) {
-        Text(text = "Contador: ${contadorState.value}")
-    }
-}
-```
-
-En el ejemplo anterior, se define un componente `Contador` que muestra un botón y un texto con el valor del estado `contador`. Al hacer clic en el botón, se incrementa en uno el valor del estado `contador`.
-
+- El estado de la interfaz se guarda con `mutableStateOf` envuelto en `remember` o `rememberSaveable`, y se suele declarar con `by`.
+- Los composables deberían ser, siempre que se pueda, *stateless*: reciben el estado como parámetros y notifican los eventos mediante lambdas.
+- Cuando el estado forma parte de la lógica de la pantalla, se eleva hasta un **ViewModel**, que lo expone como un `StateFlow` que la interfaz recoge con `collectAsStateWithLifecycle()`.
 
 ## Recursos
 
-- [Documentación oficial de Jetpack Compose](https://developer.android.com/jetpack/compose?hl=es-419): La documentación oficial de Jetpack Compose, que incluye guías, tutoriales y ejemplos para aprender a usar Compose.
-
-- [Ejemplos básicos de Compose](https://github.com/resuadam2/TutorialCompose): Un repositorio con ejemplos básicos de Jetpack Compose para que puedas aprender a crear interfaces de usuario con Compose.   
-
+- [El estado y Jetpack Compose - Documentación oficial](https://developer.android.com/develop/ui/compose/state?hl=es-419)
+- [Dónde elevar el estado](https://developer.android.com/develop/ui/compose/state-hoisting?hl=es-419)
+- [Ejemplos básicos de Compose](https://github.com/resuacode/TutorialCompose): Un repositorio con ejemplos básicos de Jetpack Compose para que puedas aprender a crear interfaces de usuario con Compose.   
 - [Avanzando con Kotlin y el manejo de la UI - Codelabs](https://developer.android.com/courses/android-basics-compose/unit-2?hl=es-419)
-
 - [Más Kotlin y listas de elementos (LazyColumn) - Codelabs](https://developer.android.com/courses/android-basics-compose/unit-3?hl=es-419)

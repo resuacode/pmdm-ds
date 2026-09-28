@@ -52,7 +52,7 @@ public class ParallaxLayer : MonoBehaviour
 
     - Asigna un sprite diferente a cada uno (pixel art, de preferencia con resolución ancha).
 
-    - Posiciónalos en diferentes planos del eje Z (por ejemplo: Z = 10, 20, 30) para ordenar el renderizado.
+    - Ordénalos para que se dibujen en el orden correcto (el cielo detrás de todo) con la propiedad **Order in Layer** de su Sprite Renderer (por ejemplo: cielo `-30`, montañas `-20`, árboles `-10`) o creando **Sorting Layers** específicas para el fondo. En 2D, el orden de dibujado no depende de la posición en el eje Z.
 
 2. Agrega el script ParallaxLayer
 
@@ -81,6 +81,6 @@ Así se crea el efecto visual de profundidad, aunque todo esté en 2D.
 ### Variantes
 - Puedes usar diferentes ejes (X, Y) para juegos de desplazamiento vertical.    
 - Puedes agregar efectos de escala o rotación para mayor complejidad.   
-- Ejecto looping en el fondo: puedes usar un script adicional para hacer que las capas se repitan al salir de la vista de la cámara.    
+- Efecto looping en el fondo: puedes usar un script adicional para hacer que las capas se repitan al salir de la vista de la cámara.    
 - Puedes usar un shader para efectos de distorsión o color.
 - Puedes combinarlo con efectos de partículas para mayor inmersión.

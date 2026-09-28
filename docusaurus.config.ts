@@ -20,8 +20,13 @@ const config: Config = {
   organizationName: 'resuacode', // Usually your GitHub org/user name.
   projectName: 'pmdm-ds', // Usually your repo name.
 
-  onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: 'throw',
+  onBrokenAnchors: 'warn',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'throw',
+    },
+  },
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -38,17 +43,8 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
         },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
-          // Useful options to enforce blogging best practices
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
-        },
+        // El sitio no usa blog
+        blog: false,
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -57,12 +53,10 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
     navbar: {
       title: 'PMDM',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'Logo PMDM',
         src: 'img/main/logo.svg',
       },
       items: [
@@ -114,14 +108,16 @@ const config: Config = {
     },
   } satisfies Preset.ThemeConfig,
 
-  plugins:[
-  [
-    require.resolve("@easyops-cn/docusaurus-search-local"),
-    ({
-       hashed: true,
-     }),
+  plugins: [
+    [
+      require.resolve('@easyops-cn/docusaurus-search-local'),
+      {
+        hashed: true,
+        language: ['es'],
+        indexBlog: false,
+      },
+    ],
   ],
-],
 };
 
 

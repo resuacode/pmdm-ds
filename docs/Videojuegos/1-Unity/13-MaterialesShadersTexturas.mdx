@@ -1,4 +1,4 @@
-# Materiale, Shaders y Texturas en Unity
+# Materiales, Shaders y Texturas en Unity
 
 ## Materiales
 
@@ -8,7 +8,9 @@ En Unity podemos asignarle un material a objetos 3D y este material será el que
 
 Los materiales son importantes ya que sin ellos los objetos son incapaces de representar en la pantalla la iluminación o las sombras proyectadas por ellos mismos. 
 
-Para crear un material seguiremos un proceso parecido a la creación de cualquier otro Asset. Desde la pestaña de **Proyecto → Create → Material**. Y este Asset simplemente arrastrarlo al objeto o desde el componente que admite un material seleccionar el material creado. 
+Para crear un material seguiremos un proceso parecido a la creación de cualquier otro Asset, desde el menú **Create** de la pestaña de **Proyecto**. Después basta con arrastrarlo al objeto o, desde el componente que admite un material (por ejemplo, el Mesh Renderer), seleccionar el material creado. 
+
+En proyectos URP, el shader por defecto de los materiales es **Universal Render Pipeline/Lit**, que reacciona a las luces de la escena. Si queremos un material que no se vea afectado por la luz, podemos usar el shader **Unlit**. 
 
 ![Creación de un material en Unity](../../../static/img/apuntes_unity/material.png)
 
@@ -18,7 +20,7 @@ Una vez tenemos un objeto con un material asignado podremos ver las propiedades 
 
 Los **shaders** en Unity son programas que se utilizan para definir cómo se renderizan los objetos en la escena.
 
-Los shaders en Unity se escriben en un lenguaje de programación llamado **ShaderLab** que es similar a Cg/HLSL.
+Los shaders en Unity se escriben combinando **ShaderLab**, un lenguaje propio de Unity que describe la estructura del shader, con **HLSL**, el lenguaje de programación de shaders en el que se escriben los cálculos.
 
 Los shaders definen cómo se calcula la iluminación, las sombras, los reflejos y otros efectos visuales en los objetos de la escena.
 
@@ -28,7 +30,7 @@ Los shaders son otro de esos temas que son lo suficientemente complejos en sí m
 
 **ShaderLab** es un lenguaje de programación específico de Unity que se utiliza para escribir shaders.
 
-Los shaders en Unity se escriben en ShaderLab y se pueden combinar con Cg/HLSL para definir cómo se renderizan los objetos en la escena.
+Los shaders en Unity se escriben en ShaderLab y se combinan con HLSL para definir cómo se renderizan los objetos en la escena.
 
 ShaderLab proporciona una serie de directivas y funciones que facilitan la escritura de shaders y permiten definir cómo se calcula la iluminación, las sombras, los reflejos y otros efectos visuales en los objetos de la escena.  
 
@@ -36,7 +38,7 @@ ShaderLab proporciona una serie de directivas y funciones que facilitan la escri
 
 **Shader Graph** es una herramienta visual que permite crear shaders en Unity sin necesidad de escribir código.
 
-Con Shader Graph se pueden crear shaders arrastrando y conectando nodos en una interfaz gráfica, lo que facilita la creación de shaders complejos sin necesidad de programar.   
+Con Shader Graph se pueden crear shaders arrastrando y conectando nodos en una interfaz gráfica, lo que facilita la creación de shaders complejos sin necesidad de programar. Viene incluido en los proyectos que usan URP o HDRP, y es la forma recomendada de crear shaders personalizados en ellos.   
 
 ## Texturas
 
@@ -54,14 +56,14 @@ Para aplicar una textura a un material simplemente arrastramos la textura al mat
 
 ## Render Mode o Modo de Renderizado
 
-El **modo de renderizado** en Unity define cómo se renderizan los objetos en la escena.
+El **modo de renderizado** define cómo se dibuja un material, en especial si se puede ver a través de él. Se configura en el propio material y sus opciones dependen del shader.
 
-Existen varios modos de renderizado en Unity, como:
+En el shader **Lit** de URP (el habitual en Unity 6) se configura con:
 
-- **Opaque**: Modo de renderizado opaco que no permite ver a través del objeto.
-- **Transparent**: Modo de renderizado transparente que permite ver a través del objeto.
-- **Cutout**: Modo de renderizado con recorte que permite ver a través del objeto con un recorte definido.
-- **Fade**: Modo de renderizado con desvanecimiento que permite ver a través del objeto con un desvanecimiento gradual.
+- **Surface Type**:
+    - **Opaque**: el objeto no permite ver a través de él. Es la opción más eficiente.
+    - **Transparent**: permite ver a través del objeto según la transparencia (canal alfa) de su color o de su textura. En este caso, la opción **Blending Mode** indica cómo se mezcla con lo que hay detrás (Alpha, Additive...).
+- **Alpha Clipping**: recorta las zonas de la textura cuya transparencia está por debajo de un umbral, dejándolas totalmente invisibles. Es útil, por ejemplo, para hojas de árboles o vallas.
 
-El modo de renderizado se puede configurar en el material de un objeto para definir cómo se renderiza en la escena.
+En el shader **Standard** del pipeline antiguo (*Built-in*), estas mismas opciones aparecen como **Rendering Mode**: *Opaque*, *Cutout* (equivalente a Alpha Clipping), *Fade* y *Transparent*.
 

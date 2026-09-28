@@ -12,26 +12,44 @@ A pesar de esto, Unity nos ofrece una serie de etiquetas preestablecidas que sue
 ![Tags](../../../static/img/apuntes_unity/tag.png)
 
 Podemos crear nuestros propios tags seleccionando el objeto al que queremos añadir la etiqueta y en el desplegable seleccionando una de las etiquetas existentes o seleccionando la opción de añadir una nueva, la cuál pasará a estar disponible en la lista desplegable a partir de entonces. 
-Los tags deben ser lo más representativos en su denominación y evitar el uso de caracteres especiales y seguir el estilo CamelCase. 
+Los tags deben ser lo más representativos en su denominación y evitar el uso de caracteres especiales y seguir el estilo PascalCase (por ejemplo, `Enemy`, `PowerUp`). Cada objeto solo puede tener **un** tag.
 
-También se pueden crear Subtags o Sub etiquetas concatenando las etiquetas padre con las etiquetas hijas junto con una barra (“/”) en medio. 
-Por ejemplo, si tenemos el tag Enemy pero queremos tener varios tipos de enemigos, podemos crear las etiquetas Enemy/Goomba o Enemy/Koopa. 
-Esto nos ayudará sobre todo a la hora de organizar nuestros objetos. 
+Todavía no hemos entrado en el scripting en Unity pero para que nos vayamos haciendo una idea del uso de estas tags, pueden servirnos para:
 
-Todavía no hemos entrado en el scripting en Unity pero para que nos vayamos haciendo una idea del uso de estas tags, esto puede servirnos precisamente para acceder a todos los objetos que contengan un tag determinado. 
-Esto se realizará con el método ***FindObjectWithTag(“TAG”)*** de la clase GameObject, método que, como vemos, recibe un tag por parámetro en forma de String. 
+- Comprobar de qué tipo es un objeto con el que hemos chocado, con el método `CompareTag("Enemy")`, que es más eficiente que comparar `gameObject.tag == "Enemy"`.
+- Buscar el primer objeto que tenga un tag con `GameObject.FindWithTag("Player")`, o todos los que lo tengan con `GameObject.FindGameObjectsWithTag("Enemy")`.
+
+```csharp
+private void OnCollisionEnter2D(Collision2D collision)
+{
+    if (collision.gameObject.CompareTag("Enemy"))
+    {
+        Debug.Log("¡Has chocado con un enemigo!");
+    }
+}
+```
+
+:::tip[Cuidado con las búsquedas]
+Las funciones `Find...` recorren todos los objetos de la escena, por lo que no deben usarse en `Update()`. Lo habitual es buscar una sola vez en `Start()` y guardar la referencia, o mejor aún, asignarla desde el inspector.
+:::
 
 ## Sobre los Layers
 
 Las capas o layers de una escena nos servirán para agrupar varios objetos de la escena y esta agrupación no va a ser representada en la escena (como sí ocurre en otros motores), si no que sirve para ciertas acciones específicas, como puede ser decidir qué capas se van a renderizar en cámara, qué capas van a recibir iluminación o con cuales se van a detectar colisiones mediante código y el raycast. 
 
-Estas capas también nos sirven para decidir qué objetos se van a mostrar por delante unos de otros en un proyecto 2D, aunque esto podemos también definirlo en una misma capa. 
+En proyectos 2D, el orden en que se dibujan los sprites (qué se ve por delante) **no** se controla con los layers, sino con los **Sorting Layers** y la propiedad **Order in Layer** del componente Sprite Renderer, que se configuran en **Edit → Project Settings → Tags and Layers**. 
 
 Para crear un nuevo Layer, al igual que con las tags, debemos tener seleccionado un objeto de la escena y en el desplegable de los layers escoger la opción de añadir uno nuevo. Al seleccionar esta opción, podremos ver las capas ya creadas por defecto y las que nosotros hemos creado. 
 
-Las capas de la 0 a la 7 son capas reservadas por Unity, mientras que las capas de la 8 a la 31 son capas que nosotros podremos utilizar para lo que queramos.
+Existen 32 capas (de la 0 a la 31). Las capas 0, 1, 2, 4 y 5 son capas integradas de Unity (*Default*, *TransparentFX*, *Ignore Raycast*, *Water* y *UI*) y no se pueden renombrar. El resto (la 3, la 6, la 7 y de la 8 a la 31) son capas que nosotros podremos utilizar para lo que queramos.
 
-El index o índice de las capas es importante ya que podremos utilizarlo por código para poder referenciar los layers. 
+El index o índice de las capas es importante ya que podremos utilizarlo por código para poder referenciar los layers. Lo más cómodo, sin embargo, es declarar una variable de tipo `LayerMask` pública o con `[SerializeField]` y elegir las capas desde el inspector:
+
+```csharp
+[SerializeField] private LayerMask groundLayer;
+
+bool enSuelo = Physics2D.OverlapCircle(transform.position, 0.1f, groundLayer);
+```
 
 ![Layers](../../../static/img/apuntes_unity/layers.png)
 

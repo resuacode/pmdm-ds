@@ -42,32 +42,76 @@ fun ListaHorizontal() {
 
 En el ejemplo anterior, se define un componente `ListaHorizontal` que muestra una lista de 100 elementos horizontales utilizando `LazyRow`. El método `items()` de `LazyRow` se utiliza para generar los elementos de la lista en función de un rango de índices.
 
-## Scroll infinito
+## Listas a partir de una colección
 
-Puedes implementar el scroll infinito en las listas de Compose utilizando el método `items()` de `LazyColumn` o `LazyRow` y pasando una lista infinita como argumento. Esto te permite cargar nuevos elementos a medida que el usuario se desplaza por la lista.
+Lo más habitual no es mostrar un número fijo de elementos, sino los elementos de una lista de datos. Para ello, a `items()` le pasamos directamente la lista:
 
 ```kotlin
-@Composable
-fun ScrollInfinito() {
-    val elementos = remember { mutableStateListOf<String>() }
+data class Tarea(val id: Int, val titulo: String)
 
-    LazyColumn {
-        items(elementos) { elemento ->
-            Text(text = elemento)
+@Composable
+fun ListaTareas(tareas: List<Tarea>, modifier: Modifier = Modifier) {
+    LazyColumn(modifier = modifier) {
+        items(tareas, key = { tarea -> tarea.id }) { tarea ->
+            Text(text = tarea.titulo)
         }
     }
 }
 ```
 
-En el ejemplo anterior, se define un componente `ScrollInfinito` que muestra una lista de elementos utilizando `LazyColumn`. Se utiliza un estado mutable `mutableStateListOf` para almacenar los elementos de la lista, y se pasa esta lista como argumento al método `items()` de `LazyColumn`. Esto permite cargar nuevos elementos a medida que el usuario se desplaza por la lista.
+El parámetro `key` indica un identificador único para cada elemento. No es obligatorio, pero es muy recomendable cuando los elementos se pueden añadir, borrar o reordenar, ya que ayuda a Compose a saber qué elemento es cada uno y a no redibujar la lista entera.
 
-El manejo del scroll infinito en Compose es similar al manejo del scroll infinito en otras bibliotecas de UI, como RecyclerView en Android. Puedes utilizar técnicas como la paginación y la carga perezosa para cargar nuevos elementos a medida que el usuario se desplaza por la lista.
+:::warning[Import de `items`]
+Si Android Studio marca en rojo `items(tareas)`, hay que importar la función `androidx.compose.foundation.lazy.items`, que es la versión que acepta una lista.
+:::
 
-El estado mutable `mutableStateListOf` se utiliza para almacenar los elementos de la lista y notificar a Compose cuando se actualizan los elementos. Esto permite que Compose vuelva a renderizar la lista con los nuevos elementos.
+También podemos mezclar elementos individuales con listas usando `item { }`, por ejemplo para añadir una cabecera:
+
+```kotlin
+LazyColumn {
+    item { Text("Mis tareas", style = MaterialTheme.typography.titleLarge) }
+    items(tareas, key = { it.id }) { tarea -> Text(tarea.titulo) }
+}
+```
+
+## Scroll infinito
+
+El scroll infinito consiste en cargar más elementos (por ejemplo, la siguiente página de resultados de una API) cuando el usuario llega al final de la lista. Para detectarlo, usamos el estado de la lista (`LazyListState`) y `derivedStateOf`:
+
+```kotlin
+@Composable
+fun ScrollInfinito(
+    elementos: List<String>,
+    onCargarMas: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val listState = rememberLazyListState()
+
+    // true cuando el último elemento visible es uno de los últimos 3 de la lista
+    val cercaDelFinal by remember {
+        derivedStateOf {
+            val ultimoVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            ultimoVisible >= listState.layoutInfo.totalItemsCount - 3
+        }
+    }
+
+    LaunchedEffect(cercaDelFinal) {
+        if (cercaDelFinal) onCargarMas()
+    }
+
+    LazyColumn(state = listState, modifier = modifier) {
+        items(elementos) { elemento ->
+            Text(text = elemento, modifier = Modifier.padding(16.dp))
+        }
+    }
+}
+```
+
+En el ejemplo anterior, cuando el usuario se acerca al final de la lista se llama a `onCargarMas()`, que normalmente será una función del ViewModel que pide más datos y los añade a la lista. Para casos más complejos existe la librería [Paging 3](https://developer.android.com/topic/libraries/architecture/paging/v3-overview?hl=es-419), que integra la paginación con Compose y Room.
 
 ## Elementos personalizados
 
-Puedes utilizar elementos personalizados en las listas de Compose para mostrar elementos más complejos. Para ello, puedes utilizar el método `item()` de `LazyColumn` o `LazyRow` y pasar un componente personalizado como argumento.
+Puedes utilizar elementos personalizados en las listas de Compose para mostrar elementos más complejos. Para ello, basta con llamar a tu propio composable dentro del bloque de `items()`.
 
 ```kotlin
 @Composable
@@ -109,7 +153,7 @@ En el ejemplo anterior, se define un componente `ListaConClics` que muestra una 
 
 ## Separadores
 
-Puedes añadir separadores entre los elementos de la lista utilizando el método `item()` de `LazyColumn` o `LazyRow` y pasando un componente separador como argumento.
+Puedes añadir separadores entre los elementos de la lista incluyendo un `HorizontalDivider` junto a cada elemento.
 
 ```kotlin
 @Composable
@@ -118,14 +162,16 @@ fun ListaConSeparadores() {
         items(100) { index ->
             Column {
                 ElementoPersonalizado(index)
-                Divider()
+                HorizontalDivider()
             }
         }
     }
 }
 ```
 
-En el ejemplo anterior, se define un componente `ListaConSeparadores` que muestra una lista de 100 elementos utilizando `LazyColumn`. Se añade un separador `Divider()` entre cada elemento de la lista.
+En el ejemplo anterior, se define un componente `ListaConSeparadores` que muestra una lista de 100 elementos utilizando `LazyColumn`. Se añade un separador `HorizontalDivider()` entre cada elemento de la lista.
+
+Si solo queremos dejar espacio entre los elementos, es más sencillo usar el parámetro `verticalArrangement` de la lista: `LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp))`. Y para dejar espacio al principio y al final sin que se recorte el contenido al hacer scroll, `contentPadding = PaddingValues(16.dp)`.
 
 ## Filtrado y ordenación
 
@@ -146,6 +192,10 @@ fun ListaFiltrada() {
 
 En el ejemplo anterior, se define un componente `ListaFiltrada` que muestra una lista de números pares del 0 al 100 utilizando `LazyColumn`. Se filtran los números pares utilizando la función de extensión `filter()`.
 
+:::tip[Dónde filtrar y ordenar]
+En una app real, el filtrado y la ordenación deberían hacerse en el ViewModel (o en la consulta a la base de datos), no dentro del composable, ya que el composable puede recomponerse muchas veces y repetiría el cálculo en cada una.
+:::
+
 ## Porqué usar LazyColumn y LazyRow en lugar de Column y Row
 
 `LazyColumn` y `LazyRow` son componentes optimizados para mostrar listas de elementos de forma eficiente y reactiva. A diferencia de `Column` y `Row`, que renderizan todos los elementos de la lista de forma inmediata, `LazyColumn` y `LazyRow` renderizan solo los elementos visibles en la pantalla y los elementos que están cerca de la zona visible.
@@ -154,14 +204,14 @@ Esto hace que `LazyColumn` y `LazyRow` sean más eficientes en términos de rend
 
 Por lo tanto, es recomendable utilizar `LazyColumn` y `LazyRow` para mostrar listas de elementos en Jetpack Compose, ya que proporcionan una experiencia de usuario más fluida y eficiente.
 
-## Cuadrículsa o Grids
+## Cuadrículas o Grids
 
 En Jetpack Compose, puedes mostrar listas de elementos en forma de cuadrículas utilizando el componente `LazyVerticalGrid` o `LazyHorizontalGrid`. Estos componentes te permiten mostrar una cuadrícula de elementos de forma eficiente y reactiva.
 
 ```kotlin
 @Composable
 fun CuadriculaVertical() {
-    LazyVerticalGrid(cells = GridCells.Fixed(3)) {
+    LazyVerticalGrid(columns = GridCells.Fixed(3)) {
         items(100) { index ->
             Text(text = "Elemento $index")
         }
@@ -174,7 +224,7 @@ En el ejemplo anterior, se define un componente `CuadriculaVertical` que muestra
 ```kotlin
 @Composable
 fun CuadriculaHorizontal() {
-    LazyHorizontalGrid(cells = GridCells.Fixed(3)) {
+    LazyHorizontalGrid(rows = GridCells.Fixed(3)) {
         items(100) { index ->
             Text(text = "Elemento $index")
         }
@@ -183,4 +233,20 @@ fun CuadriculaHorizontal() {
 ```
 
 En el ejemplo anterior, se define un componente `CuadriculaHorizontal` que muestra una cuadrícula de 100 elementos en 3 filas utilizando `LazyHorizontalGrid`. El método `items()` de `LazyHorizontalGrid` se utiliza para generar los elementos de la cuadrícula en función de un rango de índices.
+
+En lugar de un número fijo de columnas, podemos indicar un tamaño mínimo para cada celda con `GridCells.Adaptive`. Así, la cuadrícula muestra tantas columnas como quepan, lo que la adapta automáticamente a móviles, tablets o la pantalla en horizontal:
+
+```kotlin
+LazyVerticalGrid(
+    columns = GridCells.Adaptive(minSize = 128.dp),
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp)
+) {
+    items(fotos) { foto -> TarjetaFoto(foto) }
+}
+```
+
+## Recursos
+
+- [Listas y cuadrículas - Documentación oficial](https://developer.android.com/develop/ui/compose/lists?hl=es-419)
 

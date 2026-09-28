@@ -19,9 +19,9 @@ Las *scope functions* en Kotlin son las siguientes:
 
 ## `let`
 
-La función `let` te permite ejecutar un bloque de código en el contexto de un objeto y devolver el resultado de la última expresión del bloque. 
+La función `let` te permite ejecutar un bloque de código en el contexto de un objeto, al que se accede con `it`, y devuelve el resultado de la última expresión del bloque. 
 
-La función `let` se utiliza para realizar operaciones en un objeto y devolver un resultado.
+Su uso más habitual es combinarla con `?.` para ejecutar código solo si un valor no es nulo.
 
 ```kotlin
 val resultado = persona?.let {
@@ -35,9 +35,7 @@ En el ejemplo anterior, se utiliza la función `let` para acceder a las propieda
 
 ## `run`
 
-A diferencia de `let`, la función `run` te permite acceder a las propiedades y métodos del objeto sin necesidad de utilizar `it`.
-
-La función `run` se utiliza para realizar operaciones en un objeto y devolver un resultado.
+A diferencia de `let`, la función `run` te permite acceder a las propiedades y métodos del objeto directamente (el objeto es `this`), sin necesidad de utilizar `it`. También devuelve el resultado de la última expresión del bloque.
 
 ```kotlin
 val resultado = persona?.run {
@@ -51,9 +49,7 @@ En el ejemplo anterior, se utiliza la función `run` para acceder a las propieda
 
 ## `with`
 
-La función `with` es similar a `run`, pero se utiliza con un objeto como argumento en lugar de un receptor.
-
-La función `with` se utiliza para realizar operaciones en un objeto y devolver un resultado.
+La función `with` es similar a `run`, pero en lugar de llamarse sobre el objeto (`persona.run { }`), recibe el objeto como argumento (`with(persona) { }`). Dentro del bloque el objeto es `this` y se devuelve el resultado de la última expresión. No se puede combinar con `?.`, por lo que se usa con objetos no nulos.
 
 ```kotlin
 val resultado = with(persona) {
@@ -67,9 +63,7 @@ En el ejemplo anterior, se utiliza la función `with` para acceder a las propied
 
 ## `apply`
 
-A diferencia de las funciones anteriores, la función `apply` se utiliza para realizar operaciones en un objeto y devolver el objeto modificado.
-
-La función `apply` se utiliza para realizar operaciones en un objeto y devolver el objeto modificado.
+A diferencia de las funciones anteriores, la función `apply` no devuelve el resultado del bloque, sino **el propio objeto**. Dentro del bloque el objeto es `this`. Se usa mucho para configurar un objeto justo después de crearlo.
 
 ```kotlin
 val resultado = persona?.apply {
@@ -79,13 +73,20 @@ val resultado = persona?.apply {
 }
 ```
 
-En el ejemplo anterior, se utiliza la función `apply` para acceder a las propiedades `nombre` y `edad` del objeto `persona` y modificar la edad incrementándola en 1.
+En el ejemplo anterior, se utiliza la función `apply` para acceder a las propiedades `nombre` y `edad` del objeto `persona` y modificar la edad incrementándola en 1. `resultado` es el propio objeto `persona`, ya modificado.
+
+Un ejemplo muy típico de `apply` es inicializar un objeto:
+
+```kotlin
+val persona = Persona().apply {
+    nombre = "Ana"
+    edad = 20
+}
+```
 
 ## `also`
 
-La función `also` es similar a `apply`, pero se utiliza con un objeto como argumento en lugar de un receptor.
-
-La función `also` se utiliza para realizar operaciones en un objeto y devolver el objeto original.
+La función `also` es similar a `apply`, ya que también devuelve el propio objeto, pero dentro del bloque se accede a él con `it` en lugar de `this`. Se suele usar para acciones "secundarias", como mostrar un log o guardar una referencia, sin modificar el objeto.
 
 ```kotlin
 val resultado = persona?.also {
@@ -102,12 +103,18 @@ En resumen, las *scope functions* en Kotlin te permiten ejecutar un bloque de c�
 
 Podríamos decir que las diferencias generales son las siguientes:
 
-- `let` se utiliza para realizar operaciones en un objeto y devolver un resultado.
-- `run` se utiliza para acceder a las propiedades y métodos del objeto sin necesidad de utilizar `it`.
-- `with` es similar a `run`, pero se utiliza con un objeto como argumento en lugar de un receptor.
-- `apply` se utiliza para realizar operaciones en un objeto y devolver el objeto modificado.
-- `also` es similar a `apply`, pero se utiliza con un objeto como argumento en lugar de un receptor.
+| Función | Referencia al objeto | Valor devuelto | Uso típico |
+|---------|---------------------|----------------|------------|
+| `let` | `it` | Resultado del bloque | Ejecutar código si no es nulo (`x?.let { }`) |
+| `run` | `this` | Resultado del bloque | Configurar y calcular un resultado |
+| `with` | `this` | Resultado del bloque | Agrupar llamadas sobre un objeto no nulo |
+| `apply` | `this` | El propio objeto | Configurar un objeto al crearlo |
+| `also` | `it` | El propio objeto | Acciones adicionales (logs, validaciones) |
 
 En la siguiente imagen se muestra un resumen visual de las diferencias entre las *scope functions*:
 
-![Scope functions en Kotlin](https://miro.medium.com/v2/resize:fit:1200/1*OForiGdp4oIicDzbDOgQWg.jpeg)
+![Scope functions en Kotlin](/img/apuntes_android/scope_functions.jpg)
+
+:::tip[Recursos]
+- [Documentación oficial de Kotlin sobre scope functions](https://kotlinlang.org/docs/scope-functions.html)
+:::

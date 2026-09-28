@@ -20,7 +20,7 @@ En Kotlin, los tipos de datos pueden ser nulos o no nulos.
 
 - **Tipos de datos no nulos**: Los tipos de datos no nulos no pueden contener valores nulos y deben ser inicializados con un valor no nulo.
 
-- **Tipos de datos nulos**: Los tipos de datos nulos pueden contener valores nulos y deben ser inicializados con un valor nulo o con la función `null`.
+- **Tipos de datos nulables**: Los tipos de datos nulables se indican añadiendo `?` al tipo (`String?`, `Int?`...) y pueden contener tanto un valor de ese tipo como `null`.
 
 ```kotlin
 val nombre: String = "Juan" // Tipo de dato no nulo
@@ -43,11 +43,11 @@ En Kotlin, puedes utilizar operadores de seguridad de nulos para manejar los val
 ```kotlin
 val nombre: String? = null
 
-val longitud = nombre?.length // null
+val longitud1 = nombre?.length // null
 
-val longitud = nombre?.length ?: 0 // 0
+val longitud2 = nombre?.length ?: 0 // 0
 
-val longitud = nombre!!.length // Lanza una excepción de referencia nula
+val longitud3 = nombre!!.length // Lanza una NullPointerException
 ```
 
 En el ejemplo anterior, la variable `nombre` es de tipo `String?` nulo, por lo que puede contener un valor nulo.
@@ -57,6 +57,30 @@ En el ejemplo anterior, la variable `nombre` es de tipo `String?` nulo, por lo q
 - En la segunda línea, se utiliza el operador de elvis `?:` para proporcionar un valor predeterminado de `0` en caso de que la expresión `nombre?.length` sea nula. Como `nombre` es nulo, la expresión `nombre?.length ?: 0` devuelve `0`.
 
 - En la tercera línea, se utiliza el operador de no nulo `!!` para forzar la ejecución de la expresión `nombre!!.length`. Como `nombre` es nulo, la expresión `nombre!!.length` lanza una excepción de referencia nula.
+
+## Smart casts
+
+Si comprobamos que una variable nulable no es `null`, el compilador nos deja usarla directamente como si fuera no nulable dentro de ese bloque. Esto se conoce como *smart cast*:
+
+```kotlin
+fun imprimirLongitud(texto: String?) {
+    if (texto != null) {
+        println(texto.length) // Aquí texto ya es de tipo String
+    } else {
+        println("No hay texto")
+    }
+}
+```
+
+Otra forma muy habitual de ejecutar código solo si un valor no es nulo es combinar `?.` con la función `let`:
+
+```kotlin
+nombre?.let { println("El nombre tiene ${it.length} letras") }
+```
+
+:::warning[Evita el operador `!!`]
+El operador `!!` le dice al compilador "confía en mí, esto nunca es nulo". Si nos equivocamos, la app se cierra con una `NullPointerException`. Siempre que sea posible, es preferible usar `?.`, `?:`, una comprobación con `if` o `let`.
+:::
 
 ## Funciones de extensión de seguridad de nulos
 
@@ -83,6 +107,6 @@ Al utilizar tipos de datos nulos y operadores de seguridad de nulos, puedes prev
 :::tip[Recursos]
 - [Documentación oficial de Kotlin sobre seguridad de nulos](https://kotlinlang.org/docs/null-safety.html)
 - [Kotlin Playground](https://play.kotlinlang.org/): Un entorno de programación en línea para probar y aprender Kotlin.
-- [Apuntes Kotlin](https://github.com/resuadam2/kotlin-apuntes): Un repositorio con apuntes y ejemplos de Kotlin.
+- [Apuntes Kotlin](https://github.com/resuacode/kotlin-apuntes): Un repositorio con apuntes y ejemplos de Kotlin.
 :::
 

@@ -1,16 +1,10 @@
-import CodeBlock from '@theme/CodeBlock';
-
 # Conexión a internet
 
 ## Corrutinas en Android
 
-Las corutinas en Android son una forma de escribir código asíncrono de forma más sencilla y concisa. Las corutinas te permiten ejecutar tareas en segundo plano de forma eficiente y reactiva, sin bloquear el hilo principal de la aplicación. Las corutinas en Android se basan en el concepto de suspensión, que te permite pausar la ejecución de una tarea hasta que se complete una operación asíncrona, como una petición HTTP o una consulta a la base de datos.
+Las corrutinas en Android son la forma recomendada de escribir código asíncrono. Permiten ejecutar tareas largas, como una petición HTTP o una consulta a la base de datos, **sin bloquear el hilo principal**, que es el encargado de dibujar la interfaz y responder al usuario. Si lo bloqueamos, la app se congela y, pasados unos segundos, Android muestra el diálogo de "La aplicación no responde" (ANR).
 
-Las corutinas en Android se utilizan principalmente para realizar operaciones asíncronas, como peticiones HTTP, consultas a la base de datos y operaciones de E/S. Las corutinas te permiten escribir código asíncrono de forma más sencilla y reactiva, sin tener que utilizar callbacks o interfaces de usuario complejas. Las corutinas en Android se basan en el concepto de suspensión, que te permite pausar la ejecución de una tarea hasta que se complete una operación asíncrona. 
-
-Para implementar una clase que se ejecute en segundo plano debe crearse una suspend function, que es una función que puede pausar su ejecución. Para ello, se utiliza la palabra clave `suspend` antes de la declaración de la función. 
-
-Por ejemplo, el siguiente código muestra un objeto que comienza un conteo en segundo plano y lo actualiza cada segundo:
+Ya vimos los conceptos básicos en el apartado de [corrutinas en Kotlin](./1-sobre-kotlin/51-corrutinas.mdx). Recordemos que una función que puede pausar su ejecución sin bloquear el hilo se marca con la palabra clave `suspend`:
 
 ```kotlin
 object Timer {
@@ -25,11 +19,9 @@ object Timer {
 }
 ```
 
-En este ejemplo, la función `start` es una suspend function que inicia un conteo en segundo plano y llama a un callback cada segundo con el valor actual del contador. 
+En este ejemplo, la función `start` es una suspend function que inicia un conteo y llama a un callback cada segundo con el valor actual del contador. La función `delay` suspende la corrutina durante un segundo sin bloquear el hilo.
 
-La función `delay` se utiliza para pausar la ejecución de la tarea durante un segundo.
-
-Para llamar a una suspend function desde una función principal, se utiliza la función `runBlocking`, que crea un bloque de código que ejecuta la tarea de forma síncrona. Por ejemplo, el siguiente código muestra cómo llamar a la función `start` desde una función principal:
+Una función `suspend` solo puede llamarse desde una corrutina. En un programa de consola podemos crear una con `runBlocking`, que bloquea el hilo hasta que termina:
 
 ```kotlin
 fun main() {
@@ -41,26 +33,27 @@ fun main() {
 }
 ```
 
-En este ejemplo, la función `main` llama a la función `start` de forma síncrona utilizando `runBlocking`. La función `start` inicia un conteo en segundo plano y llama a un callback cada segundo con el valor actual del contador. 
+En Android **nunca** usaremos `runBlocking`, sino los ámbitos de corrutinas (*coroutine scopes*) que nos proporciona Jetpack y que se cancelan automáticamente cuando dejan de ser necesarios:
 
-Las corutinas en Android te permiten escribir código asíncrono de forma más sencilla y reactiva, sin tener que utilizar callbacks o interfaces de usuario complejas. Las corutinas se basan en el concepto de suspensión, que te permite pausar la ejecución de una tarea hasta que se complete una operación asíncrona.
+- `viewModelScope`: dentro de un ViewModel. Es el que usaremos para las peticiones a internet y a la base de datos.
+- `LaunchedEffect` y `rememberCoroutineScope()`: dentro de un composable.
 
 ![Corroutine Scope](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-coroutines-android-studio/img/a3c314fb082a9626_960.png?hl=es-419)
 
 :::tip[La palabra clave suspend]
-La palabra clave suspend en kotlin se utiliza para marcar una función que puede pausar su ejecución y reanudarla más tarde. Las funciones suspendidas se utilizan en las corutinas para realizar operaciones asíncronas de forma reactiva y eficiente.
+La palabra clave suspend en Kotlin se utiliza para marcar una función que puede pausar su ejecución y reanudarla más tarde. Las funciones suspendidas se utilizan en las corrutinas para realizar operaciones asíncronas de forma eficiente.
 :::
 
 ### LaunchedEffect para ejecutar tareas en segundo plano en Jetpack Compose
 
-LaunchedEffect es una función de Jetpack Compose que te permite ejecutar una tarea en segundo plano cuando un composable se coloca en la jerarquía de composición.
+`LaunchedEffect` es un composable que lanza una corrutina cuando entra en la composición y la **cancela automáticamente** cuando sale de ella.
 
 Por ejemplo, el siguiente código muestra un composable que muestra un contador que se actualiza cada segundo:
 
 ```kotlin
 @Composable
 fun Timer() {
-    var count by remember { mutableStateOf(0) }
+    var count by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -73,111 +66,57 @@ fun Timer() {
 }
 ```
 
-En este ejemplo, el composable `Timer` muestra un contador que se actualiza cada segundo. La función `LaunchedEffect` se utiliza para iniciar un bucle infinito que actualiza el contador cada segundo. La función `delay` se utiliza para pausar la ejecución del bucle durante un segundo.    
+En este ejemplo, el composable `Timer` muestra un contador que se actualiza cada segundo. `LaunchedEffect` inicia un bucle infinito que, gracias a `delay`, no bloquea el hilo. Cuando `Timer` deja de mostrarse (por ejemplo, al navegar a otra pantalla), la corrutina se cancela sola, por lo que no hace falta hacer nada para detenerla.
 
-### Alcance de las corutinas en Jetpack Compose
+El parámetro de `LaunchedEffect` (en el ejemplo, `Unit`) es la **clave**: si cambia, la corrutina en curso se cancela y se lanza una nueva. Con `Unit` se ejecuta una sola vez. Si, por ejemplo, queremos volver a cargar datos cada vez que cambia un identificador, lo pasamos como clave:
 
-En Jetpack Compose, las corutinas se ejecutan en el alcance de un composable, lo que significa que una corutina se cancela automáticamente cuando el composable se elimina de la jerarquía de composición. Esto garantiza que las corutinas se cancelen de forma segura y eficiente cuando ya no son necesarias, evitando posibles fugas de memoria y problemas de rendimiento. 
-
-Por ejemplo, el siguiente código muestra un composable que inicia una corutina cuando se coloca en la jerarquía de composición y la cancela cuando se elimina:
-
-```kotlin 
-@Composable
-fun Timer() {
-    var count by remember { mutableStateOf(0) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(1000)
-            count++
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            // Cancela la corutina cuando el composable se elimina
-            coroutineContext.cancel()
-        }
-    }
-
-    Text(text = "Count: $count")
+```kotlin
+LaunchedEffect(usuarioId) {
+    // Se vuelve a ejecutar cada vez que cambia usuarioId
 }
-``` 
+```
 
-En este ejemplo, el composable `Timer` inicia una corutina cuando se coloca en la jerarquía de composición utilizando `LaunchedEffect` y la cancela cuando se elimina utilizando `DisposableEffect`. La función `onDispose` se utiliza para realizar tareas de limpieza cuando el composable se elimina, como cancelar la corutina.
+### rememberCoroutineScope para lanzar corrutinas desde eventos
 
-### CoroutineScope en Jetpack Compose
-
-En Jetpack Compose, puedes utilizar `coroutineScope` para crear un alcance de corutina que se cancela automáticamente cuando el composable se elimina de la jerarquía de composición. `coroutineScope` es una función de Jetpack Compose que te permite crear un alcance de corutina local que se cancela automáticamente cuando el composable se elimina.  
-
-Por ejemplo, el siguiente código muestra un composable que inicia una corutina utilizando `coroutineScope` y la cancela cuando se elimina:
+`LaunchedEffect` sirve para tareas que se lanzan al mostrarse el composable. Pero si queremos lanzar una corrutina en respuesta a un **evento del usuario**, como pulsar un botón, no podemos usar `LaunchedEffect` dentro de un `onClick`, porque `onClick` no es un composable. Para eso se usa `rememberCoroutineScope()`, que devuelve un ámbito ligado al composable:
 
 ```kotlin
 @Composable
-fun Timer() {
-    var count by remember { mutableStateOf(0) }
+fun Carrera() {
+    var progreso by remember { mutableFloatStateOf(0f) }
+    val scope = rememberCoroutineScope()
 
-    coroutineScope {
-        launch {
-            while (true) {
-                delay(1000)
-                count++
-            }
-        }
-    }
-
-    Text(text = "Count: $count")
-}
-``` 
-
-En este ejemplo, el composable `Timer` inicia una corutina utilizando `coroutineScope` y la cancela automáticamente cuando el composable se elimina. La función `launch` se utiliza para iniciar una corutina en el alcance de `coroutineScope` que actualiza el contador cada segundo. 
-
-`coroutineScope` es una función de Jetpack Compose que te permite crear un alcance de corutina local que se cancela automáticamente cuando el composable se elimina. `coroutineScope` es útil para iniciar corutinas en un composable y garantizar que se cancelen de forma segura y eficiente cuando ya no son necesarias. 
-
-### CoroutineScope en un LaunchedEffect
-
-En Jetpack Compose, puedes utilizar `coroutineScope` en un `LaunchedEffect` para crear un alcance de corutina local que se cancela automáticamente cuando el composable se elimina de la jerarquía de composición. `coroutineScope` es una función de Jetpack Compose que te permite crear un alcance de corutina local que se cancela automáticamente cuando el composable se elimina. 
-
-Por ejemplo, el siguiente código muestra un composable que inicia una corutina utilizando `coroutineScope` en un `LaunchedEffect` y la cancela cuando se elimina:
-
-```kotlin
-@Composable
-fun Timer() {
-    var count by remember { mutableStateOf(0) }
-
-    LaunchedEffect(Unit) {
-        coroutineScope {
-            launch {
-                while (true) {
-                    delay(1000)
-                    count++
+    Column {
+        LinearProgressIndicator(progress = { progreso })
+        Button(onClick = {
+            scope.launch {
+                progreso = 0f
+                while (progreso < 1f) {
+                    delay(100)
+                    progreso += 0.05f
                 }
             }
+        }) {
+            Text("Empezar")
         }
     }
-
-    Text(text = "Count: $count")
 }
-``` 
+```
 
-En este ejemplo, el composable `Timer` inicia una corutina utilizando `coroutineScope` en un `LaunchedEffect` y la cancela automáticamente cuando el composable se elimina. La función `launch` se utiliza para iniciar una corutina en el alcance de `coroutineScope` que actualiza el contador cada segundo.  
+Las corrutinas lanzadas con este `scope` también se cancelan automáticamente cuando el composable sale de la composición.
 
-`coroutineScope` es una función de Jetpack Compose que te permite crear un alcance de corutina local que se cancela automáticamente cuando el composable se elimina. `coroutineScope` es útil para iniciar corutinas en un composable y garantizar que se cancelen de forma segura y eficiente cuando ya no son necesarias. 
-
-Un ejemplo de uso podemos encontrarlo en el siguiente Codelab en el que se implemmenta una carrera ficticia entre dos jugadores:
-
-[Codelab: Carrera de coches ficticia](https://developer.android.com/codelabs/basic-android-kotlin-compose-coroutines-android-studio?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-5-pathway-1%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-coroutines-android-studio)
-
-:::info[CoroutineContext]
-El contexto de la corrutina es un objeto que proporciona información sobre la corutina, como su alcance, su trabajo y su estado. El contexto de la corutina se utiliza para gestionar la ejecución de la corutina y proporcionar información sobre su estado y progreso.
+:::warning[Corrutinas en los composables o en el ViewModel]
+`LaunchedEffect` y `rememberCoroutineScope` están pensados para lógica **de la interfaz** (animaciones, mostrar un snackbar, desplazar una lista...). Las operaciones que obtienen o guardan datos, como las peticiones a internet, deben lanzarse desde el **ViewModel** con `viewModelScope`, que sobrevive a los giros de pantalla. Si lanzáramos una petición desde un composable, se cancelaría y repetiría cada vez que se gira la pantalla.
 :::
 
-:::tip[LaunchedEffect]
-LaunchedEffect es una función de Jetpack Compose que te permite ejecutar una tarea en segundo plano cuando un composable se coloca en la jerarquía de composición. LaunchedEffect es útil para realizar operaciones asíncronas, como peticiones HTTP, consultas a la base de datos y operaciones de E/S.
+Un ejemplo de uso de corrutinas en Compose podemos encontrarlo en el siguiente Codelab, en el que se implementa una carrera ficticia entre dos jugadores:
 
-Una de las principales ventajas del uso de LaunchedEffect es que se ejecuta en el alcance de un composable, lo que significa que se cancela automáticamente cuando el composable se elimina de la jerarquía de composición. Esto garantiza que las tareas en segundo plano se cancelen de forma segura y eficiente cuando ya no son necesarias, evitando posibles fugas de memoria y problemas de rendimiento.
-Esto hace que no sea necesario preocuparse por la cancelación manual de las tareas en segundo plano, ya que Jetpack Compose se encarga de ello de forma automática. 
-Tampoco debemos preocuparnos de proporcionar un componente Dispatcher de forma explícita, ya que LaunchedEffect utiliza el Dispatcher predeterminado de la corrutina para ejecutar la tarea en segundo plano. 
+[Codelab: Carrera de coches ficticia](https://developer.android.com/codelabs/basic-android-kotlin-compose-coroutines-android-studio?hl=es-419)
+
+:::tip[LaunchedEffect]
+Una de las principales ventajas del uso de `LaunchedEffect` es que se ejecuta en el ámbito del composable, lo que significa que se cancela automáticamente cuando el composable se elimina de la composición. Esto evita que queden tareas ejecutándose cuando ya no son necesarias.
+
+Las corrutinas de `LaunchedEffect`, `rememberCoroutineScope` y `viewModelScope` se ejecutan por defecto en el hilo principal (`Dispatchers.Main`). Esto no es un problema mientras solo llamemos a funciones `suspend` (como `delay` o las de Retrofit y Room), ya que suspenden sin bloquear. Si necesitamos hacer un trabajo pesado que bloquee (leer un fichero, un cálculo largo...), lo envolveremos en `withContext(Dispatchers.IO)` o `withContext(Dispatchers.Default)`.
 :::
 
 ## Formas de conectarse a internet desde una app
@@ -188,9 +127,9 @@ Para conectarse a internet en una aplicación Android con Jetpack Compose, puede
 
 - **Retrofit**: Retrofit es una biblioteca de cliente HTTP para Android y Java que facilita la conexión a servicios web RESTful. Puedes utilizar Retrofit para realizar peticiones HTTP a un servidor y obtener los datos necesarios para tu aplicación.
 
-- **Ktor**: Ktor es un framework de cliente y servidor web en Kotlin que te permite crear aplicaciones web
+- **Ktor Client**: Ktor es un framework de JetBrains, escrito en Kotlin, para crear clientes y servidores web. Su cliente HTTP es una alternativa a Retrofit muy usada en proyectos Kotlin Multiplatform.
 
-- **Volley**: Volley es una biblioteca de red que facilita la conexión a servicios web en Android. Puedes utilizar Volley para realizar peticiones HTTP y gestionar las respuestas de forma sencilla.
+- **Volley**: Volley es una biblioteca de red de Google, más antigua, que facilita la conexión a servicios web en Android. Hoy en día apenas se usa en proyectos nuevos.
 
 Vamos a centrarnos en la primera opción, Retrofit, que es una de las bibliotecas más utilizadas para conectarse a servicios web en Android. 
 
@@ -219,9 +158,9 @@ Para implementar Retrofit en una aplicación Android con Jetpack Compose, puedes
 
 1. **Definir la interfaz de servicio web**: Define una interfaz que contenga las operaciones disponibles en el servicio web y anótala con las anotaciones de Retrofit, como `@GET`, `@POST`, `@PUT` y `@DELETE`. Por ejemplo, puedes definir una interfaz `ApiService` que contenga métodos para obtener y enviar datos al servidor.
 
-2. **Crear una instancia de Retrofit**: Crea una instancia de Retrofit utilizando el constructor de `Retrofit.Builder` y configura la URL base del servicio web y el convertidor de JSON. Por ejemplo, puedes crear una instancia de Retrofit que se conecte a un servidor en `https://api.example.com` y utilice el convertidor de JSON de Gson.
+2. **Crear una instancia de Retrofit**: Crea una instancia de Retrofit utilizando `Retrofit.Builder` y configura la URL base del servicio web y el convertidor de JSON. Por ejemplo, puedes crear una instancia de Retrofit que se conecte a un servidor en `https://api.example.com/` y utilice el convertidor de JSON de Gson.
 
-3. **Crear una instancia del servicio web**: Crea una instancia del servicio web a partir de la interfaz de servicio web y la instancia de Retrofit. Por ejemplo, puedes crear una instancia del servicio web a partir de la interfaz `ApiService` y la instancia de Retrofit.
+3. **Crear una instancia del servicio web**: Crea una instancia del servicio web a partir de la interfaz de servicio web y la instancia de Retrofit.
 
 4. **Realizar peticiones HTTP**: Utiliza la instancia del servicio web para realizar peticiones HTTP al servidor y obtener los datos necesarios para tu aplicación. Por ejemplo, puedes utilizar el método `getUsers()` de la interfaz `ApiService` para obtener una lista de usuarios del servidor.
 
@@ -229,9 +168,12 @@ Para implementar Retrofit en una aplicación Android con Jetpack Compose, puedes
 
 ## Ejemplo sencillo de implementación
 
-A continuación, se muestra un ejemplo de implementación de Retrofit en una aplicación Android con Jetpack Compose:
+A continuación, se muestra un resumen de todas las piezas de Retrofit juntas:
 
 ```kotlin
+// Modelo de datos que representa cada usuario del JSON
+data class User(val id: Int, val name: String)
+
 // Define la interfaz de servicio web con las operaciones disponibles
 interface ApiService {
     @GET("users")
@@ -240,20 +182,18 @@ interface ApiService {
 
 // Crea una instancia de Retrofit con la URL base y el convertidor de JSON
 val retrofit = Retrofit.Builder()
-    .baseUrl("https://api.example.com")
+    .baseUrl("https://api.example.com/")
     .addConverterFactory(GsonConverterFactory.create())
     .build()
 
-// Crea una instancia del servicio web a partir de la interfaz de servicio web y la instancia de Retrofit
+// Crea una instancia del servicio web a partir de la interfaz y de Retrofit
 val apiService = retrofit.create(ApiService::class.java)
 
-// Realiza una petición HTTP al servidor para obtener una lista de usuarios
+// Realiza una petición HTTP (desde una corrutina, ya que getUsers es suspend)
 val users = apiService.getUsers()
 ```
 
-En este ejemplo, se define una interfaz `ApiService` con el método `getUsers()` que realiza una petición GET al servidor para obtener una lista de usuarios. Se crea una instancia de Retrofit con la URL base `https://api.example.com` y el convertidor de JSON de Gson. A continuación, se crea una instancia del servicio web a partir de la interfaz `ApiService` y la instancia de Retrofit. Por último, se utiliza la instancia del servicio web para realizar una petición HTTP al servidor y obtener una lista de usuarios.    
-
-Con Retrofit, puedes conectarte a servicios web RESTful de forma sencilla y eficiente en una aplicación Android con Jetpack Compose. Retrofit te permite definir una interfaz de servicio web con anotaciones que describen las operaciones disponibles en el servicio y gestionar la comunicación con el servidor de forma automática. 
+En este ejemplo, se define una interfaz `ApiService` con el método `getUsers()` que realiza una petición GET a `https://api.example.com/users` para obtener una lista de usuarios. Se crea una instancia de Retrofit con la URL base y el convertidor de JSON de Gson. A continuación, se crea una instancia del servicio web a partir de la interfaz `ApiService`. Por último, se utiliza para obtener la lista de usuarios. Como `getUsers()` es una función `suspend`, Retrofit se encarga de hacer la petición fuera del hilo principal.
 
 Todo este código suele ordenarse y distribuirse en diferentes archivos y paquetes para mantener una estructura limpia y organizada. A continuación veremos cada uno de estos pasos en detalle.  
 
@@ -261,376 +201,350 @@ Todo este código suele ordenarse y distribuirse en diferentes archivos y paquet
 
 ### Permiso de Internet
 
-Para conectarse a internet en una aplicación Android, debes añadir el permiso de internet al archivo `AndroidManifest.xml` de la aplicación. Puedes hacerlo añadiendo la siguiente línea al archivo `AndroidManifest.xml`:
+Para conectarse a internet en una aplicación Android, debes añadir el permiso de internet al archivo `AndroidManifest.xml` de la aplicación, fuera de la etiqueta `<application>`:
 
-```xml
-<uses-permission android:name="android.permission.INTERNET" />
+```xml title="AndroidManifest.xml"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        ...>
+    </application>
+</manifest>
 ```
 
-Este permiso permite que la aplicación se conecte a internet y realice peticiones HTTP al servidor. Sin este permiso, la aplicación no podrá conectarse a internet y no podrá realizar peticiones HTTP al servidor.
+Sin este permiso, la aplicación no podrá conectarse a internet y las peticiones fallarán con una excepción de seguridad.
+
+:::warning[Solo HTTPS]
+Por seguridad, a partir de Android 9 las apps solo pueden conectarse por defecto a direcciones **HTTPS**. Si la API que queremos usar solo funciona con HTTP (por ejemplo, un servidor local de pruebas), hay que permitirlo explícitamente con `android:usesCleartextTraffic="true"` en la etiqueta `<application>`, algo que nunca debería hacerse en una app publicada.
+:::
 
 ### Importar las dependencias de Retrofit
 
-Para utilizar Retrofit en una aplicación Android, primero debes importar las dependencias de Retrofit en el archivo `build.gradle` del módulo de la aplicación. Puedes hacerlo añadiendo las siguientes líneas al archivo `build.gradle`:
+Para utilizar Retrofit, primero debemos añadir sus dependencias. En los proyectos actuales de Android Studio, las versiones se centralizan en el archivo `gradle/libs.versions.toml`:
 
-```kotlin
+```toml title="libs.versions.toml"
+[versions]
+retrofit = "3.0.0"
+
+[libraries]
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+retrofit-converter-scalars = { group = "com.squareup.retrofit2", name = "converter-scalars", version.ref = "retrofit" }
+```
+
+```kotlin title="app/build.gradle.kts"
 dependencies {
     // Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    // Retrofit with Scalar Converter
-    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+    implementation(libs.retrofit)
+    // Convertidor de JSON a objetos con Gson
+    implementation(libs.retrofit.converter.gson)
+    // Convertidor de la respuesta a String (opcional)
+    implementation(libs.retrofit.converter.scalars)
 }
 ```
 
-Estas líneas importan las dependencias de Retrofit y el convertidor de escalares en la aplicación. El convertidor de escalares se utiliza para convertir las respuestas del servidor en cadenas de texto.
+Si no usamos el catálogo de versiones, se pueden escribir directamente:
+
+```kotlin title="app/build.gradle.kts"
+dependencies {
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+    implementation("com.squareup.retrofit2:converter-scalars:3.0.0")
+}
+```
+
+La primera dependencia es Retrofit. Las otras dos son **convertidores**: el de Gson transforma el JSON de la respuesta en objetos de Kotlin (e incluye ya la librería Gson), y el de escalares (*scalars*) devuelve la respuesta como un `String` sin transformar, lo cual es útil para hacer las primeras pruebas.
 
 ### Definir la interfaz de servicio web
 
-A continuación, debes definir una interfaz de servicio web que contenga las operaciones disponibles en el servicio. 
-Puedes hacerlo creando una interfaz en un archivo Kotlin y anotándola con las anotaciones de Retrofit, como `@GET`, `@POST`, `@PUT` y `@DELETE`. 
-Por ejemplo, puedes definir una interfaz `ApiService` que contenga métodos para obtener y enviar datos al servidor:
+A continuación, debes definir una interfaz de servicio web que contenga las operaciones disponibles en el servicio. Cada función se anota con el tipo de petición (`@GET`, `@POST`, `@PUT`, `@DELETE`) y la ruta relativa a la URL base:
 
 ```kotlin
-import retrofit2.http.GET
+import retrofit2.http.*
 
 interface ApiService {
     @GET("users")
     suspend fun getUsers(): List<User>
+
+    // Parámetro en la ruta: users/5
+    @GET("users/{id}")
+    suspend fun getUser(@Path("id") id: Int): User
+
+    // Parámetro en la query: users?page=2
+    @GET("users")
+    suspend fun getUsersPage(@Query("page") page: Int): List<User>
+
+    // Envía un objeto en el cuerpo de la petición como JSON
+    @POST("users")
+    suspend fun createUser(@Body user: User): User
 }
 ```
 
-En este ejemplo, la interfaz `ApiService` contiene un método `getUsers()` que realiza una petición GET al servidor para obtener una lista de usuarios.
+En este ejemplo, la interfaz `ApiService` contiene varios métodos que realizan peticiones al servidor. Las anotaciones `@Path`, `@Query` y `@Body` indican cómo se incluye cada parámetro en la petición.
 
 :::tip[Ubicación de la interfaz de servicio web en el proyecto]
-La interfaz de servicio web suele ubicarse en un paquete de datos, network o servicios del proyecto para mantener una estructura limpia y organizada.
-:::
-
-:::info[Anotaciones de Retrofit]
-Las anotaciones de Retrofit se utilizan para describir las operaciones disponibles en el servicio web. Por ejemplo, la anotación `@GET` se utiliza para realizar una petición GET al servidor, la anotación `@POST` se utiliza para realizar una petición POST al servidor, y así sucesivamente.    
+La interfaz de servicio web suele ubicarse en un paquete `data`, `network` o `remote` del proyecto para mantener una estructura limpia y organizada.
 :::
 
 ### Crear una instancia de Retrofit
 
-Una vez que hayas definido la interfaz de servicio web, debes crear una instancia de Retrofit utilizando el constructor de `Retrofit.Builder`.
-Puedes hacerlo creando una instancia de Retrofit en un archivo Kotlin y configurando la URL base del servicio web y el convertidor de JSON.
-Por ejemplo, puedes crear una instancia de Retrofit que se conecte a un servidor en `https://api.example.com` y utilice el convertidor de JSON de Gson:
+Una vez que hayas definido la interfaz de servicio web, debes crear una instancia de Retrofit utilizando `Retrofit.Builder`, configurando la URL base del servicio web y el convertidor de JSON:
 
 ```kotlin
-private const val BASE_URL = "https://api.example.com"
+private const val BASE_URL = "https://api.example.com/"
 
-val retrofit = Retrofit.Builder()
+val retrofit: Retrofit = Retrofit.Builder()
     .baseUrl(BASE_URL)
     .addConverterFactory(GsonConverterFactory.create())
     .build()
 ```
 
-:::warning[Para usar Gson en tu proyecto]
-Para utilizar Gson en tu proyecto, debes importar la dependencia de Gson en el archivo `build.gradle` del módulo de la aplicación. Puedes hacerlo añadiendo la siguiente línea al archivo `build.gradle`:
-
-```kotlin
-dependencies {
-    // Gson
-    implementation("com.google.code.gson:gson:2.8.8")
-}
-```
-:::
-
-En este ejemplo, se crea una instancia de Retrofit con la URL base `https://api.example.com` y el convertidor de JSON de Gson.
-
-:::tip[Ubicación de la instancia de Retrofit en el proyecto]
-La instancia de Retrofit suele ubicarse en un archivo Kotlin en el paquete de datos, network o servicios del proyecto para mantener una estructura limpia y organizada.
+:::warning[La URL base debe terminar en `/`]
+Retrofit lanza una excepción si la URL base no termina con una barra. Además, las rutas de las anotaciones (`@GET("users")`) no deben empezar por `/`, ya que en ese caso se ignoraría la parte de la ruta incluida en la URL base.
 :::
 
 :::tip[Convertidores de Retrofit]
-Retrofit utiliza convertidores para convertir las respuestas del servidor en objetos Java/Kotlin y viceversa. 
-Puedes utilizar convertidores como Gson, Moshi, Jackson y Scalars para convertir los datos del servidor en objetos Java/Kotlin y viceversa.   
-Cada uno de estos convertidores tiene sus propias ventajas y desventajas, por lo que debes elegir el que mejor se adapte a tus necesidades.
-En este ejemplo, se utiliza el convertidor de Gson para convertir los datos del servidor en objetos Java/Kotlin. 
-Sin embargo, si prefieres utilizar otro convertidor, puedes cambiar el convertidor de Gson por el convertidor de tu elección.
-Por ejemplo, para hacer el mismo ejemplo anterior pero usando Scalars, puedes cambiar la línea de configuración del convertidor de Gson por la siguiente:
+Retrofit utiliza convertidores para transformar las respuestas del servidor en objetos Java/Kotlin y viceversa. 
+Existen convertidores para Gson, Moshi, Jackson, kotlinx.serialization y Scalars, entre otros. Cada uno tiene sus propias ventajas, por lo que debes elegir el que mejor se adapte a tus necesidades.
+
+Por ejemplo, para recibir la respuesta como un simple `String` usaríamos Scalars (y la función del servicio devolvería `String`):
 
 ```kotlin
 .addConverterFactory(ScalarsConverterFactory.create())
 ```
+
+En el apartado [Conversión JSON a objetos](./8-trabajando-con-json.mdx) veremos cómo usar `kotlinx.serialization`, que es la alternativa recomendada en proyectos Kotlin.
 :::
 
 ### Crear una instancia del servicio web
 
-Una vez que hayas creado una instancia de Retrofit, debes crear una instancia del servicio web a partir de la interfaz de servicio web y la instancia de Retrofit.
-Puedes hacerlo creando una instancia del servicio web en un archivo Kotlin y utilizando el método `create()` de Retrofit.
-Por ejemplo, puedes crear una instancia del servicio web a partir de la interfaz `ApiService` y la instancia de Retrofit:
+Una vez que hayas creado una instancia de Retrofit, debes crear una instancia del servicio web a partir de la interfaz con el método `create()`:
 
 ```kotlin
-val apiService = retrofit.create(ApiService::class.java)
+val apiService: ApiService = retrofit.create(ApiService::class.java)
 ```
 
-En este ejemplo, se crea una instancia del servicio web a partir de la interfaz `ApiService` y la instancia de Retrofit.
+Retrofit genera automáticamente una clase que implementa la interfaz `ApiService` y que realiza las peticiones HTTP.
 
-Esta instancia puede implementarse a través de un patrón Singleton para garantizar que solo haya una instancia del servicio web en la aplicación, sin embargo, esto dependerá de las necesidades de tu aplicación.
-En muchas ocasiones es preferible utilizar inyección de dependencias para proporcionar instancias de servicios web en lugar de crearlas manualmente. 
-De esta forma los objetos se pueden reutilizar y se facilita la gestión de dependencias en la aplicación.
+Crear la instancia de Retrofit es costoso, por lo que solo debería existir **una** en toda la aplicación. Podríamos guardarla en un `object` (un singleton) y acceder a ella desde cualquier parte, pero los singletons representan estados globales en la aplicación y hacen que el código sea difícil de probar, ya que no se pueden sustituir por versiones de prueba.
 
-Esto se debe a que los Singleton representan estados globales en la aplicación y pueden ser difíciles de gestionar y probar. 
-Por otro lado, la inyección de dependencias permite desacoplar las dependencias de los objetos y facilita la gestión de las dependencias en la aplicación.
+En su lugar, es preferible utilizar **inyección de dependencias**: cada clase recibe en su constructor los objetos que necesita, en lugar de crearlos o buscarlos ella misma. Vamos a acostumbrarnos a gestionar las dependencias de esta forma, ya que es una buena práctica de programación.
 
-Vamos a acostumbrarnos a gestionar las dependencias de esta forma, ya que es una buena práctica de programación y facilita la gestión de dependencias en la aplicación.
-
-Para esto separaremos claramente la capa de datos de la de UI a través de un repositorio o Repository, que será el encargado de gestionar las peticiones al servidor y devolver los datos a la capa de UI.
-
-Este repositorio se encargará de gestionar las peticiones al servidor y devolver los datos a la capa de UI.
+Para esto separaremos claramente la capa de datos de la de UI a través de un repositorio o *Repository*, que será el encargado de gestionar las peticiones al servidor y devolver los datos a la capa de UI.
 
 ![Separación de la Data Layer](https://developer.android.com/static/codelabs/basic-android-kotlin-compose-add-repository/img/dbf927072d3070f0_960.png)
 
 
 ### Creación de un repositorio
 
-Para separar claramente la capa de datos de la de UI, vamos a crear un repositorio que se encargue de gestionar las peticiones al servidor y devolver los datos a la capa de UI.
+Crearemos un nuevo paquete llamado `data` y en él una interfaz `UsersRepository` con los métodos para obtener los datos, junto con una clase que la implementa usando el servicio de Retrofit.
 
-Para ello, crearemos un nuevo paquete llamado `data` en el que crearemos una clase `DataRepository` que contendrá los métodos para obtener y enviar datos al servidor.
-
-Es habitual que esta clase implemente una interfaz que defina los métodos necesarios para interactuar con el servidor, de esta forma se facilita la gestión de dependencias y se mejora la modularidad de la aplicación.
+Definir el repositorio como una interfaz permite, por ejemplo, crear una versión falsa con datos de prueba para los tests o para las *previews*, sin tener que cambiar el resto de la app.
 
 ```kotlin
-interface DataRepository {
+interface UsersRepository {
     suspend fun getUsers(): List<User>
 }
 
-class DataRepositoryImpl(private val apiService: ApiService) : DataRepository {
-    override suspend fun getUsers(): List<User> {
-        return apiService.getUsers()
-    }
+class NetworkUsersRepository(
+    private val apiService: ApiService
+) : UsersRepository {
+    override suspend fun getUsers(): List<User> = apiService.getUsers()
 }
 ```
 
-En este ejemplo, la interfaz `DataRepository` define un método `getUsers()` que obtiene una lista de usuarios del servidor. La clase `DataRepositoryImpl` implementa la interfaz `DataRepository` y utiliza la instancia del servicio web para obtener los datos del servidor.  
+En este ejemplo, la interfaz `UsersRepository` define un método `getUsers()` que obtiene una lista de usuarios. La clase `NetworkUsersRepository` implementa la interfaz y recibe el servicio de Retrofit en su constructor, en lugar de crearlo ella misma: eso es la inyección de dependencias.
 
 :::tip[Ubicación del repositorio en el proyecto]
-El repositorio suele ubicarse en un paquete de datos o repository del proyecto para mantener una estructura limpia y organizada.
+El repositorio suele ubicarse en el paquete `data` del proyecto para mantener una estructura limpia y organizada.
 :::
-
-Al implementar el repositorio, nos aseguramos de que la capa de datos esté separada de la de UI y que las operaciones de red se gestionen de forma eficiente y reactiva.
 
 ### Inyección de dependencias
 
-La inyección de dependencias no es más que un patrón de diseño que se utiliza para desacoplar las dependencias de los objetos y facilitar la gestión de las dependencias en la aplicación.
+La inyección de dependencias no es más que un patrón de diseño que se utiliza para desacoplar las dependencias de los objetos y facilitar su gestión.
 
-Para implementar la inyección de dependencias en la aplicación, puedes utilizar una biblioteca de inyección de dependencias como Dagger, Hilt o Koin. Estas bibliotecas te permiten definir módulos que proporcionan instancias de objetos y componentes que gestionan la inyección de dependencias en la aplicación.
+Para implementar la inyección de dependencias en la aplicación, puedes utilizar una biblioteca como Hilt (la recomendada por Google), Koin o Dagger. Sin embargo, en este caso vamos a utilizar la inyección de dependencias **manual**, que nos ayuda a entender qué hacen estas librerías por debajo.
 
-Sin embargo, en este caso vamos a utilizar la inyección de dependencias manual para proporcionar instancias de objetos en la aplicación.
+Para ello, vamos a crear un **contenedor de dependencias**: una clase que crea una única vez los objetos de la capa de datos (Retrofit, el servicio y el repositorio) y los proporciona a quien los necesite. Como en el resto de casos, lo definimos a partir de una interfaz:
 
-Para ello, vamos a crear un contenedor de dependencias dentro del propio paquete de datos que se encargue de proporcionar instancias de objetos en la aplicación.
-
-Es interesante que nuestra clase `DataContainer` sea un objeto Singleton que proporcione instancias de objetos en la aplicación. De esta forma, garantizamos que solo haya una instancia del contenedor de dependencias en la aplicación y que los objetos se puedan reutilizar en toda la aplicación.
-
-También debería de heredar de una interfaz que defina los métodos necesarios para proporcionar instancias de objetos en la aplicación.
-
-De esta forma, facilitamos la gestión de dependencias y mejoramos la modularidad de la aplicación.
-
-```kotlin
-private const val BASE_URL = "https://api.example.com"
-
-interface DataContainer {
-    val provideDataRepository: DataRepository
+```kotlin title="data/AppContainer.kt"
+interface AppContainer {
+    val usersRepository: UsersRepository
 }
 
-object DataContainerImpl : DataContainer {
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
+class DefaultAppContainer : AppContainer {
+    private val baseUrl = "https://api.example.com/"
+
+    private val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl(baseUrl)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    private val apiService by lazy { retrofit.create(ApiService::class.java) }
-    private val dataRepository = DataRepositoryImpl(apiService)
+    private val retrofitService: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
+    }
 
-    override val provideDataRepository: DataRepository by lazy { dataRepository }
+    override val usersRepository: UsersRepository by lazy {
+        NetworkUsersRepository(retrofitService)
+    }
 }
 ```
 
-En este ejemplo, la interfaz `DataContainer` define un método `provideDataRepository` que proporciona una instancia del repositorio de datos en la aplicación. El objeto `DataContainerImpl` implementa la interfaz `DataContainer` y proporciona una instancia del repositorio de datos utilizando la instancia del servicio web.  
+En este ejemplo, la interfaz `AppContainer` define una propiedad `usersRepository`, y la clase `DefaultAppContainer` la implementa creando Retrofit, el servicio y el repositorio. Gracias a `by lazy`, cada objeto se crea la primera vez que se necesita y después se reutiliza.
 
 :::tip[Ubicación del contenedor de dependencias en el proyecto]
-El contenedor de dependencias suele ubicarse en un paquete de datos o repository del proyecto para mantener una estructura limpia y organizada.
+El contenedor de dependencias suele ubicarse en el paquete `data` del proyecto.
 :::
-
-Al implementar la inyección de dependencias, nos aseguramos de que las dependencias de los objetos se gestionen de forma eficiente y reactiva en la aplicación.
-
-Si en lugar de utilizar un Singleton utilizasemos una clase normal, deberíamos de proporcionar una instancia del contenedor de dependencias en la aplicación para que pueda proporcionar instancias de objetos en la aplicación.
-
-El mismo ejemplo de contenedor anterior pero utilizando una clase quedaría tal que así:
-
-```kotlin
-private const val BASE_URL = "https://api.example.com"
-
-interface DataContainer {
-    val provideDataRepository: DataRepository
-}
-
-class DataContainerImpl : DataContainer {
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    private val apiService by lazy { retrofit.create(ApiService::class.java) }
-    private val dataRepository = DataRepositoryImpl(apiService)
-
-    override val provideDataRepository: DataRepository by lazy { dataRepository }
-}
-```
-
-La elección de si utilizar un Singleton o una clase normal dependerá de las necesidades de tu aplicación y de cómo quieras gestionar las dependencias en la aplicación.
-
 
 ### Adjuntar el contenedor de dependencias a la aplicación
 
-Una vez que hayas creado el contenedor de dependencias, debes adjuntarlo a la aplicación para que pueda proporcionar instancias de objetos en la aplicación.
+El contenedor debe existir mientras exista la aplicación y debe haber uno solo. El lugar adecuado para crearlo es la clase `Application`, de la que Android crea una única instancia al arrancar la app, antes que cualquier actividad:
 
-Para ello, puedes adjuntar el contenedor de dependencias a la aplicación en el archivo `Application` de la aplicación.
-
-```kotlin
+```kotlin title="MyApplication.kt"
 class MyApplication : Application() {
-    lateinit var container: DataContainer
+    lateinit var container: AppContainer
+
     override fun onCreate() {
         super.onCreate()
-        container = DataContainerImpl
+        container = DefaultAppContainer()
     }
 }
 ```
 
-En este ejemplo, la clase `MyApplication` extiende de `Application` y adjunta el contenedor de dependencias a la aplicación en el método `onCreate()`.
-
-Si utilizamos una clase para el contenedor en lugar de un objeto Singleton, la implementación sería la siguiente:
-
-```kotlin
-class MyApplication : Application() {
-    lateinit var container: DataContainer
-    override fun onCreate() {
-        super.onCreate()
-        container = DataContainerImpl()
-    }
-}
-```
+En este ejemplo, la clase `MyApplication` extiende de `Application` y crea el contenedor de dependencias en el método `onCreate()`.
 
 :::tip[Ubicación de la clase Application en el proyecto]
-La clase `Application` suele ubicarse en el paquete de la aplicación para mantener una estructura limpia y organizada.
+La clase `Application` suele ubicarse en el paquete raíz de la aplicación, junto a la `MainActivity`.
 :::
 
-Al adjuntar el contenedor de dependencias a la aplicación, garantizamos que las instancias de objetos se proporcionen de forma eficiente y reactiva en la aplicación.
+Debemos también actualizar el archivo `AndroidManifest.xml` para que Android utilice nuestra clase `MyApplication`, añadiendo el atributo `android:name` a la etiqueta `<application>` (el resto de atributos se quedan como estaban):
 
-Debemos también actualizar el archivo `AndroidManifest.xml` para que la aplicación utilice la clase `MyApplication` como clase de aplicación principal.
-
-```xml
+```xml title="AndroidManifest.xml"
 <application
     android:name=".MyApplication"
+    android:allowBackup="true"
     android:icon="@mipmap/ic_launcher"
     android:label="@string/app_name"
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
-    android:theme="@style/Theme.BasicAndroidKotlinCompose"
-    android:allowBackup="true"
-    android:usesCleartextTraffic="true"
-    android:networkSecurityConfig="@xml/network_security_config"
-    tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+    android:theme="@style/Theme.MyApp">
 ```
 
-En este ejemplo, se actualiza el atributo `android:name` de la etiqueta `<application>` para que la aplicación utilice la clase `MyApplication` como clase de aplicación principal.
-
-Al actualizar el archivo `AndroidManifest.xml`, garantizamos que la aplicación utilice la clase `MyApplication` como clase de aplicación principal.
+:::warning[Si la app se cierra al arrancar]
+Si olvidamos añadir `android:name=".MyApplication"` al manifiesto, Android usará la clase `Application` por defecto y, al intentar convertirla en `MyApplication` para acceder al contenedor, la app se cerrará con una `ClassCastException`.
+:::
 
 ### Utilizar el repositorio en la capa de UI (En el ViewModel)
 
-Para añadir los datos del servidor a la capa de UI, debes utilizar el repositorio en la capa de UI (en el ViewModel) para obtener los datos del servidor y mostrarlos en la pantalla.   
+El ViewModel recibe el repositorio como parámetro de su constructor. Así no necesita saber de dónde vienen los datos, y en los tests podemos pasarle un repositorio falso.
 
-Para ello, en la declaración del ViewModel agregaremos un parámetro al constructor principal, que será privado y del tipo del Repositorio.
+Para representar los posibles estados de la pantalla (cargando, datos obtenidos o error) usamos una interfaz sellada, como vimos en el apartado de [sealed classes](./1-sobre-kotlin/26-sealed-classes.mdx):
 
-Al hacer esto, en la función get del repositorio ya no necesitamos pasarle el parámetro del repositorio, ya que este se inyectará automáticamente en el ViewModel.
+```kotlin title="ui/UsersViewModel.kt"
+sealed interface UsersUiState {
+    data object Loading : UsersUiState
+    data class Success(val users: List<User>) : UsersUiState
+    data class Error(val message: String) : UsersUiState
+}
 
-Además, ya que el propio framework de Android no nos permite pasar valores a los ViewModel cuándo estos se crean, debemos implementar un objeto ViewModelFactory que se encargue de proporcionar instancias de ViewModel en la aplicación.
+class UsersViewModel(
+    private val usersRepository: UsersRepository
+) : ViewModel() {
 
-Este objeto es una implentación del patrón Factoría o Factory que se encarga de la creación de objetos, podemos utilizarlo para usar el propio contenedor de dependencias para proporcionar instancias de ViewModel en la aplicación.
-
-```kotlin
-class MainViewModel(private val repository: DataRepository) : ViewModel() {
-    var _state = mutableStateOf(MainState())
-    val state: State<MainState> = _state.asState()
+    private val _uiState = MutableStateFlow<UsersUiState>(UsersUiState.Loading)
+    val uiState: StateFlow<UsersUiState> = _uiState.asStateFlow()
 
     init {
         getUsers()
     }
 
-    private fun getUsers() {
+    fun getUsers() {
         viewModelScope.launch {
-            val users = repository.getUsers()
-            _state.value = MainState(users = users)
+            _uiState.value = UsersUiState.Loading
+            _uiState.value = try {
+                UsersUiState.Success(usersRepository.getUsers())
+            } catch (e: IOException) {
+                UsersUiState.Error("Error de conexión")
+            } catch (e: HttpException) {
+                UsersUiState.Error("Error del servidor: ${e.code()}")
+            }
         }
     }
 
     companion object {
-        val Factory: ViewModelProvider.Factory = ViewModelFactory {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                // [APLICATION_KEY] es una constante que se utiliza para obtener la instancia de la aplicación
-                val application = this[APLICATION_KEY] as Application
-                val repository = application.container.provideDataRepository
-                MainViewModel(repository)
+                val application = this[APPLICATION_KEY] as MyApplication
+                UsersViewModel(application.container.usersRepository)
             }
         }
     }
 }
 ```
 
-En este ejemplo, la clase `MainViewModel` extiende de `ViewModel` y utiliza el repositorio para obtener los datos del servidor y mostrarlos en la pantalla. La función `getUsers()` utiliza el repositorio para obtener una lista de usuarios del servidor y mostrarlos en la pantalla.
-Además, se ha añadido un objeto Factory que se encarga de proporcionar instancias de ViewModel en la aplicación.
+En este ejemplo, la clase `UsersViewModel` recibe el repositorio en su constructor y, al crearse, lanza la petición en `viewModelScope`. Si la petición va bien, el estado pasa a `Success` con la lista de usuarios; si falla por un problema de red (`IOException`) o por una respuesta de error del servidor (`HttpException`), pasa a `Error`.
 
-:::tip[Ubicación del ViewModel en el proyecto]
-El ViewModel suele ubicarse en un paquete de viewmodel o ui del proyecto para mantener una estructura limpia y organizada.
+:::warning[Captura siempre los errores de red]
+Una petición a internet puede fallar en cualquier momento: el dispositivo puede no tener conexión, el servidor puede estar caído o devolver un error. Si no capturamos la excepción, **la app se cerrará**.
 :::
 
-:::tip[APLICATION_KEY]
-La constante `APLICATION_KEY` se utiliza para obtener la instancia de la aplicación en el ViewModelFactory. Esta constante se utiliza para acceder a la instancia de la aplicación en el ViewModelFactory y proporcionar instancias de ViewModel en la aplicación.  
+Como el ViewModel ahora tiene un parámetro en su constructor, Android no sabe cómo crearlo por sí solo. Para ello definimos una **factory** (una implementación del patrón Factoría, encargado de crear objetos) en el `companion object` del ViewModel:
+
+- `viewModelFactory { initializer { ... } }` crea la factory. Dentro de `initializer` escribimos cómo construir el ViewModel.
+- `this[APPLICATION_KEY]` nos da la instancia de la aplicación, que convertimos a `MyApplication` para acceder a su contenedor y obtener el repositorio.
+
+:::tip[Ubicación del ViewModel en el proyecto]
+El ViewModel suele ubicarse en el paquete `ui` del proyecto, junto a la pantalla que lo usa.
 :::
 
 :::info[La palabra reservada companion en Kotlin]
-La palabra reservada companion en Kotlin se utiliza para definir miembros estáticos en una clase. 
-Los miembros estáticos son miembros de una clase que pertenecen a la clase en lugar de a una instancia de la clase.   
-En este ejemplo, la palabra reservada companion se utiliza para definir un objeto Factory que proporciona instancias de ViewModel en la aplicación.
+La palabra reservada `companion` en Kotlin se utiliza para definir miembros que pertenecen a la clase en lugar de a cada instancia, de forma similar a los miembros `static` de Java.
+En este ejemplo, se utiliza para definir la `Factory` del ViewModel, a la que accedemos como `UsersViewModel.Factory`.
 :::
 
 
 ### Utilizar el ViewModel en la capa de UI (En el Composable)
 
-Para añadir los datos del servidor a la capa de UI, debes utilizar el ViewModel en la capa de UI (en el Composable) para obtener los datos del servidor y mostrarlos en la pantalla.    
+En el composable obtenemos el ViewModel con la función `viewModel()`, pasándole la factory, y recogemos su estado con `collectAsStateWithLifecycle()`. Después, con un `when`, mostramos una cosa u otra según el estado:
 
-Para ello, en la declaración del Composable agregaremos un parámetro al constructor principal, que será privado y del tipo del ViewModel.
-
-Al hacer esto, en la función get del ViewModel ya no necesitamos pasarle el parámetro del ViewModel, ya que este se inyectará automáticamente en el Composable.
-
-```kotlin
+```kotlin title="ui/UsersScreen.kt"
 @Composable
-fun MainScreen(viewModel: MainViewModel) {
-    val state by viewModel.state.collectAsState()
+fun UsersScreen(
+    modifier: Modifier = Modifier,
+    viewModel: UsersViewModel = viewModel(factory = UsersViewModel.Factory)
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Column {
-        Text("Users:")
-        state.users.forEach { user ->
-            Text(user.name)
+    when (val state = uiState) {
+        UsersUiState.Loading -> CircularProgressIndicator(modifier = modifier)
+        is UsersUiState.Success -> LazyColumn(modifier = modifier) {
+            items(state.users, key = { it.id }) { user ->
+                Text(user.name)
+            }
+        }
+        is UsersUiState.Error -> Column(modifier = modifier) {
+            Text(state.message)
+            Button(onClick = viewModel::getUsers) { Text("Reintentar") }
         }
     }
 }
 ```
 
-En este ejemplo, el composable `MainScreen` utiliza el ViewModel para obtener los datos del servidor y mostrarlos en la pantalla. La función `collectAsState()` se utiliza para obtener el estado del ViewModel y mostrar los datos en la pantalla. 
+En este ejemplo, el composable `UsersScreen` muestra un indicador de carga mientras se obtienen los datos, la lista de usuarios cuando llegan o un mensaje de error con un botón para reintentar.
 
 :::tip[Ubicación del Composable en el proyecto]
-El Composable suele ubicarse en un paquete de ui del proyecto para mantener una estructura limpia y organizada.
+El Composable suele ubicarse en el paquete `ui` del proyecto para mantener una estructura limpia y organizada.
 :::
 
 ## Recursos
 
-- [Codelab: Cómo obtener datos de Internet](https://developer.android.com/codelabs/basic-android-kotlin-compose-getting-data-internet?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-5-pathway-1%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-getting-data-internet#0)
-- [Codelab: Cómo agregar un repositorio e inyección de dependencias de forma manual](https://developer.android.com/codelabs/basic-android-kotlin-compose-add-repository?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-5-pathway-2%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-add-repository#0)
-- [Codelab: Cómo cargar y mostrar imágenes de Internet](https://developer.android.com/codelabs/basic-android-kotlin-compose-load-images?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-5-pathway-2%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-load-images#0)
+- [Codelab: Cómo obtener datos de Internet](https://developer.android.com/codelabs/basic-android-kotlin-compose-getting-data-internet?hl=es-419)
+- [Codelab: Cómo agregar un repositorio e inyección de dependencias de forma manual](https://developer.android.com/codelabs/basic-android-kotlin-compose-add-repository?hl=es-419)
+- [Codelab: Cómo cargar y mostrar imágenes de Internet](https://developer.android.com/codelabs/basic-android-kotlin-compose-load-images?hl=es-419)
 
-- [Ejercicio resuelto de ejemplo - TriviaApp versión con Retrofit](https://github.com/resuadam2/TriviaApp/tree/first-api-version)
+- [Ejercicio resuelto de ejemplo - TriviaApp versión con Retrofit](https://github.com/resuacode/TriviaApp/tree/first-api-version)
 
 :::info[Nota sobre el ejemplo de TriviaApp]
 En el ejemplo de TriviaApp se ha resuelto uno de los ejercicios propuestos, 
@@ -639,13 +553,12 @@ en concreto la rama del repositorio adjunta al enlace anterior hace referencia a
 La api de la que se obtienen las preguntas es la siguiente: [Open Trivia Database](https://opentdb.com/api_config.php)
 :::
 
-## Referencias y documentacion
+## Referencias y documentación
 
 - [Documentación de Retrofit](https://square.github.io/retrofit/)
-- [Documentación de Ktor](https://ktor.io/)
+- [Documentación del cliente de Ktor](https://ktor.io/docs/client-create-new-application.html)
 - [Documentación de Volley](https://developer.android.com/training/volley)
-- [Documentación de CoroutineScope](https://kotlinlang.org/docs/coroutines-basics.html)
-- [Documentación de LaunchedEffect](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#LaunchedEffect(kotlin.coroutines.CoroutineScope,%20kotlin.coroutines.CoroutineStart,%20kotlin.Function0))
-- [Documentación de DisposableEffect](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#DisposableEffect(kotlin.coroutines.CoroutineScope,%20kotlin.Function0))
-- [Documentación de coroutineScope](https://kotlinlang.org/docs/coroutines-basics.html#coroutine-scope)
-- [Documentación de CoroutineContext](https://kotlinlang.org/docs/coroutines-basics.html#coroutine-context)
+- [Corrutinas de Kotlin en Android](https://developer.android.com/kotlin/coroutines?hl=es-419)
+- [Efectos secundarios en Compose (LaunchedEffect, rememberCoroutineScope...)](https://developer.android.com/develop/ui/compose/side-effects?hl=es-419)
+- [La capa de datos](https://developer.android.com/topic/architecture/data-layer?hl=es-419)
+- [Inyección de dependencias manual](https://developer.android.com/training/dependency-injection/manual?hl=es-419)

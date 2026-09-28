@@ -53,7 +53,7 @@ En el ejemplo anterior, se definen dos funciones lambda `suma` y `resta` que tom
 
 ## Los parámetros en Kotlin
 
-A diferencia de Java, en Kotlin los parámetros de una función son inmutables por defecto, lo que significa que no se pueden modificar dentro de la función. Si necesitas modificar un parámetro dentro de una función, debes declararlo como una variable `var`.
+A diferencia de Java, en Kotlin los parámetros de una función son siempre de solo lectura (se comportan como `val`), lo que significa que no se pueden reasignar dentro de la función. Si necesitas trabajar con un valor que cambie, debes copiarlo en una variable local declarada con `var`.
 
 ```kotlin
 fun duplicar(numero: Int): Int {
@@ -63,7 +63,7 @@ fun duplicar(numero: Int): Int {
 }
 ```
 
-En el ejemplo anterior, se define una función `duplicar` que toma un parámetro de tipo `Int` y devuelve un valor de tipo `Int`. El parámetro `numero` se declara como una variable `var` para poder modificar su valor dentro de la función.
+En el ejemplo anterior, se define una función `duplicar` que toma un parámetro de tipo `Int` y devuelve un valor de tipo `Int`. Como `numero` no se puede reasignar, se copia su valor en la variable local `resultado`, declarada con `var`, para poder modificarla.
 
 ### Parámetros con valores por defecto
 
@@ -80,6 +80,18 @@ saludar("Juan") // Hola, Juan!
 
 En el ejemplo anterior, se define una función `saludar` que toma un parámetro de tipo `String` con un valor por defecto de `"Mundo"`. Si no se proporciona un argumento al llamar a la función, se utiliza el valor por defecto.
 
+### Argumentos con nombre
+
+Al llamar a una función podemos indicar el nombre de cada parámetro. Esto hace el código más legible y nos permite cambiar el orden de los argumentos o saltarnos los que tienen valor por defecto:
+
+```kotlin
+fun crearUsuario(nombre: String, edad: Int = 18, activo: Boolean = true) { /* ... */ }
+
+crearUsuario(nombre = "Ana", activo = false) // edad toma el valor por defecto
+```
+
+Esta forma de llamar a las funciones se usa constantemente en Jetpack Compose (`Text(text = "Hola", modifier = Modifier.padding(8.dp))`).
+
 :::tip[Funciones con valores por defecto y su no obligatoriedad, su uso en Compose]
 Las funciones con valores por defecto son muy útiles en Jetpack Compose, ya que te permiten definir componentes con valores por defecto y llamar a esos componentes sin proporcionar todos los argumentos.
 
@@ -93,8 +105,9 @@ fun Boton(texto: String = "Aceptar", color: Color = Color.Blue) {
     }
 }
 
-Boton() // Botón con texto "Aceptar" y color azul
-Boton("Cancelar", Color.Red) // Botón con texto "Cancelar" y color rojo
+Boton() // Botón con texto "Aceptar" en azul
+Boton("Cancelar", Color.Red) // Botón con texto "Cancelar" en rojo
+Boton(color = Color.Green) // Botón con texto "Aceptar" en verde
 ```
 :::
 
@@ -107,7 +120,7 @@ val suma: (Int, Int) -> Int = { a, b -> a + b }
 val resta = { a: Int, b: Int -> a - b }
 ```
 
-En el ejemplo anterior, se definen dos funciones lambda `suma` y `resta` que toman dos parámetros de tipo `Int` y devuelven un valor de tipo `Int`. En la función lambda `suma`, se especifican los tipos de los parámetros de entrada, mientras que en la función lambda `resta`, se deja que el compilador infiera los tipos automáticamente.
+En el ejemplo anterior, se definen dos funciones lambda `suma` y `resta` que toman dos parámetros de tipo `Int` y devuelven un valor de tipo `Int`. En `suma` se indica el tipo de la variable (`(Int, Int) -> Int`) y el compilador infiere a partir de él los tipos de `a` y `b`. En `resta` se indican los tipos de los parámetros dentro de la propia lambda y el compilador infiere el tipo de la variable.
 
 ### La palabra reservada `it`
 
@@ -139,7 +152,19 @@ val suma: (Int, Int) -> Int = { a, b ->
 }
 ```
 
-En el ejemplo anterior, se define una función lambda `suma` que toma dos parámetros de tipo `Int` y devuelve un valor de tipo `Int`. La función lambda realiza la suma de los dos parámetros y muestra un mensaje por consola con el resultado.
+En el ejemplo anterior, se define una función lambda `suma` que toma dos parámetros de tipo `Int` y devuelve un valor de tipo `Int`. La función lambda realiza la suma de los dos parámetros y muestra un mensaje por consola con el resultado. En una lambda no se usa `return`: el valor devuelto es el de la **última expresión** del bloque (en este caso, `resultado`).
+
+### Trailing lambdas
+
+Si el último parámetro de una función es otra función, la lambda puede escribirse **fuera de los paréntesis**. Si es el único parámetro, los paréntesis pueden omitirse:
+
+```kotlin
+val numeros = listOf(1, 2, 3)
+numeros.forEach({ n -> println(n) }) // Válido, pero poco habitual
+numeros.forEach { n -> println(n) }  // Forma idiomática
+```
+
+Esta sintaxis es la base de Jetpack Compose: en `Column { ... }` o `Button(onClick = { ... }) { Text("Pulsa") }` el contenido entre llaves es una lambda.
 
 ### Número variable de argumentos
 

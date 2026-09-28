@@ -17,9 +17,13 @@ Las actividades en Android pueden estar en uno de los siguientes estados:
 - **Created**: La actividad ha sido creada pero aún no es visible para el usuario.
 - **Started**: La actividad es visible para el usuario pero no tiene el foco.
 - **Resumed**: La actividad está en primer plano y tiene el foco.
-- **Paused**: La actividad ha perdido el foco pero aún es visible para el usuario.
+- **Paused**: La actividad ha perdido el foco pero aún es visible para el usuario (por ejemplo, porque hay un diálogo del sistema encima o está en modo multiventana).
 - **Stopped**: La actividad ya no es visible para el usuario.
 - **Destroyed**: La actividad ha sido destruida y liberada de la memoria.
+
+:::info[Estados en la librería Lifecycle]
+La librería `androidx.lifecycle`, que es la que usan internamente Compose y los ViewModel, simplifica estos estados en cinco: `INITIALIZED`, `CREATED`, `STARTED`, `RESUMED` y `DESTROYED`. En ella, una actividad en pausa se considera `STARTED` y una actividad detenida se considera `CREATED`.
+:::
 
 ## Métodos del ciclo de vida
 
@@ -37,41 +41,56 @@ En Android, cada actividad tiene una serie de métodos que se invocan en funció
 A continuación, se muestra un ejemplo del ciclo de vida de una actividad en Android:
 
 ```kotlin
-class MainActivity : AppCompatActivity() {
+private const val TAG = "MainActivity"
+
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        Log.d("MainActivity", "onCreate")
+        enableEdgeToEdge()
+        setContent {
+            MyAppTheme {
+                MyApp()
+            }
+        }
+        Log.d(TAG, "onCreate")
     }
 
     override fun onStart() {
         super.onStart()
-        Log.d("MainActivity", "onStart")
+        Log.d(TAG, "onStart")
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d("MainActivity", "onResume")
+        Log.d(TAG, "onResume")
     }
 
     override fun onPause() {
         super.onPause()
-        Log.d("MainActivity", "onPause")
+        Log.d(TAG, "onPause")
     }
 
     override fun onStop() {
         super.onStop()
-        Log.d("MainActivity", "onStop")
+        Log.d(TAG, "onStop")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("MainActivity", "onDestroy")
+        Log.d(TAG, "onDestroy")
     }
 }
 ```
 
-En el ejemplo anterior, se define una actividad `MainActivity` con los métodos del ciclo de vida más comunes. Cada método imprime un mensaje de registro en la consola para indicar en qué estado se encuentra la actividad.
+En el ejemplo anterior, se define una actividad `MainActivity` con los métodos del ciclo de vida más comunes. Cada método imprime un mensaje de registro en el **Logcat** de Android Studio para indicar en qué estado se encuentra la actividad. Podemos filtrar los mensajes escribiendo `tag:MainActivity` en el buscador del Logcat.
+
+En una app con Compose, la actividad hereda de `ComponentActivity` y en `onCreate` llama a `setContent { }` con el composable raíz de la app, en lugar de cargar un layout XML con `setContentView`. La llamada a `enableEdgeToEdge()` hace que la app se dibuje de borde a borde, detrás de las barras del sistema, que es el comportamiento obligatorio a partir de Android 15.
+
+:::warning[Cambios de configuración]
+Cuando cambia la configuración del dispositivo (por ejemplo, al **girar la pantalla**, cambiar el idioma o activar el modo oscuro), Android **destruye y vuelve a crear la actividad**: se llama a `onPause`, `onStop`, `onDestroy` y de nuevo a `onCreate`, `onStart` y `onResume`. Todo el estado que estuviera guardado en la actividad o en un `remember` se pierde.
+
+Por eso guardaremos el estado de la interfaz en `rememberSaveable` o, mejor aún, en un **ViewModel**, que sobrevive a estos cambios de configuración.
+:::
 
 ## Imagen del ciclo de vida de una actividad
 
@@ -96,11 +115,18 @@ En Android, el contexto se puede obtener a través de la clase `Context` o de un
 En Android, puedes obtener el contexto de varias formas, dependiendo de la clase en la que te encuentres. Algunas de las formas más comunes de obtener el contexto son:
 
 - `this`: En una actividad, puedes utilizar `this` para hacer referencia al contexto de la actividad.
-- `getApplicationContext()`: En una actividad o un servicio, puedes utilizar `getApplicationContext()` para obtener el contexto de la aplicación.
-- `getContext()`: En una vista, puedes utilizar `getContext()` para obtener el contexto de la vista.
+- `applicationContext`: En una actividad o un servicio, puedes utilizar `applicationContext` (el `getApplicationContext()` de Java) para obtener el contexto de la aplicación, que vive mientras vive la app.
 
 :::tip[Contexto en Compose]
-Para obtener el contexto en un entorno de Compose, puedes utilizar el modificador `LocalContext.current`.
+Para obtener el contexto dentro de un composable, se utiliza `LocalContext.current`:
+
+```kotlin
+val context = LocalContext.current
+```
+:::
+
+:::warning[No guardes el contexto de una actividad]
+Una actividad se destruye y se vuelve a crear con frecuencia. Si guardamos una referencia a ella (por ejemplo, en un ViewModel o en un singleton), impedimos que se libere de memoria (*memory leak*). Cuando necesitemos un contexto que dure toda la vida de la app, como para crear una base de datos, usaremos el contexto de la aplicación.
 :::
 
 ## Usos comunes del contexto
@@ -126,25 +152,45 @@ Toast.makeText(this, "Hola, mundo!", Toast.LENGTH_SHORT).show()
 
 En el ejemplo anterior, se utiliza `Toast.makeText()` para crear un toast con el mensaje "Hola, mundo!" y `Toast.LENGTH_SHORT` para especificar la duración del toast.
 
-Los toasts son útiles para mostrar mensajes informativos o de confirmación al usuario de forma rápida y sencilla.
+Los toasts son útiles para mostrar mensajes informativos o de confirmación al usuario de forma rápida y sencilla. Dentro de un composable, en lugar de `this` usaremos el contexto obtenido con `LocalContext.current`.
 
 ## Snackbar en Android
 
-Los snackbar son mensajes breves que se muestran en la parte inferior de la pantalla y permiten al usuario realizar una acción o deshacer una acción.
+Los snackbar son mensajes breves que se muestran en la parte inferior de la pantalla y permiten al usuario realizar una acción, como deshacer la última operación.
 
-En Android, puedes utilizar la clase `Snackbar` de la biblioteca de diseño de materiales para mostrar snackbar en tu aplicación.
-
-A continuación, se muestra un ejemplo de cómo mostrar un snackbar en Android:
+En Compose, los snackbar se muestran a través del `Scaffold`: se crea un `SnackbarHostState`, se le pasa al `Scaffold` y se llama a su función `showSnackbar()`, que es una función `suspend` y por tanto debe llamarse desde una corrutina.
 
 ```kotlin
-Snackbar.make(view, "Mensaje de snackbar", Snackbar.LENGTH_SHORT)
-    .setAction("Deshacer") {
-        // Acción al deshacer
+@Composable
+fun PantallaConSnackbar() {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { innerPadding ->
+        Button(
+            modifier = Modifier.padding(innerPadding),
+            onClick = {
+                scope.launch {
+                    val resultado = snackbarHostState.showSnackbar(
+                        message = "Elemento eliminado",
+                        actionLabel = "Deshacer",
+                        duration = SnackbarDuration.Short
+                    )
+                    if (resultado == SnackbarResult.ActionPerformed) {
+                        // Acción al deshacer
+                    }
+                }
+            }
+        ) {
+            Text("Eliminar")
+        }
     }
-    .show()
+}
 ```
 
-En el ejemplo anterior, se utiliza `Snackbar.make()` para crear un snackbar con el mensaje "Mensaje de snackbar" y `Snackbar.LENGTH_SHORT` para especificar la duración del snackbar. Se utiliza `setAction()` para añadir un botón de deshacer al snackbar y `show()` para mostrar el snackbar en la pantalla.
+En el ejemplo anterior, al pulsar el botón se muestra un snackbar con el mensaje "Elemento eliminado" y una acción "Deshacer". La función `showSnackbar()` espera a que el snackbar desaparezca y devuelve si el usuario ha pulsado la acción.
 
 Los snackbar son útiles para mostrar mensajes informativos o de confirmación al usuario y permitirle realizar acciones adicionales.
 
@@ -169,7 +215,42 @@ builder.setNegativeButton("Cancelar") { dialog, which ->
 builder.show()
 ```
 
-En compose, puedes utilizar el componente `AlertDialog` para crear diálogos de forma declarativa.
+El código anterior corresponde al sistema de vistas clásico. En Compose, el diálogo es un composable más, `AlertDialog`, y se muestra u oculta en función de un estado:
+
+```kotlin
+@Composable
+fun BotonConConfirmacion(onConfirmar: () -> Unit) {
+    var mostrarDialogo by remember { mutableStateOf(false) }
+
+    Button(onClick = { mostrarDialogo = true }) {
+        Text("Borrar todo")
+    }
+
+    if (mostrarDialogo) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogo = false },
+            title = { Text("Título del diálogo") },
+            text = { Text("¿Seguro que quieres borrar todos los elementos?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onConfirmar()
+                    mostrarDialogo = false
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogo = false }) { Text("Cancelar") }
+            }
+        )
+    }
+}
+```
+
+`onDismissRequest` se llama cuando el usuario cierra el diálogo pulsando fuera de él o con el botón "atrás".
 
 Los diálogos son útiles para interactuar con el usuario y solicitar su entrada o confirmación de forma clara y concisa.
 
+## Recursos
+
+- [El ciclo de vida de la actividad - Documentación oficial](https://developer.android.com/guide/components/activities/activity-lifecycle?hl=es-419)
+- [Codelab: Etapas del ciclo de vida de una actividad](https://developer.android.com/codelabs/basic-android-kotlin-compose-activity-lifecycle?hl=es-419)
+- [Diálogos en Compose](https://developer.android.com/develop/ui/compose/components/dialog?hl=es-419)

@@ -4,21 +4,30 @@ La **UI (User Interface)** o interfaz de usuario es uno de los aspectos más imp
 
 Unity ofrece muchos componentes que nos ayudarán a maquetar la **UI** y darle funcionalidad de una forma muy simple, a través de componentes como el Texto, las imágenes de UI, botones, toggle buttons, sliders, scrollbars, inputs, dropdown views, scroll views, etc. 
 
+Actualmente Unity tiene dos sistemas para crear interfaces en los juegos:
+
+- **Unity UI (uGUI)**: el sistema basado en GameObjects dentro de un **Canvas**. Es el más extendido y el que aparece en la mayoría de tutoriales, y es el que usaremos en los juegos de estos apuntes.
+- **UI Toolkit**: un sistema más reciente, inspirado en el desarrollo web, que veremos al final de este apartado.
+
 En cuanto a la estructura básica de la UI tenemos en primer lugar los objetos **Canvas**, que serán nuestro lienzo en blanco para agregar elementos de UI, junto con el Event System es el encargado de detectar y gestionar los eventos y, por último, los componentes visuales e interactivos que se alojarán dentro del propio Canvas.
 
 ## Canvas
 
-Para crear un **Canvas** simplemente debemos añadirlo como cualquier otro **GameObject**, desde la barra de herramientas seleccionaremos **GameObject → UI → Canvas**. Esto creará automáticamente los objetos y componentes necesarios, incluyendo el **Event System**. 
+Para crear un **Canvas** simplemente debemos añadirlo como cualquier otro **GameObject**, desde la barra de herramientas seleccionaremos **GameObject → UI → Canvas** (en Unity 6, dentro de **UI (Canvas)**). Esto creará automáticamente los objetos y componentes necesarios, incluyendo el **Event System**. Si creamos directamente un botón o un texto sin tener Canvas, Unity lo crea también automáticamente. 
 
-El Canvas, no solo nos sirve como un contenedor de componentes visuales interactivos, sino que también se encarga de manejar otros aspectos importantes. Por ejemplo, el modo de renderizado, que puede ser en pantalla  o ScreenSpace, el cual tomará como tamaño total la pantalla dónde se renderiza la escena, esto es habitual configurarlo así para la UI general del juego, menús, etc. Otro modo de renderizado posible es el WorldSpace o espacio del mundo, con el cuál podremos definir su tamaño y posición dentro de la escena, este modo se suele usar por ejemplo para mostrar la barra de vida de un personaje o un enemigo que se mueve por la pantalla justo encima del mismo.  
+El Canvas, no solo nos sirve como un contenedor de componentes visuales interactivos, sino que también se encarga de manejar otros aspectos importantes. Por ejemplo, el modo de renderizado (**Render Mode**), que puede ser:
 
-Al crear un Canvas observaremos que, además del propio componente Canvas del objeto, también se incluyen otros dos, el componente Canvas Scaler y el Graphic Raycaster. El Canvas Scaler nos permite escalar el contenido del canvas según el tamaño de la pantalla o mantener un aspecto constante al mundo. El **Graphic Raycaster**, por su parte, permite determinar qué **Layers** se bloquearán al interactuar con alguno de los elementos de UI. 
+- **Screen Space - Overlay**: la UI se dibuja encima de todo, ocupando toda la pantalla. Es el modo por defecto y el habitual para la UI general del juego, menús, marcadores, etc.
+- **Screen Space - Camera**: igual que el anterior, pero la UI se dibuja a una distancia de una cámara concreta, lo que permite que le afecten los efectos de postprocesado o que haya objetos por delante.
+- **World Space**: el Canvas es un objeto más de la escena, con su propio tamaño y posición. Se suele usar, por ejemplo, para mostrar la barra de vida de un enemigo justo encima de él.  
+
+Al crear un Canvas observaremos que, además del propio componente Canvas del objeto, también se incluyen otros dos, el componente Canvas Scaler y el Graphic Raycaster. El **Canvas Scaler** nos permite escalar el contenido del canvas según el tamaño de la pantalla. Lo más recomendable es poner su **UI Scale Mode** en **Scale With Screen Size** e indicar una resolución de referencia (por ejemplo, 1920 x 1080): así la UI se verá proporcionalmente igual en cualquier resolución. El **Graphic Raycaster**, por su parte, es el encargado de detectar sobre qué elementos de la UI pulsa o hace clic el usuario. 
 
 ## Componentes de la UI
 
 Los componentes de UI que queramos utilizar serán hijos del **Canvas**. Podemos manipular su posición o tamaño usando las herramientas de edición de la propia escena. Para agregar un elemento, lo más rápido y sencillo es hacer clic derecho sobre el objeto Canvas y buscar el elemento que queremos agregar en la categoría de UI. 
 
-El elemento **Text** por ejemplo, nos permite mostrar un texto y configurar su fuente, tamaño, color y demás elementos relacionados con el mismo. 
+El elemento **Text - TextMeshPro** por ejemplo, nos permite mostrar un texto y configurar su fuente, tamaño, color y demás elementos relacionados con el mismo. La primera vez que lo añadimos, Unity nos pedirá importar los **TMP Essential Resources**, necesarios para que funcione. El antiguo componente **Text** sigue existiendo en la categoría **Legacy**, pero se desaconseja porque se ve borroso al escalarlo. Desde código, los textos de TextMeshPro son del tipo `TextMeshProUGUI` (del espacio de nombres `TMPro`). 
 
 **Image**por su parte, serán imágenes a utilizar en el fondo de la UI u otros elementos, pudiendo seleccionar el sprite que utilizaremos para ello, el color o la forma de visualización de la misma. 
 
@@ -28,7 +37,7 @@ El **Button**, el cual también nos permite personalizar el sprite que le da for
 
 Otros como el **Drop down**, el **Toggle** o el **Scrollview**, que poseen un componente llamado **Rect Transform** con el que podremos modificar su posición, tamaño, rotación, escala, pivote y anclaje. El anclaje en el Rect Transform se refiere al punto de referencia donde se ubicará el elemento, independientemente del tamaño. El pivote se activa presionando la tecla **Shift**, indica el punto que se utiliza para asignarle la posición y el punto central desde el cuál rotarlo. Con la tecla Alt ubicamos la posición automáticamente en alguno de los puntos. El Rect Transform junto con el anclaje y el pivote nos permite crear interfaces adaptables a diferentes resoluciones de pantalla y dispositivos, de la misma forma que con componentes anteriores, también podremos acceder desde código para modificar estos valores en tiempo de ejecución. 
 
-Estos son los elementos principales y los más simples para elaborar una UI básica en Unity, pero en la actualidad también existen paquetes que nos ayudan a mejorar la creación de nuestras UI para adaptarla mejor y más rápidamente, como puede ser **UIToolkit**. 
+Estos son los elementos principales y los más simples para elaborar una UI básica en Unity. 
 
 ## Eventos de la UI
 
@@ -40,7 +49,6 @@ Por ejemplo, si queremos que al pulsar un botón se muestre un mensaje en consol
 
 ```csharp
 using UnityEngine;
-using UnityEngine.UI;
 
 public class ButtonScript : MonoBehaviour
 {
@@ -51,21 +59,67 @@ public class ButtonScript : MonoBehaviour
 }
 ```
 
-Y lo asignamos al botón en el campo **On Click**.
+Y lo asignamos al botón en el campo **On Click**. El método debe ser `public` para que aparezca en la lista.
 
-## El UIToolkit
+También podemos asignar el evento desde código, lo cual es útil cuando creamos botones dinámicamente:
 
-El **UIToolkit** es un paquete que nos permite crear interfaces de usuario de una forma más sencilla y rápida, con una mayor flexibilidad y personalización.    
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
-Para instalarlo, simplemente debemos ir a la pestaña de **Package Manager** y buscar **UIToolkit**. Una vez instalado, podremos crear un nuevo **UI Toolkit** desde **GameObject → UI Toolkit → UI Toolkit Root**. Aunque en Unity6 ya se incluye por defecto, en versiones anteriores debemos instalarlo desde el Package Manager.
+public class Marcador : MonoBehaviour
+{
+    [SerializeField] private Button botonSumar;
+    [SerializeField] private TextMeshProUGUI textoPuntos;
+    private int puntos = 0;
 
-El **UIToolkit** nos permite crear interfaces de usuario de una forma más sencilla y rápida, con una mayor flexibilidad y personalización.
+    void Start()
+    {
+        botonSumar.onClick.AddListener(SumarPunto);
+    }
 
-Las interfaces definidas con **UIToolkit** se componen de **UI Toolkit Root**, **UI Toolkit Document** y **UI Toolkit View**.
+    private void SumarPunto()
+    {
+        puntos++;
+        textoPuntos.text = "Puntos: " + puntos;
+    }
+}
+```
 
-El **UI Toolkit Root** es el objeto raíz de la interfaz, que contiene todos los elementos de la misma. El **UI Toolkit Document** es el documento de la interfaz, que contiene los elementos de la interfaz. El **UI Toolkit View** es la vista de la interfaz, que muestra los elementos de la interfaz.   
+## UI Toolkit
 
-Para crear un nuevo **UI Toolkit**, simplemente debemos añadirlo como cualquier otro **GameObject**, desde la barra de herramientas seleccionaremos **GameObject → UI Toolkit → UI Toolkit Root**. Esto creará automáticamente los objetos y componentes necesarios, incluyendo el **UI Toolkit Document** y el **UI Toolkit View**.    
+**UI Toolkit** es el sistema de interfaces más reciente de Unity. En lugar de crear la UI con GameObjects, se define con archivos inspirados en el desarrollo web:
 
-Una vez creado el **UI Toolkit**, podremos añadir elementos de la interfaz desde la barra de herramientas, seleccionando **GameObject → UI Toolkit → UI Toolkit Element**. Esto creará un nuevo elemento de la interfaz, que podremos personalizar y configurar según nuestras necesidades. 
+- **UXML**: describe la estructura de la interfaz (qué elementos hay y cómo se anidan), de forma parecida a HTML.
+- **USS**: define el estilo de los elementos (colores, tamaños, márgenes...), de forma parecida a CSS. La colocación de los elementos se basa en *flexbox*.
+- **UI Builder**: un editor visual (**Window → UI Toolkit → UI Builder**) que permite diseñar la interfaz arrastrando elementos, sin tener que escribir el UXML y el USS a mano.
 
+UI Toolkit está integrado en el editor desde Unity 2021.2, por lo que no hace falta instalar ningún paquete. Para mostrar una interfaz de UI Toolkit en el juego, se crea un objeto con **GameObject → UI Toolkit → UI Document**, que añade un componente **UIDocument** al que asignamos nuestro archivo UXML (en **Source Asset**) y un asset de **Panel Settings**, que controla, entre otras cosas, el escalado según la resolución.
+
+Desde código se accede a los elementos por su nombre a través del elemento raíz del documento:
+
+```csharp
+using UnityEngine;
+using UnityEngine.UIElements;
+
+public class MenuPrincipal : MonoBehaviour
+{
+    void OnEnable()
+    {
+        var root = GetComponent<UIDocument>().rootVisualElement;
+
+        Button botonJugar = root.Q<Button>("BotonJugar");
+        Label titulo = root.Q<Label>("Titulo");
+
+        titulo.text = "Mi juego";
+        botonJugar.clicked += () => Debug.Log("¡A jugar!");
+    }
+}
+```
+
+:::info[¿uGUI o UI Toolkit?]
+UI Toolkit es el sistema que Unity está impulsando y es especialmente cómodo para menús e interfaces con mucho texto y formularios. Sin embargo, uGUI sigue siendo más sencillo para empezar, tiene mucha más documentación y tutoriales, y todavía resulta más práctico para algunas cosas, como la UI en el espacio del mundo o las animaciones con el Animator. Por eso en estos apuntes usamos uGUI.
+
+[Documentación oficial de UI Toolkit](https://docs.unity3d.com/Manual/UIElements.html)
+:::

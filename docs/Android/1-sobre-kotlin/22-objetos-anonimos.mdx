@@ -1,10 +1,14 @@
-import CodeBlock from '@theme/CodeBlock';
+# Objetos anónimos y la palabra clave `object` en Kotlin
 
-# Objetos anónimos en Kotlin
+En Kotlin, la palabra clave `object` se utiliza en tres situaciones distintas que conviene no confundir:
 
-En Kotlin, puedes crear objetos anónimos utilizando la palabra clave `object`. 
+- **Expresiones de objeto** (*object expressions*): crean un **objeto anónimo**, sin clase con nombre, en el momento en que se necesita.
+- **Declaraciones de objeto** (*object declarations*): crean un **singleton**, una clase con nombre de la que solo existe una instancia.
+- **Companion objects**: un objeto declarado dentro de una clase cuyos miembros se usan como los miembros `static` de Java.
 
-Los objetos anónimos son instancias de una clase anónima que no tienen un nombre y se utilizan para definir una clase de forma concisa y reutilizable.
+## Objetos anónimos (expresiones de objeto)
+
+Un objeto anónimo es una instancia de una clase que no tiene nombre y que se define en el mismo lugar en el que se crea.
 
 ```kotlin
 val persona = object {
@@ -20,21 +24,11 @@ En el ejemplo anterior, se crea un objeto anónimo que tiene dos propiedades `no
 
 El objeto anónimo se asigna a la variable `persona` y se puede acceder a sus propiedades utilizando la notación de punto.
 
-Los objetos anónimos son útiles cuando necesitas crear una instancia de una clase de forma rápida y concisa sin tener que definir una clase con nombre.
+Los objetos anónimos son útiles cuando necesitas un objeto puntual y no merece la pena definir una clase con nombre que no se va a reutilizar.
 
-## Uso de objetos anónimos
+### Implementación de interfaces con objetos anónimos
 
-Los objetos anónimos se utilizan en Kotlin para:
-
-- Crear instancias de una clase de forma rápida y concisa.
-- Definir clases de forma reutilizable sin tener que definir una clase con nombre.
-- Implementar interfaces y clases abstractas de forma anónima.
-
-Los objetos anónimos son una característica poderosa de Kotlin que te permite escribir código de forma más concisa y eficiente.
-
-## Implementación de interfaces con objetos anónimos
-
-En Kotlin, puedes implementar interfaces de forma anónima utilizando objetos anónimos. Esto te permite definir una clase que implementa una interfaz sin tener que definir una clase con nombre.
+El uso más habitual de los objetos anónimos es implementar una interfaz (o extender una clase abstracta) sin tener que crear una clase con nombre.
 
 ```kotlin
 interface Saludable {
@@ -56,9 +50,21 @@ Se crea un objeto anónimo que implementa la interfaz `Saludable` y se asigna a 
 
 El objeto anónimo define la implementación del método `saludar` y se puede llamar al método utilizando la notación de punto.
 
-## Implementación del patrón Singleton con objetos anónimos
+:::info[Objetos anónimos y lambdas]
+Si la interfaz solo tiene un método abstracto, se puede declarar como `fun interface` y entonces, en lugar de un objeto anónimo, basta con pasar una lambda:
 
-En Kotlin, puedes implementar el patrón Singleton utilizando objetos anónimos. El patrón Singleton garantiza que una clase tenga una única instancia y proporciona un punto de acceso global a esa instancia.
+```kotlin
+fun interface Saludable {
+    fun saludar()
+}
+
+val persona = Saludable { println("Hola, soy una persona saludable!") }
+```
+:::
+
+## El patrón Singleton con declaraciones de objeto
+
+Si escribimos `object` seguido de un **nombre**, ya no estamos creando un objeto anónimo, sino declarando un **singleton**: una clase de la que Kotlin crea automáticamente una única instancia, la primera vez que se accede a ella.
 
 ```kotlin
 object Configuracion {
@@ -70,25 +76,37 @@ println(Configuracion.servidor) // localhost
 println(Configuracion.puerto) // 8080
 ```
 
-En el ejemplo anterior, se define un objeto anónimo `Configuracion` que tiene dos propiedades `servidor` y `puerto`.
-
-El objeto anónimo se utiliza para almacenar la configuración de la aplicación y garantiza que solo haya una instancia de la configuración en toda la aplicación.
-
-:::tip[Características de los objetos anónimos]
-Los objetos anónimos en Kotlin tienen las siguientes características:
-
-- No tienen un nombre y se crean utilizando la palabra clave `object`.
-- Pueden tener propiedades, métodos y constructores.
-- Se utilizan para definir clases de forma concisa y reutilizable.
-- Se pueden utilizar para implementar interfaces y clases abstractas de forma anónima.
-- Se pueden utilizar para implementar el patrón Singleton y almacenar configuraciones globales.
-:::
+En el ejemplo anterior, se declara el objeto `Configuracion`, que tiene dos propiedades `servidor` y `puerto`. Se accede a él directamente por su nombre, sin crear ninguna instancia con un constructor.
 
 :::info[Sobre el patrón Singleton]
 El patrón Singleton es un patrón de diseño que garantiza que una clase tenga una única instancia y proporciona un punto de acceso global a esa instancia.
 
-En Kotlin, puedes implementar el patrón Singleton utilizando objetos anónimos, que garantizan que solo haya una instancia de la clase en toda la aplicación.
+Usos comunes del patrón Singleton incluyen la creación de objetos de configuración, conexiones a bases de datos y puntos de acceso a servicios globales.
 
-**Usos comunes del patrón Singleton incluyen la creación de objetos de configuración, conexiones a bases de datos y puntos de acceso a servicios globales.**
+Hay que usarlo con cuidado: un singleton es un estado global de la aplicación, lo que dificulta las pruebas y acopla el código. En Android veremos que, en lugar de acceder a singletons desde cualquier sitio, es preferible **inyectar las dependencias** (por ejemplo, pasar el repositorio al constructor del ViewModel).
 :::
 
+## Companion objects
+
+Kotlin no tiene la palabra clave `static`. Cuando queremos miembros que pertenezcan a la clase y no a cada instancia, los declaramos dentro de un `companion object`:
+
+```kotlin
+class Usuario(val nombre: String) {
+    companion object {
+        const val EDAD_MINIMA = 18
+
+        fun invitado(): Usuario = Usuario("Invitado")
+    }
+}
+
+println(Usuario.EDAD_MINIMA) // 18
+val u = Usuario.invitado()
+```
+
+Veremos los companion objects en Android, por ejemplo, para definir la *factory* de un ViewModel o la instancia única de una base de datos de Room.
+
+:::tip[Resumen]
+- `object { ... }` o `object : Interfaz { ... }` → objeto anónimo, se crea una nueva instancia cada vez que se evalúa.
+- `object Nombre { ... }` → singleton con nombre.
+- `companion object { ... }` → miembros "estáticos" de una clase.
+:::

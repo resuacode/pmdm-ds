@@ -10,9 +10,13 @@ Aunque se podría aprender C# de forma independiente a Unity, debemos tener en c
 
 ## Creación de un Script
 
-Empezaremos por crear un  archivo de código, es decir, un Script de C#. Dentro de los proyectos de UNity, los Scripts funcionan como un Asset más que podemos agregar a nuestra pestaña de proyecto. Para ello, desde la barra de herramientas (por ejemplo), seleccionaremos **Assets → Create → C# Script**. Lo ideal sería almacenar los scripts en una carpeta llamada Scripts. 
+Empezaremos por crear un archivo de código, es decir, un Script de C#. Dentro de los proyectos de Unity, los Scripts funcionan como un Asset más que podemos agregar a nuestra pestaña de proyecto. Para ello, desde la barra de herramientas (por ejemplo), seleccionaremos **Assets → Create → Scripting → MonoBehaviour Script** (en versiones anteriores a Unity 6, **Assets → Create → C# Script**). Lo ideal sería almacenar los scripts en una carpeta llamada Scripts. 
 
-La existencia del Script por si solo en el proyecto no hace que el código se ejecute, al igual que con el resto de Assets, para poder usarlos debemos agregarlos a un objeto de la escena y esto, en el caso de los Scripts se hará en forma de Componente. Para editar el código del Script podemos hacer doble clic sobre él o bien pulsar en el botón de Open en el inspector teniéndolo seleccionado, esto nos abrirá el editor de código que tengamos asignado por defecto será Visual Studio de Microsoft (el cuál se nos habrá instalado con la instalación de Unity o nos habrá pedido que lo instalemos dependiendo de la versión del motor y del editor de código), pero también podemos usar un editor de nuestra preferencia. No confundir Visual Studio con Visual Studio Code, ambos editores son de Microsoft pero no son el mismo producto, aunque si podemos usar ambos indistintamente. 
+:::warning[El nombre del script]
+El nombre que le demos al archivo al crearlo será el nombre de la clase. Si después renombramos el archivo, hay que cambiar también el nombre de la clase dentro del código (o viceversa); si no coinciden, Unity no podrá añadir el script a ningún objeto.
+:::
+
+La existencia del Script por si solo en el proyecto no hace que el código se ejecute, al igual que con el resto de Assets, para poder usarlos debemos agregarlos a un objeto de la escena y esto, en el caso de los Scripts se hará en forma de Componente. Para editar el código del Script podemos hacer doble clic sobre él o bien pulsar en el botón de Open en el inspector teniéndolo seleccionado, esto nos abrirá el editor de código que tengamos asignado. En Windows suele ser Visual Studio de Microsoft, que el Hub ofrece instalar junto con el editor, pero también podemos usar Visual Studio Code (con la extensión oficial de Unity) o JetBrains Rider, que es gratuito para uso no comercial. No confundir Visual Studio con Visual Studio Code: ambos editores son de Microsoft pero no son el mismo producto. 
 
 :::tip[Cambiar el editor de código por defecto]
 Para cambiar el editor de código por defecto en Unity, debemos ir a **Edit → Preferences → External Tools** y seleccionar el editor de código que queramos usar.
@@ -21,13 +25,11 @@ Para cambiar el editor de código por defecto en Unity, debemos ir a **Edit → 
 Veamos ahora el esquema general de un script y algunos de los términos fundamentales de la programación de Scripts en Unity. Por defecto, cuándo creamos un Script se nos genera ya con unas pequeñas líneas de código, es decir, con una estructura básica, que son las siguientes:
 
 ```csharp
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class NombreDelScript : MonoBehaviour
 {
-    // Start is called before the first frame update
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         
@@ -41,7 +43,7 @@ public class NombreDelScript : MonoBehaviour
 }
 ```
 
-- **using**: Es una directiva que se utiliza para importar librerías de C# que necesitemos en nuestro Script. En este caso, estamos importando las librerías `System.Collections`, `System.Collections.Generic` y `UnityEngine`. La librería `UnityEngine` es la que nos permite acceder a las clases y funciones propias de Unity. 
+- **using**: Es una directiva que se utiliza para importar los espacios de nombres (*namespaces*) de C# que necesitemos en nuestro Script. En este caso, importamos `UnityEngine`, que es el que nos permite acceder a las clases y funciones propias de Unity. En versiones anteriores a Unity 6, la plantilla incluía también `System.Collections` y `System.Collections.Generic`, que solo son necesarios si usamos colecciones como `List` o corrutinas. 
 - **public class NombreDelScript : MonoBehaviour**: Es la definición de la clase del Script. La clase del Script debe heredar de `MonoBehaviour` para que pueda ser un componente de un GameObject en Unity. El nombre de la clase debe ser el mismo que el nombre del archivo del Script.
 - **void Start()**: Es un método que se llama una vez al inicio del juego, antes de que se ejecute el primer frame. Se utiliza para inicializar variables y configurar el estado inicial del objeto.    
 - **void Update()**: Es un método que se llama una vez por frame. Se utiliza para actualizar el comportamiento del objeto en cada frame, como el movimiento, la interacción, la lógica del juego, etc.  
@@ -55,6 +57,16 @@ Cómo podemos observar, la herencia en C# se realiza a través de los dos puntos
 En el caso de los métodos Start y Update, estos son métodos predefinidos que se ejecutan en un orden concreto. Start se ejecuta una vez al inicio del juego, antes de que se ejecute el primer frame, y Update se ejecuta una vez por frame.
 
 ## Variables y tipos de datos
+
+:::tip[Variables en el inspector]
+Las variables `public` de un script aparecen en el inspector y se pueden modificar desde el editor sin tocar el código. Si queremos que una variable se vea en el inspector pero no sea accesible desde otros scripts, la declaramos `private` con el atributo `[SerializeField]`, que es la opción recomendada:
+
+```csharp
+[SerializeField] private float velocidad = 5f;
+```
+
+El valor que asignemos en el inspector **tiene prioridad** sobre el que escribimos en el código.
+:::
 
 Las variables en C# son contenedores que se utilizan para almacenar datos. En C# existen varios tipos de datos que se pueden utilizar para declarar variables, como:
 
@@ -112,10 +124,10 @@ Saludar();
 
 En Unity, las funciones del MonoBehaviour son funciones predefinidas que se utilizan para controlar el comportamiento de los objetos en la escena. Algunas de las funciones más comunes del MonoBehaviour son:  
 
-- **Awake()**: Se llama una vez al inicio del juego, antes de que se ejecute el primer frame. Se utiliza para inicializar variables y configurar el estado inicial del objeto.
-- **Start()**: Se llama una vez al inicio del juego, antes de que se ejecute el primer frame.
-- **Update()**: Se llama una vez por frame. Se utiliza para actualizar el comportamiento del objeto en cada frame. 
-- **FixedUpdate()**: Se llama una vez por frame, pero se sincroniza con el tiempo físico del juego. Se utiliza para actualizar el comportamiento del objeto en cada frame, pero con una frecuencia fija.
+- **Awake()**: Se llama una única vez, en cuanto se carga el objeto, aunque el script esté desactivado. Se utiliza para inicializar el propio objeto, por ejemplo, para obtener referencias a sus componentes con `GetComponent`.
+- **Start()**: Se llama una única vez, justo antes del primer `Update()`, y solo si el script está activado. Como se ejecuta después del `Awake()` de todos los objetos de la escena, es el lugar adecuado para acceder a otros objetos.
+- **Update()**: Se llama una vez por frame. Se utiliza para actualizar el comportamiento del objeto en cada frame y, sobre todo, para leer la entrada del jugador. 
+- **FixedUpdate()**: Se llama a intervalos de tiempo fijos (por defecto, 50 veces por segundo), independientemente de los FPS, en sincronía con el motor de físicas. Por eso, en un frame puede ejecutarse varias veces o ninguna. Es el lugar adecuado para aplicar fuerzas o modificar la velocidad de un Rigidbody.
 - **LateUpdate()**: Se llama una vez por frame, después de que se hayan procesado todos los Updates. Se utiliza para actualizar el comportamiento del objeto después de que se hayan procesado todos los Updates.
 - **OnEnable()**: Se llama cuando el objeto se activa.
 - **OnDisable()**: Se llama cuando el objeto se desactiva.
@@ -131,7 +143,7 @@ void Start()
 }
 ```
 
-La función **Awake** se ejecuta una única vez cuándo el objeto se indexa en la escena. Tras esto, se ejecuta una única vez la función **Start**, inmediatamente después del Awake, en cuanto el GameObject ya está activo y listo. Por último, tenemos la función **Update**, la cuál se ejecuta tantas veces por segundo como frames por segundo pueda ejecutar el hardware dónde se ejecuta el juego. 
+La función **Awake** se ejecuta una única vez cuándo el objeto se carga en la escena. Tras esto, se ejecuta una única vez la función **Start**, antes del primer frame en el que el objeto está activo. Por último, tenemos la función **Update**, la cuál se ejecuta tantas veces por segundo como frames por segundo pueda ejecutar el hardware dónde se ejecuta el juego. 
 
 Es importante entender el concepto de **FPS** o **Frames per Seconds**, es decir, fotogramas por segundo. Si un juego se está ejecutando a 30 FPS, quiere decir que visualiza 30 frames por pantalla en cada segundo, y, en lo que a nosotros respecta a nivel programación, esto quiere decir que el método Update se va a lanzar 30 veces en cada segundo. 
 
@@ -143,21 +155,23 @@ Otras funciones relevantes, entre otras, son las siguientes:
 - **OnTriggerExit(Collider other)**: Se llama cuando un objeto sale del trigger del objeto.
 - **OnCollisionEnter(Collision collision)**: Se llama cuando un objeto colisiona con otro objeto.
 - **OnCollisionExit(Collision collision)**: Se llama cuando un objeto deja de colisionar con otro objeto.
+- En los juegos 2D se usan sus equivalentes con el sufijo `2D`: **OnTriggerEnter2D(Collider2D other)**, **OnCollisionEnter2D(Collision2D collision)**, etc.
 - **OnMouseDown()**: Se llama cuando se hace clic en el objeto con el ratón.
 - **OnMouseEnter()**: Se llama cuando el ratón entra en el objeto.
 - **OnMouseExit()**: Se llama cuando el ratón sale del objeto.
 - **OnMouseOver()**: Se llama cuando el ratón está sobre el objeto.
 - **OnMouseUp()**: Se llama cuando se suelta el clic del ratón en el objeto.
 
-**[Documentación oficial sobre el MonoBehaviour](https://docs.unity3d.com/ScriptReference/MonoBehaviour.html)
-**
+**[Documentación oficial sobre el MonoBehaviour](https://docs.unity3d.com/ScriptReference/MonoBehaviour.html)**
 
-A la hora de probar el código es importante tener en cuenta que deberemos hacerlo pulsando en el Play de la escena para poder ejecutarla y que también tenemos disponible en la ventana dónde se aloja la pestaña de Project, otra pestaña con la consola y la salida estándar en ella para debuguear, para ello nos será muy útil la clase Log. 
+A la hora de probar el código es importante tener en cuenta que deberemos hacerlo pulsando en el Play de la escena para poder ejecutarla y que también tenemos disponible en la ventana dónde se aloja la pestaña de Project, otra pestaña con la consola (**Console**) en la que se muestran los mensajes y errores, muy útil para depurar. 
 
-Con la clase Log podemos imprimir mensajes en la consola de Unity, para ello usaremos el método Log de la clase Debug. 
+Para imprimir mensajes en la consola de Unity usaremos los métodos de la clase `Debug`: 
 
 ```csharp
 Debug.Log("Mensaje de depuración");
+Debug.LogWarning("Aviso");
+Debug.LogError("Error");
 ```
 
 ### Ejemplo de uso de un Script
@@ -165,34 +179,27 @@ Debug.Log("Mensaje de depuración");
 Vamos a ver un ejemplo sencillo de cómo utilizar un Script en Unity. Para ello, vamos a crear un Script que haga que un cubo rote en la escena.
 
 1. Crearemos un nuevo proyecto en Unity y crearemos un nuevo GameObject 3D en la escena. Para ello, haremos clic en **GameObject → 3D Object → Cube**.
-2. Seleccionaremos el cubo en la jerarquía y añadiremos un componente **Rigidbody**. Para ello, haremos clic en **Add Component → Physics → Rigidbody**.
-3. Crearemos un nuevo Script de C# en la pestaña de proyecto. Para ello, haremos clic en **Assets → Create → C# Script** y lo llamaremos `RotarCubo`.
-4. Editaremos el Script `RotarCubo` y escribiremos el siguiente código:
+2. Crearemos un nuevo Script de C# en la pestaña de proyecto. Para ello, haremos clic en **Assets → Create → Scripting → MonoBehaviour Script** y lo llamaremos `RotarCubo`.
+3. Editaremos el Script `RotarCubo` y escribiremos el siguiente código:
 
 ```csharp
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class RotarCubo : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    [SerializeField] private float gradosPorSegundo = 90f;
 
     // Update is called once per frame
     void Update()
     {
-        transform.Rotate(new Vector3(0, 1, 0));
+        transform.Rotate(0, gradosPorSegundo * Time.deltaTime, 0);
     }
 }
 ```
 
-5. Asociaremos el Script `RotarCubo` al cubo en la escena. Para ello, arrastraremos el Script desde la pestaña de proyecto al cubo en la jerarquía.
+4. Asociaremos el Script `RotarCubo` al cubo en la escena. Para ello, arrastraremos el Script desde la pestaña de proyecto al cubo en la jerarquía.
 
-Una vez hecho esto, si ejecutamos la escena, veremos cómo el cubo rota en la escena. Esto es debido a que hemos asociado el Script `RotarCubo` al cubo y hemos escrito un código en el Script que hace que el cubo rote en cada frame.  
+Una vez hecho esto, si ejecutamos la escena, veremos cómo el cubo rota en la escena a 90 grados por segundo. Multiplicar por `Time.deltaTime` hace que la velocidad de giro no dependa de los FPS, como veremos más abajo. Esto es debido a que hemos asociado el Script `RotarCubo` al cubo y hemos escrito un código en el Script que hace que el cubo rote en cada frame.  
 
 Este es un ejemplo muy sencillo de cómo utilizar un Script en Unity. A partir de aquí, podemos crear Scripts más complejos con comportamientos más avanzados para los objetos en la escena. 
 
@@ -204,22 +211,35 @@ El ciclo de vida de un Script en Unity es el conjunto de eventos que se producen
 
 El ciclo de vida de un Script en Unity consta de los siguientes eventos:
 
-- **Awake()**: Se llama una vez al inicio del juego, antes de que se ejecute el primer frame. Se utiliza para inicializar variables y configurar el estado inicial del objeto.
-- **OnEnable()**: Se llama cuando el objeto se activa.
-- **Start()**: Se llama una vez al inicio del juego, antes de que se ejecute el primer frame.
-- **Update()**: Se llama una vez por frame. Se utiliza para actualizar el comportamiento del objeto en cada frame.
-- **FixedUpdate()**: Se llama una vez por frame, pero se sincroniza con el tiempo físico del juego.
-- **LateUpdate()**: Se llama una vez por frame, después de que se hayan procesado todos los Updates.
+- **Awake()**: Se llama una vez, al cargar el objeto.
+- **OnEnable()**: Se llama cada vez que el objeto o el script se activa.
+- **Start()**: Se llama una vez, antes del primer frame en el que el script está activo.
+- **FixedUpdate()**: Se llama a intervalos fijos, junto con la simulación de físicas.
+- **Update()**: Se llama una vez por frame.
+- **LateUpdate()**: Se llama una vez por frame, después de que se hayan procesado todos los Updates. Es útil, por ejemplo, para mover una cámara que sigue a un jugador que ya se ha movido en su `Update()`.
 - **OnDisable()**: Se llama cuando el objeto se desactiva.
 - **OnDestroy()**: Se llama cuando el objeto se destruye.
 
-El ciclo de vida de un Script en Unity es importante para entender cómo se ejecutan las funciones y cómo se controla el comportamiento de los objetos en la escena.
+El ciclo de vida de un Script en Unity es importante para entender cómo se ejecutan las funciones y cómo se controla el comportamiento de los objetos en la escena. El diagrama completo del orden de ejecución puede consultarse en la [documentación oficial](https://docs.unity3d.com/Manual/execution-order.html).
 
 ## El Input en Unity
 
 El **Input** en Unity se utiliza para detectar la entrada del usuario, como el teclado, el ratón, el mando, la pantalla táctil, etc.
 
-Para detectar la entrada del usuario en Unity, se utilizan los métodos de la clase `Input`. Algunos de los métodos más comunes de la clase `Input` son:
+Unity tiene actualmente **dos sistemas** de entrada:
+
+- El **Input Manager** antiguo, basado en la clase `Input` (`Input.GetKeyDown`, `Input.GetAxis`...). Es muy sencillo de usar y es el que aparece en la mayoría de tutoriales.
+- El **Input System**, un paquete más moderno y flexible, que es el que Unity recomienda y el que viene instalado por defecto en los proyectos creados con las plantillas de Unity 6.
+
+:::warning[InvalidOperationException al usar `Input`]
+Si en un proyecto de Unity 6 usamos la clase `Input` y al darle al Play aparece el error *"InvalidOperationException: You are trying to read Input using the UnityEngine.Input class, but you have switched active Input handling to Input System package in Player Settings"*, significa que el proyecto solo tiene activado el sistema nuevo.
+
+Para poder usar los dos sistemas, hay que ir a **Edit → Project Settings → Player → Other Settings → Active Input Handling** y seleccionar **Both**. Unity pedirá reiniciar el editor.
+:::
+
+### El Input Manager clásico
+
+Para detectar la entrada del usuario con el sistema clásico, se utilizan los métodos de la clase `Input`. Algunos de los métodos más comunes de la clase `Input` son:
 
 - **Input.GetKey(KeyCode key)**: Devuelve verdadero si la tecla especificada está presionada.
 - **Input.GetKeyDown(KeyCode key)**: Devuelve verdadero si la tecla especificada se ha presionado en este frame.
@@ -257,13 +277,10 @@ El Input en Unity es una parte fundamental del desarrollo de videojuegos y aplic
 Vamos a ver un ejemplo sencillo de cómo utilizar el Input en Unity. Para ello, vamos a crear un Script que haga que un cubo se mueva en la escena con las teclas de dirección del teclado.  
 
 1. Crearemos un nuevo proyecto en Unity y crearemos un nuevo GameObject 3D en la escena. Para ello, haremos clic en **GameObject → 3D Object → Cube**.
-2. Seleccionaremos el cubo en la jerarquía y añadiremos un componente **Rigidbody**. Para ello, haremos clic en **Add Component → Physics → Rigidbody**.
-3. Crearemos un nuevo Script de C# en la pestaña de proyecto. Para ello, haremos clic en **Assets → Create → C# Script** y lo llamaremos `MoverCubo`.
-4. Editaremos el Script `MoverCubo` y escribiremos el siguiente código:
+2. Crearemos un nuevo Script de C# en la pestaña de proyecto. Para ello, haremos clic en **Assets → Create → Scripting → MonoBehaviour Script** y lo llamaremos `MoverCubo`.
+3. Editaremos el Script `MoverCubo` y escribiremos el siguiente código:
 
 ```csharp
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MoverCubo : MonoBehaviour
@@ -283,7 +300,7 @@ public class MoverCubo : MonoBehaviour
 }
 ```
 
-5. Asociaremos el Script `MoverCubo` al cubo en la escena. Para ello, arrastraremos el Script desde la pestaña de proyecto al cubo en la jerarquía.
+4. Asociaremos el Script `MoverCubo` al cubo en la escena. Para ello, arrastraremos el Script desde la pestaña de proyecto al cubo en la jerarquía.
 
 Una vez hecho esto, si ejecutamos la escena, veremos cómo el cubo se mueve en la escena con las teclas de dirección del teclado. Esto es debido a que hemos asociado el Script `MoverCubo` al cubo y hemos escrito un código en el Script que hace que el cubo se mueva con las teclas de dirección del teclado.    
 
@@ -300,15 +317,13 @@ Si no se multiplica el movimiento por Time.deltaTime, el movimiento del objeto d
 
 ### InputManager
 
-El **InputManager** en Unity es un componente que se utiliza para configurar la entrada del usuario en el juego.
+El **InputManager** en Unity es la configuración del sistema de entrada clásico.
 
 El InputManager en Unity se utiliza para configurar los ejes, los botones y las teclas que se van a utilizar para controlar el comportamiento de los objetos en la escena.
 
-Para acceder al InputManager en Unity, se puede hacer clic en **Edit → Project Settings → InputManager**.
+Para acceder al InputManager en Unity, se puede hacer clic en **Edit → Project Settings → Input Manager**.
 
 En el InputManager se pueden configurar los ejes, los botones y las teclas que se van a utilizar en el juego. Por ejemplo, se pueden configurar los ejes `Horizontal` y `Vertical` para controlar el movimiento de un objeto en la escena con las teclas de dirección del teclado.  
-
-El InputManager en Unity es una parte fundamental del desarrollo de videojuegos y aplicaciones interactivas. Con el InputManager, podemos configurar la entrada del usuario en el juego y controlar el comportamiento de los objetos en la escena.  
 
 :::tip[Sobre el control con mandos o teclado]
 En el InputManager también se pueden configurar los ejes, los botones y las teclas que se van a utilizar para controlar el juego con un mando o un teclado. Por ejemplo, se pueden configurar los ejes `Horizontal` y `Vertical` para controlar el movimiento de un objeto en la escena con un mando o las teclas de dirección del teclado. 
@@ -330,7 +345,7 @@ Para detectar la entrada táctil en Unity, se utilizan los métodos de la clase 
     - **TouchPhase.Canceled**: El toque ha sido cancelado.
 - **Touch.position**: Devuelve la posición del toque en la pantalla.
 - **Touch.deltaPosition**: Devuelve el desplazamiento del toque en la pantalla.
-- **Touch.deltaTime**: Devuelve el tiempo transcurrido desde el último frame.
+- **Touch.deltaTime**: Devuelve el tiempo transcurrido desde el último cambio del toque.
 
 Por ejemplo, para detectar si se ha tocado la pantalla en un dispositivo táctil, se puede utilizar el siguiente código:
 
@@ -348,18 +363,65 @@ if (Input.touchCount > 0)
 
 La entrada táctil en Unity es una parte fundamental del desarrollo de videojuegos y aplicaciones interactivas para dispositivos táctiles. Con la entrada táctil, podemos detectar la entrada del usuario en dispositivos táctiles y controlar el comportamiento de los objetos en la escena.    
 
-### Input System package
+### El Input System
 
-El **Input System package** en Unity es un paquete que se utiliza para gestionar la entrada del usuario en el juego.
+El **Input System** es el sistema de entrada moderno de Unity. Se distribuye como un paquete (**Input System**) que, en los proyectos creados con las plantillas de Unity 6, ya viene instalado. Si no lo está, se puede instalar desde **Window → Package Manager**.
 
-El Input System package en Unity se utiliza para configurar los ejes, los botones y las teclas que se van a utilizar para controlar el comportamiento de los objetos en la escena.  
+Su principal ventaja es que separa las **acciones** del juego (moverse, saltar, disparar...) de los **controles** concretos que las activan (teclas, botones del mando, pantalla táctil...). Así, el código solo pregunta "¿se ha pulsado saltar?", y la misma acción funciona con teclado, mando o pantalla táctil sin cambiar el código.
 
-Para acceder al Input System package en Unity, se puede hacer clic en **Window → Package Manager** y buscar el paquete **Input System**.
+Las plantillas de Unity 6 incluyen un asset llamado **InputSystem_Actions** con acciones ya configuradas, como `Move`, `Look`, `Jump` o `Attack`. Haciendo doble clic sobre él se abre el editor de acciones, donde podemos ver y modificar qué controles activan cada acción. Estas acciones son las **acciones del proyecto** (*project-wide actions*) y se pueden usar desde cualquier script:
 
-El Input System package en Unity es una parte fundamental del desarrollo de videojuegos y aplicaciones interactivas. Con el Input System package, podemos configurar la entrada del usuario en el juego y controlar el comportamiento de los objetos en la escena.  
+```csharp
+using UnityEngine;
+using UnityEngine.InputSystem;
 
-:::tip[Sobre el Input System package]
-El Input System package en Unity es una alternativa al InputManager que ofrece más funcionalidades y flexibilidad para gestionar la entrada del usuario en el juego. Con el Input System package, se pueden configurar los ejes, los botones y las teclas de forma más sencilla y eficiente.    
+public class MoverCubo : MonoBehaviour
+{
+    [SerializeField] private float velocidad = 5f;
+
+    private InputAction moveAction;
+    private InputAction jumpAction;
+
+    void Start()
+    {
+        // Buscamos las acciones definidas en el asset InputSystem_Actions
+        moveAction = InputSystem.actions.FindAction("Move");
+        jumpAction = InputSystem.actions.FindAction("Jump");
+    }
+
+    void Update()
+    {
+        // Move devuelve un Vector2 con valores entre -1 y 1 (WASD, flechas, joystick...)
+        Vector2 movimiento = moveAction.ReadValue<Vector2>();
+        transform.Translate(new Vector3(movimiento.x, 0, movimiento.y) * velocidad * Time.deltaTime);
+
+        // WasPressedThisFrame equivale a Input.GetKeyDown
+        if (jumpAction.WasPressedThisFrame())
+        {
+            Debug.Log("¡Salto!");
+        }
+    }
+}
+```
+
+También es posible leer directamente un dispositivo concreto, de forma parecida a como se hacía con la clase `Input`:
+
+```csharp
+using UnityEngine.InputSystem;
+
+if (Keyboard.current.spaceKey.wasPressedThisFrame)
+{
+    Debug.Log("Se ha presionado la tecla Espacio");
+}
+
+if (Mouse.current.leftButton.isPressed)
+{
+    Vector2 posicion = Mouse.current.position.ReadValue();
+}
+```
+
+:::tip[¿Qué sistema usar?]
+En los juegos paso a paso de estos apuntes usamos el Input Manager clásico por su sencillez, activando **Both** en *Active Input Handling*. Para proyectos nuevos, y especialmente si queremos que el juego funcione con mando o en móvil, es recomendable usar el Input System.
+
+Más información en la [documentación del Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@latest).
 :::
-
-

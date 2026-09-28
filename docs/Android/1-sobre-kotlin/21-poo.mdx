@@ -31,7 +31,7 @@ En el ejemplo anterior, se crea un objeto `persona` de la clase `Persona` y se i
 
 ## Propiedades y métodos
 
-En Kotlin, puedes definir propiedades y métodos en una clase utilizando la palabra clave `var` o `val` seguida del nombre de la propiedad o el método y el tipo de dato de la propiedad o el método.
+En Kotlin, las propiedades de una clase se declaran con `var` (si pueden cambiar) o `val` (si son de solo lectura) seguidas de su nombre y su tipo, y los métodos se declaran con `fun`, igual que cualquier otra función.
 
 ```kotlin
 class Persona {
@@ -83,20 +83,15 @@ class Persona {
 }
 ```
 
-En el ejemplo anterior, se define una clase `Persona` con dos propiedades `nombre` y `edad` que se han encapsulado con el modificador de acceso `private`. Esto significa que las propiedades `nombre` y `edad` solo se pueden acceder y modificar dentro de la clase `Persona`.
-
-Para acceder a las propiedades de una clase en Kotlin, puedes utilizar los métodos de acceso `get` y `set` para obtener y establecer el valor de una propiedad.
+En el ejemplo anterior, se define una clase `Persona` con dos propiedades `nombre` y `edad` cuyo *setter* es privado (`private set`). Esto significa que se pueden **leer** desde cualquier parte, pero solo se pueden **modificar** desde dentro de la clase `Persona`.
 
 ```kotlin
 val persona = Persona()
-persona.nombre = "Juan"
-persona.edad = 30
-persona.saludar()
+println(persona.nombre) // Correcto: el getter es público
+persona.nombre = "Juan" // Error de compilación: el setter es privado
 ```
 
-En el ejemplo anterior, se crea un objeto `persona` de la clase `Persona` y se inicializan las propiedades `nombre` y `edad` del objeto. 
-
-Sin embargo, al intentar modificar las propiedades `nombre` y `edad` desde fuera de la clase `Persona`, se produce un error de compilación debido a que las propiedades están encapsuladas con el modificador de acceso `private`.
+En Kotlin no hace falta escribir métodos `getNombre()` o `setNombre()` como en Java: al acceder a `persona.nombre` se llama automáticamente al *getter* de la propiedad, y al asignarle un valor se llama a su *setter*.
 
 ### Setters y Getters personalizados
 
@@ -106,7 +101,7 @@ En Kotlin, puedes definir setters y getters personalizados para las propiedades 
 class Persona {
     var nombre: String = ""
         set(value) {
-            field = value.capitalize()
+            field = value.replaceFirstChar { it.uppercase() }
         }
     var edad: Int = 0
         set(value) {
@@ -119,9 +114,16 @@ class Persona {
 }
 ```
 
-En el ejemplo anterior, se define una clase `Persona` con dos propiedades `nombre` y `edad` que tienen setters personalizados. El setter de la propiedad `nombre` capitaliza el valor de la propiedad, y el setter de la propiedad `edad` establece el valor de la propiedad en `0` si es menor que `0`.
+En el ejemplo anterior, se define una clase `Persona` con dos propiedades `nombre` y `edad` que tienen setters personalizados. El setter de la propiedad `nombre` pone en mayúscula la primera letra, y el setter de la propiedad `edad` establece el valor de la propiedad en `0` si es menor que `0`. La palabra reservada `field` hace referencia al valor almacenado de la propiedad (el *backing field*).
 
-Para acceder a las propiedades de una clase en Kotlin, puedes utilizar los métodos de acceso `get` y `set` para obtener y establecer el valor de una propiedad.
+También se puede definir un getter personalizado, por ejemplo para propiedades calculadas:
+
+```kotlin
+class Rectangulo(val ancho: Int, val alto: Int) {
+    val area: Int
+        get() = ancho * alto
+}
+```
 
 ```kotlin
 val persona = Persona()
@@ -130,7 +132,7 @@ persona.edad = -10
 persona.saludar()
 ```
 
-En el ejemplo anterior, se crea un objeto `persona` de la clase `Persona` y se inicializan las propiedades `nombre` y `edad` del objeto.
+En el ejemplo anterior, se crea un objeto `persona` de la clase `Persona` y se le asignan valores a sus propiedades. Gracias a los setters personalizados, el nombre queda como `"Juan"` y la edad como `0`.
 
 ## Constructores
 
@@ -146,6 +148,22 @@ class Persona(nombre: String, edad: Int) {
 ```
 
 En el ejemplo anterior, se define una clase `Persona` con un constructor primario que toma dos parámetros `nombre` y `edad`. Las propiedades de la clase se inicializan con los valores de los parámetros del constructor.
+
+Esta forma es tan habitual que Kotlin permite declarar las propiedades **directamente en el constructor primario** añadiendo `val` o `var` a los parámetros. El siguiente código es equivalente al anterior y es la forma idiomática de hacerlo:
+
+```kotlin
+class Persona(var nombre: String, var edad: Int)
+```
+
+Si necesitamos ejecutar código al crear el objeto, podemos usar un bloque `init`:
+
+```kotlin
+class Persona(val nombre: String, val edad: Int) {
+    init {
+        require(edad >= 0) { "La edad no puede ser negativa" }
+    }
+}
+```
 
 Para crear un objeto de una clase con un constructor primario en Kotlin, puedes utilizar la palabra clave `val` o `var` seguida del nombre del objeto, el operador de asignación `=` y la invocación del constructor de la clase con los argumentos del constructor.
 
@@ -173,6 +191,10 @@ class Persona {
 
 En el ejemplo anterior, se define una clase `Persona` con un constructor secundario que toma dos parámetros `nombre` y `edad`. Las propiedades de la clase se inicializan con los valores de los parámetros del constructor secundario.
 
+:::tip[Constructores secundarios y valores por defecto]
+En Kotlin los constructores secundarios se usan poco. En la mayoría de casos, en lugar de tener varios constructores es más sencillo usar un único constructor primario con **valores por defecto**: `class Persona(val nombre: String = "", val edad: Int = 0)`.
+:::
+
 Para crear un objeto de una clase con un constructor secundario en Kotlin, puedes utilizar la palabra clave `val` o `var` seguida del nombre del objeto, el operador de asignación `=` y la invocación del constructor secundario de la clase con los argumentos del constructor.
 
 ```kotlin
@@ -183,7 +205,7 @@ En el ejemplo anterior, se crea un objeto `persona` de la clase `Persona` utiliz
 
 ## Herencia
 
-En Kotlin, puedes crear una clase que herede de otra clase utilizando la palabra clave `:` seguida del nombre de la clase base.
+En Kotlin, puedes crear una clase que herede de otra clase utilizando `:` seguido del nombre de la clase base y la llamada a su constructor. Por defecto, las clases en Kotlin son `final` (no se puede heredar de ellas), por lo que la clase base debe marcarse como `open`.
 
 ```kotlin
 open class Persona {
@@ -230,7 +252,7 @@ class Empleado : Persona() {
 En el ejemplo anterior, se define una clase `Persona` con un método `saludar` y una clase `Empleado` que hereda de la clase `Persona` y sobrescribe el método `saludar`.
 
 :::tip[La palabra reservada open]
-La palabra reservada `open` se utiliza para marcar una clase o un miembro de una clase como "sobreseíble", lo que significa que puede ser heredado y sobrescrito por clases derivadas. 
+La palabra reservada `open` se utiliza para marcar una clase como heredable o un miembro de una clase como sobrescribible. En Kotlin, a diferencia de Java, las clases y sus métodos son `final` por defecto.
 :::
 
 Para utilizar el polimorfismo en Kotlin, puedes crear un objeto de la clase derivada y asignarlo a una variable de la clase base.
@@ -240,7 +262,7 @@ val persona: Persona = Empleado()
 persona.saludar()
 ```
 
-En el ejemplo anterior, se crea un objeto `empleado` de la clase `Empleado` y se asigna a una variable `persona` de la clase `Persona`. Al llamar al método `saludar` en la variable `persona`, se ejecuta la implementación del método `saludar` de la clase `Empleado`.
+En el ejemplo anterior, se crea un objeto de la clase `Empleado` y se asigna a una variable `persona` de la clase `Persona`. Al llamar al método `saludar` en la variable `persona`, se ejecuta la implementación del método `saludar` de la clase `Empleado`.
 
 ## Abstracción
 
@@ -267,5 +289,26 @@ val persona: Persona = Empleado()
 persona.saludar()
 ```
 
-En el ejemplo anterior, se crea un objeto `empleado` de la clase `Empleado` y se asigna a una variable `persona` de la clase `Persona`. Al llamar al método `saludar` en la variable `persona`, se ejecuta la implementación del método `saludar` de la clase `Empleado`.
+En el ejemplo anterior, se crea un objeto de la clase `Empleado` y se asigna a una variable `persona` de la clase `Persona`. Al llamar al método `saludar` en la variable `persona`, se ejecuta la implementación del método `saludar` de la clase `Empleado`.
+
+## Interfaces
+
+Las interfaces definen un conjunto de métodos (y propiedades) que una clase se compromete a implementar. A diferencia de las clases abstractas, una clase puede implementar varias interfaces. En Kotlin, las interfaces pueden incluir también implementaciones por defecto.
+
+```kotlin
+interface Saludable {
+    fun saludar()
+    fun despedirse() {
+        println("¡Adiós!") // Implementación por defecto
+    }
+}
+
+class Empleado : Persona(), Saludable {
+    override fun saludar() {
+        println("Hola, soy un empleado")
+    }
+}
+```
+
+Las interfaces se usan mucho en Android para desacoplar capas de la aplicación, por ejemplo al definir repositorios (`interface UserRepository`) que después implementa una clase concreta.
 

@@ -13,6 +13,8 @@ Siempre debe haber al menos una cámara en la escena para que pueda ser renderiz
 
 ## Propiedades principales de un componente Camera
 
+Las propiedades que se describen a continuación son las de la cámara del **Universal Render Pipeline** (URP), que es el que usan las plantillas *Universal 2D* y *Universal 3D* de Unity 6. En proyectos con el pipeline integrado antiguo (*Built-in*), el inspector de la cámara es algo distinto.
+
 ![Componente Camera](../../../static/img/apuntes_unity/camera.png)    
 
 ### Render Type
@@ -52,19 +54,15 @@ Hay que tener en cuenta que a más objetos dibujados en pantalla al mismo tiempo
 
 ### Rendering
 
-- **Renderer**: Define cómo se renderizan los objetos en la cámara. 
-    - **Skybox**: Renderiza un skybox en la cámara.
-    - **Solid Color**: Renderiza un color sólido en la cámara.
-    - **Depth Only**: Renderiza la profundidad de los objetos en la cámara.
-    - **Don't Clear**: No borra el buffer de color de la cámara.
+- **Renderer**: Define qué *renderer* de URP utiliza la cámara (por ejemplo, el *Renderer 2D* en proyectos 2D). Los renderers disponibles se configuran en el asset del pipeline (**Edit → Project Settings → Graphics**).
 - **Post Processing**: Permite aplicar efectos de postprocesado a la cámara. Los efectos de postprocesado son efectos visuales que se aplican a la imagen renderizada después de que se haya renderizado.
 - **Anti-aliasing**: Permite suavizar los bordes de los objetos renderizados. Cuanto mayor sea el valor, más suavizado será.
 - **Stop NaN**: Evita que los valores NaN se muestren en la cámara. NaN significa "Not a Number" y se produce cuando se realizan operaciones matemáticas no válidas.
 - **Dithering**: Permite aplicar dithering a la cámara. El dithering es una técnica que se utiliza para simular colores y efectos visuales que no se pueden representar con precisión en una pantalla.
-- **Render Shadows**: Permite renderizar sombras en la cámara. Para que esto funcione, la cámara debe tener un componente Light en la escena que emita sombras.
-- **Priority**: Define la prioridad de renderizado de la cámara. Cuanto mayor sea el valor, más prioridad tendrá.
+- **Render Shadows**: Permite que la cámara renderice sombras. Para que se vean, además, debe haber en la escena alguna luz con las sombras activadas.
+- **Priority**: Define el orden de renderizado cuando hay varias cámaras base. Las cámaras con mayor prioridad se dibujan después, es decir, por encima de las demás.
 - **Culling Mask**: Define qué capas de la escena se renderizan en la cámara. Solo se renderizarán los objetos que estén en las capas seleccionadas.
-- **Occulusion Culling**: Permite activar la culling de oclusiones en la cámara. La culling de oclusiones es una técnica que se utiliza para evitar renderizar objetos que están ocultos por otros objetos.
+- **Occlusion Culling**: Permite activar el *occlusion culling* en la cámara, una técnica que se utiliza para evitar renderizar objetos que están ocultos detrás de otros objetos.
 
 ### Stack 
 
@@ -75,7 +73,7 @@ Hay que tener en cuenta que a más objetos dibujados en pantalla al mismo tiempo
 - **Background Type**: Define el tipo de fondo de la cámara.
     - **Skybox**: Renderiza un skybox en la cámara.
     - **Solid Color**: Renderiza un color sólido en la cámara.
-    - **Uninitializer**: No renderiza nada en la cámara.
+    - **Uninitialized**: No limpia el fondo. Solo tiene sentido en casos concretos en los que otra cámara ya dibuja toda la pantalla.
 - **Volumes**: Permite añadir volúmenes de efectos visuales a la cámara. Los volúmenes de efectos visuales son objetos que se utilizan para aplicar efectos visuales a la cámara.
 
 ### Output

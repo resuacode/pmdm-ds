@@ -4,7 +4,7 @@ import CodeBlock from '@theme/CodeBlock';
 
 En Kotlin, puedes crear enumeraciones utilizando la palabra clave `enum class`.
 
-Las enumeraciones son una forma de definir un conjunto fijo de constantes que representan valores específicos. Cada constante en una enumeración tiene un nombre y un valor asociado.
+Las enumeraciones son una forma de definir un conjunto fijo de constantes que representan valores específicos. Cada constante tiene un nombre (`name`) y una posición (`ordinal`), y además puede tener propiedades propias.
 
 ```kotlin
 enum class Color {
@@ -24,7 +24,7 @@ Las enumeraciones en Kotlin tienen las siguientes propiedades:
 
 - **Constructores**: Las enumeraciones pueden tener constructores personalizados para inicializar las constantes con valores específicos.
 
-- **Implementación de interfaces**: Las enumeraciones pueden implementar interfaces y heredar de clases.
+- **Implementación de interfaces**: Las enumeraciones pueden implementar interfaces, pero no pueden heredar de otras clases (ya heredan implícitamente de `Enum`).
 
 ## Acceso a las constantes de una enumeración
 
@@ -46,13 +46,36 @@ enum class Color(val rgb: Int) {
     VERDE(0x00FF00),
     AZUL(0x0000FF);
 
-    fun nombreEnMayusculas(): String {
-        return name.toUpperCase()
+    fun nombreEnMinusculas(): String {
+        return name.lowercase()
     }
 }
 ```
 
-En el ejemplo anterior, se define una enumeración `Color` con una propiedad `rgb` y un método `nombreEnMayusculas` que devuelve el nombre de la constante en mayúsculas.
+En el ejemplo anterior, se define una enumeración `Color` con una propiedad `rgb` y un método `nombreEnMinusculas` que devuelve el nombre de la constante en minúsculas. Fíjate en el `;` que separa la lista de constantes de los miembros de la enumeración: es obligatorio cuando la enumeración tiene propiedades o métodos.
+
+### Recorrer y buscar constantes
+
+```kotlin
+for (color in Color.entries) {
+    println("${color.name} -> ${color.rgb}")
+}
+
+val verde = Color.valueOf("VERDE") // Lanza una excepción si no existe
+```
+
+La propiedad `entries` devuelve la lista de todas las constantes de la enumeración (sustituye a la antigua función `values()`).
+
+### Enumeraciones y `when`
+
+Al usar una enumeración en un `when` como expresión, el compilador nos obliga a cubrir todos los casos, por lo que no hace falta `else`:
+
+```kotlin
+fun describir(color: Color): String = when (color) {
+    Color.ROJO -> "Color cálido"
+    Color.VERDE, Color.AZUL -> "Color frío"
+}
+```
 
 ## Implementación de interfaces con enumeraciones
 
@@ -92,4 +115,4 @@ Las enumeraciones son útiles en Kotlin para:
 
 - Definir un conjunto fijo de constantes que representan valores específicos.
 - Agregar propiedades y métodos a las constantes para agregar funcionalidades.
-- Implementar interfaces y heredar de clases para agregar funcionalidades a las constantes.
+- Implementar interfaces para agregar funcionalidades a las constantes.

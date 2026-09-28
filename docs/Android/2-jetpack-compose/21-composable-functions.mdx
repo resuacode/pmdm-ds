@@ -2,11 +2,11 @@ import CodeBlock from '@theme/CodeBlock';
 
 # Funciones componibles en Jetpack Compose
 
-En Jetpack Compose, las interfaces de usuario se crean a partir de funciones componibles, que son funciones que devuelven un árbol de elementos de la interfaz de usuario. Puedes componer estas funciones para crear interfaces de usuario complejas y reutilizables.
+En Jetpack Compose, las interfaces de usuario se crean a partir de funciones componibles. Estas funciones no devuelven nada (su tipo de retorno es `Unit`), sino que **emiten** elementos de la interfaz de usuario al ejecutarse. Puedes componer estas funciones para crear interfaces de usuario complejas y reutilizables.
 
 ## Crear una función componible
 
-Para crear una función componible en Jetpack Compose, utiliza la anotación `@Composable` antes de la definición de la función. Una función componible puede tener parámetros y devolver un árbol de elementos de la interfaz de usuario utilizando las funciones de composición proporcionadas por Compose.
+Para crear una función componible en Jetpack Compose, utiliza la anotación `@Composable` antes de la definición de la función. Una función componible puede tener parámetros y puede llamar a otras funciones componibles. Por convención, su nombre empieza por mayúscula, como si fuera una clase.
 
 ```kotlin
 @Composable
@@ -15,7 +15,7 @@ fun Greeting(name: String) {
 }
 ```
 
-En el ejemplo anterior, se define una función componible `Greeting` que toma un parámetro `name` de tipo `String` y devuelve un elemento de texto `Text` que muestra un saludo personalizado.
+En el ejemplo anterior, se define una función componible `Greeting` que toma un parámetro `name` de tipo `String` y muestra un elemento de texto `Text` con un saludo personalizado.
 
 ## Componer funciones componibles
 
@@ -40,7 +40,7 @@ En el ejemplo anterior, se define una función componible `GreetingList` que tom
 
 ## Actualización de funciones componibles
 
-Las funciones componibles en Jetpack Compose son reactivas, lo que significa que se vuelven a ejecutar automáticamente cuando cambian los datos de entrada. Esto permite que la interfaz de usuario se actualice de forma dinámica en respuesta a los cambios en los datos.
+Las funciones componibles en Jetpack Compose son reactivas, lo que significa que se vuelven a ejecutar automáticamente cuando cambian los datos de los que dependen (sus parámetros o el estado que leen). A este proceso se le llama **recomposición**. Esto permite que la interfaz de usuario se actualice de forma dinámica en respuesta a los cambios en los datos.
 
 ```kotlin
 @Composable
@@ -49,9 +49,9 @@ fun Counter(count: Int) {
 }
 ```
 
-En el ejemplo anterior, se define una función componible `Counter` que muestra el recuento actual. Cuando cambia el recuento, la función componible se vuelve a ejecutar automáticamente para reflejar el nuevo valor.
+En el ejemplo anterior, se define una función componible `Counter` que muestra el recuento actual. Cuando el composable que llama a `Counter` le pasa un valor distinto de `count`, la función se vuelve a ejecutar automáticamente para reflejar el nuevo valor. Veremos cómo guardar y modificar ese valor en el apartado de [gestión del estado](./22-state-management.mdx).
 
-## Columnas y filas en Jetpack Compose+
+## Columnas y filas en Jetpack Compose
 
 Jetpack Compose proporciona las funciones `Column` y `Row` para organizar elementos de la interfaz de usuario en columnas y filas respectivamente. Puedes anidar columnas y filas para crear diseños más complejos y reutilizables.
 
@@ -88,45 +88,61 @@ fun Greeting(name: String) {
 
 En el ejemplo anterior, se utiliza el modificador `padding` para añadir un relleno alrededor del texto, el modificador `background` para cambiar el color de fondo del texto, y el modificador `clickable` para añadir una acción al hacer clic en el texto.
 
+:::warning[El orden de los modificadores importa]
+Los modificadores se aplican en el orden en el que se encadenan. En el ejemplo anterior, como `padding` va **antes** que `background`, el relleno queda fuera del fondo azul (funciona como un margen). Si los intercambiamos, `Modifier.background(Color.Blue).padding(16.dp)`, el fondo azul ocupa también el relleno.
+
+Por convención, todo composable que creemos debería aceptar un parámetro `modifier: Modifier = Modifier` y aplicarlo a su elemento raíz, para que quien lo use pueda ajustar su tamaño, posición, etc.
+:::
+
 :::info[Video Modificadores y uso del tema]
 <iframe width="560" height="315" src="https://www.youtube.com/embed/oqV6ZQ48sjM?si=q_RKkBR4TwZJBcKV" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 :::
 
 ## Recursos en Jetpack Compose
 
-Jetpack Compose utiliza el sistema de recursos de Android para gestionar los recursos de la interfaz de usuario, como cadenas, colores, dimensiones, etc. Puedes acceder a los recursos utilizando la función `stringResource()`, `colorResource()`, `dimenResource()`, etc.
+Jetpack Compose utiliza el sistema de recursos de Android para gestionar los recursos de la interfaz de usuario, como cadenas, colores, dimensiones, etc. Puedes acceder a los recursos utilizando las funciones `stringResource()`, `colorResource()`, `dimensionResource()`, `painterResource()`, etc.
 
 ```kotlin
 @Composable
 fun Greeting() {
     Text(
-        text = stringResource(id = R.string.hello),
-        color = colorResource(id = R.color.primary),
-        fontSize = dimenResource(id = R.dimen.text_size)
+        text = stringResource(R.string.hello),
+        color = colorResource(R.color.primary),
+        modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium))
     )
 }
 ```
 
-En el ejemplo anterior, se utiliza la función `stringResource()` para obtener una cadena de recursos, la función `colorResource()` para obtener un color de recursos, y la función `dimenResource()` para obtener una dimensión de recursos.
+En el ejemplo anterior, se utiliza la función `stringResource()` para obtener una cadena de recursos, la función `colorResource()` para obtener un color de recursos, y la función `dimensionResource()` para obtener una dimensión de recursos (de tipo `Dp`).
+
+:::tip[Usa siempre recursos para los textos]
+Guardar los textos en `res/values/strings.xml` en lugar de escribirlos directamente en el código permite traducir la app a otros idiomas simplemente añadiendo un nuevo archivo `strings.xml` en la carpeta correspondiente (por ejemplo, `values-en`).
+:::
 
 ## Temas en Jetpack Compose
 
-Jetpack Compose utiliza el sistema de temas de Android para aplicar estilos coherentes a la interfaz de usuario. Puedes definir un tema personalizado utilizando la función `provideAppTheme()` y aplicarlo a tu aplicación utilizando el modificador `MaterialTheme`.
+Jetpack Compose utiliza el composable `MaterialTheme` para aplicar estilos coherentes (colores, tipografía y formas) a todos los componentes que contiene. Al crear un proyecto nuevo, Android Studio genera en el paquete `ui.theme` una función con el nombre de la app (por ejemplo, `MyAppTheme`) que envuelve a `MaterialTheme` con los colores y la tipografía del proyecto.
 
 ```kotlin
 @Composable
-fun MyApp() {
+fun MyAppTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colors = lightColors(),
+        colorScheme = lightColorScheme(),
         typography = Typography,
-        shapes = Shapes
-    ) {
-        Greeting()
+        shapes = Shapes(),
+        content = content
+    )
+}
+
+// En MainActivity
+setContent {
+    MyAppTheme {
+        Greeting("Android")
     }
 }
 ```
 
-En el ejemplo anterior, se define un tema personalizado con colores, tipografía y formas personalizadas, y se aplica a la aplicación utilizando el modificador `MaterialTheme`.
+En el ejemplo anterior, se define un tema con un esquema de colores, una tipografía y unas formas, y se aplica a la aplicación envolviendo el contenido con él. Dentro del tema, los componentes pueden acceder a sus valores con `MaterialTheme.colorScheme`, `MaterialTheme.typography` y `MaterialTheme.shapes`. Lo veremos en detalle en el apartado de [Material Design](./25-material-design.mdx).
 
 ## Ejemplos de funciones componibles
 
@@ -170,13 +186,13 @@ fun GreetingList(names: List<String>) {
     Column {
         names.forEach { name ->
             Greeting(name = name)
-            Divider(color = Color.Gray, thickness = 1.dp)
+            HorizontalDivider(thickness = 1.dp, color = Color.Gray)
         }
     }
 }
 ```
 
-En el ejemplo anterior, se utiliza la función `Column` para organizar los saludos en una lista vertical con una línea divisoria entre cada saludo.
+En el ejemplo anterior, se utiliza la función `Column` para organizar los saludos en una lista vertical con una línea divisoria entre cada saludo. En Material 3, el antiguo `Divider` se ha sustituido por `HorizontalDivider` y `VerticalDivider`.
 
 ### Cómo añadir imágenes usando Image y painterResource
 
@@ -195,7 +211,11 @@ fun Greeting(name: String) {
 }
 ```
 
-En el ejemplo anterior, se utiliza la función `Image` para añadir una imagen a la interfaz de usuario utilizando un recurso de imagen.
+En el ejemplo anterior, se utiliza la función `Image` para añadir una imagen a la interfaz de usuario utilizando un recurso de imagen. El parámetro `contentDescription` es el texto que leen los lectores de pantalla; solo debe ser `null` en imágenes puramente decorativas.
+
+:::tip[Imágenes desde internet]
+`painterResource` solo carga imágenes de los recursos de la app. Para cargar imágenes a partir de una URL se utiliza una librería como [Coil](https://coil-kt.github.io/coil/compose/), con su composable `AsyncImage`.
+:::
 
 ## Previews en Jetpack Compose
 
@@ -244,40 +264,48 @@ Jetpack Compose proporciona opciones de alineación que te permiten alinear los 
 ```kotlin
 @Composable
 fun Greeting(name: String) {
-    Text(
-        text = "Hello, $name!",
-        modifier = Modifier.align(Alignment.CenterHorizontally)
-    )
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Hello, $name!",
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+    }
 }
 ```
 
-En el ejemplo anterior, se utiliza el modificador `align` para alinear el texto horizontalmente en el centro de la pantalla.
+En el ejemplo anterior, se utiliza el modificador `align` para centrar horizontalmente el texto dentro de la columna.
+
+:::info[`Modifier.align` depende del contenedor]
+El modificador `align` solo está disponible dentro de un contenedor (`Column`, `Row` o `Box`) y acepta valores distintos en cada uno: dentro de una `Column` solo se puede alinear horizontalmente, dentro de una `Row` solo verticalmente y dentro de un `Box` en ambos ejes.
+:::
 
 ### Opciones de alineación horizontal
 
-Las opciones de alineación horizontal en Jetpack Compose son las siguientes:
+Las opciones de alineación horizontal (se usan en `Column`) son las siguientes:
 
-- `start`: Alinea el elemento al principio del eje horizontal.
-- `centerHorizontally`: Alinea el elemento en el centro del eje horizontal.
-- `end`: Alinea el elemento al final del eje horizontal.
+- `Alignment.Start`: Alinea el elemento al principio del eje horizontal.
+- `Alignment.CenterHorizontally`: Alinea el elemento en el centro del eje horizontal.
+- `Alignment.End`: Alinea el elemento al final del eje horizontal.
 
 ### Opciones de alineación vertical
 
-Las opciones de alineación vertical en Jetpack Compose son las siguientes:
+Las opciones de alineación vertical (se usan en `Row`) son las siguientes:
 
-- `top`: Alinea el elemento en la parte superior del eje vertical.
-- `centerVertically`: Alinea el elemento en el centro del eje vertical.
-- `bottom`: Alinea el elemento en la parte inferior del eje vertical.
+- `Alignment.Top`: Alinea el elemento en la parte superior del eje vertical.
+- `Alignment.CenterVertically`: Alinea el elemento en el centro del eje vertical.
+- `Alignment.Bottom`: Alinea el elemento en la parte inferior del eje vertical.
+
+En un `Box` se usan alineaciones en los dos ejes: `Alignment.TopStart`, `Alignment.Center`, `Alignment.BottomEnd`, etc.
 
 ### Opciones de alineación personalizadas
 
-Además de las opciones de alineación predefinidas, Jetpack Compose te permite crear opciones de alineación personalizadas utilizando la función `Alignment`.
+Además de las opciones de alineación predefinidas, Jetpack Compose te permite crear alineaciones personalizadas con `BiasAlignment`, indicando un desplazamiento en cada eje entre `-1f` (inicio) y `1f` (final), donde `0f` es el centro.
 
 ```kotlin
-val CustomAlignment = Alignment(0.25f, 0.75f)
+val CustomAlignment = BiasAlignment(horizontalBias = -0.5f, verticalBias = 0.5f)
 ```
 
-En el ejemplo anterior, se define una opción de alineación personalizada `CustomAlignment` con un desplazamiento horizontal del 25% y un desplazamiento vertical del 75%.
+En el ejemplo anterior, se define una alineación personalizada que coloca el elemento a medio camino entre el inicio y el centro en horizontal, y a medio camino entre el centro y el final en vertical.
 
 ### Uso de opciones de alineación en Column y Row
 
@@ -302,12 +330,12 @@ Las diferentes opciones de alineación y disposición te permiten crear diseños
 
 Para el Arrangement existen las siguientes opciones:
 
-- `SpaceAround`: Distribuye el espacio entre los elementos de forma uniforme, con espacio adicional alrededor de los elementos.
-- `SpaceBetween`: Distribuye el espacio entre los elementos de forma uniforme, sin espacio adicional alrededor de los elementos.
-- `SpaceEvenly`: Distribuye el espacio entre los elementos de forma uniforme, con espacio adicional alrededor de los elementos y en los extremos.
-- `Center`: Centra los elementos en el espacio disponible.
-- `Start`: Coloca los elementos al principio del espacio disponible.
-- `End`: Coloca los elementos al final del espacio disponible.
+- `SpaceBetween`: Reparte el espacio libre entre los elementos, sin dejar espacio antes del primero ni después del último.
+- `SpaceAround`: Deja el mismo espacio alrededor de cada elemento, por lo que en los extremos queda la mitad de espacio que entre dos elementos.
+- `SpaceEvenly`: Deja exactamente el mismo espacio entre los elementos y en los extremos.
+- `Center`: Agrupa los elementos en el centro del espacio disponible.
+- `Start` / `End` (en `Row`) y `Top` / `Bottom` (en `Column`): Agrupa los elementos al principio o al final.
+- `spacedBy(8.dp)`: Deja una separación fija entre cada elemento. Es la forma más cómoda de separar elementos sin añadir `Spacer`.
 
 En las siguientes imágenes animadas se muestran ejemplos de alineación horizontal y vertical en Jetpack Compose:
 
@@ -326,7 +354,9 @@ fun Greeting(name: String) {
 }
 ```
 
-En el ejemplo anterior, se utiliza el modificador `size` para cambiar el tamaño del texto a 48 dp.
+En el ejemplo anterior, se utiliza el modificador `size` para que el elemento `Text` ocupe un cuadrado de 48 dp de lado. Esto no cambia el tamaño de la letra (para eso se usa el parámetro `fontSize` o el `style`), sino el espacio que ocupa el composable.
+
+Otros modificadores de tamaño muy utilizados son `fillMaxWidth()`, `fillMaxHeight()` y `fillMaxSize()`, que hacen que el elemento ocupe todo el espacio disponible, y `weight(1f)` dentro de una `Row` o `Column`, que reparte el espacio sobrante entre los elementos de forma proporcional.
 
 ### Modificador de altura y anchura
 
@@ -339,29 +369,36 @@ fun Greeting(name: String) {
 
 En el ejemplo anterior, se utilizan los modificadores `width` y `height` para cambiar la anchura del texto a 100 dp y la altura a 50 dp.
 
-### Modificador de tipografía
+### Estilo del texto
 
 ```kotlin
 @Composable
 fun Greeting(name: String) {
-    Text(text = "Hello, $name!", style = TextStyle(fontWeight = FontWeight.Bold))
+    Text(
+        text = "Hello, $name!",
+        fontWeight = FontWeight.Bold,
+        fontSize = 20.sp,
+        style = MaterialTheme.typography.titleLarge
+    )
 }
 ```
 
-En el ejemplo anterior, se utiliza el modificador `style` para cambiar el peso de la fuente del texto a negrita.
+En el ejemplo anterior, el estilo del texto no se cambia con un modificador, sino con los parámetros propios de `Text`: `fontWeight` para ponerlo en negrita, `fontSize` para el tamaño (en `sp`, que respeta el tamaño de letra configurado por el usuario) y `style` para aplicar uno de los estilos de texto del tema.
 
 ### Modificador de alineación
 
 ```kotlin
 @Composable
 fun Greeting(name: String) {
-    Text(text = "Hello, $name!", modifier = Modifier.align(Alignment.CenterHorizontally))
+    Box(modifier = Modifier.fillMaxSize()) {
+        Text(text = "Hello, $name!", modifier = Modifier.align(Alignment.Center))
+    }
 }
 ```
 
-En el ejemplo anterior, se utiliza el modificador `align` para alinear el texto horizontalmente en el centro.
+En el ejemplo anterior, se utiliza el modificador `align` para centrar el texto dentro del `Box`.
 
-### Modificador de margen
+### Modificador de relleno (padding)
 
 ```kotlin
 @Composable
@@ -370,7 +407,9 @@ fun Greeting(name: String) {
 }
 ```
 
-En el ejemplo anterior, se utiliza el modificador `padding` para añadir un margen de 16 dp alrededor del texto.
+En el ejemplo anterior, se utiliza el modificador `padding` para añadir un espacio de 16 dp alrededor del texto. En Compose no existe un modificador de margen: el efecto de margen se consigue colocando el `padding` antes de modificadores como `background` o `border`, como vimos al hablar del orden de los modificadores.
+
+También se puede indicar el relleno de cada lado por separado: `Modifier.padding(horizontal = 16.dp, vertical = 8.dp)` o `Modifier.padding(start = 8.dp, top = 4.dp)`.
 
 ### Modificador de color de fondo
 

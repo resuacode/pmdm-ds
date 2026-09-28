@@ -7,33 +7,56 @@ Para ello, vamos a utilizar la librería `kotlinx.serialization` que nos permite
 
 ## Dependencias
 
-Para poder utilizar `kotlinx.serialization` en nuestro proyecto, necesitamos añadir las siguientes dependencias en nuestro archivo `build.gradle.kts`:
+Para poder utilizar `kotlinx.serialization` en nuestro proyecto necesitamos dos cosas: el **plugin** de serialización de Kotlin, que genera en tiempo de compilación el código para convertir nuestras clases, y la **librería** `kotlinx-serialization-json`.
 
-```kotlin
+En el archivo `gradle/libs.versions.toml`:
+
+```toml title="libs.versions.toml"
+[versions]
+kotlinxSerialization = "1.11.0"
+retrofit = "3.0.0"
+
+[libraries]
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+retrofit-converter-kotlinx-serialization = { group = "com.squareup.retrofit2", name = "converter-kotlinx-serialization", version.ref = "retrofit" }
+
+[plugins]
+# Usa la misma versión que el plugin de Kotlin del proyecto
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+```
+
+En el `build.gradle.kts` del **proyecto** declaramos el plugin sin aplicarlo:
+
+```kotlin title="build.gradle.kts (Project)"
 plugins {
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
+    // ...
+    alias(libs.plugins.kotlin.serialization) apply false
+}
+```
+
+Y en el `build.gradle.kts` del **módulo** `app` lo aplicamos y añadimos las dependencias:
+
+```kotlin title="app/build.gradle.kts"
+plugins {
+    // ...
+    alias(libs.plugins.kotlin.serialization)
 }
 
 dependencies {
     // Kotlin serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    implementation(libs.kotlinx.serialization.json)
+    // Convertidor de Retrofit para kotlinx.serialization
+    implementation(libs.retrofit.converter.kotlinx.serialization)
 }
 ```
 
 :::warning[Importante, sobre las versiones]
-Es posible que tengas que cambiar la versión de `kotlinx-serialization-json` por la que esté disponible en el momento de leer este documento.
-Si estás utilizando Android Studio, es probable que el propio IDE te sugiera la versión correcta.
+El plugin de serialización **debe tener la misma versión que Kotlin**. Por eso, en lugar de escribir su versión, reutilizamos la entrada `kotlin` que Android Studio ya crea en el catálogo de versiones.
+
+Las versiones de las librerías indicadas son las estables en el momento de escribir estos apuntes. Android Studio subraya las dependencias que tienen una versión más reciente disponible.
 :::
 
-También es interesante modificar las dependencias de Retrofit para que utilice `kotlinx.serialization` en lugar de Scalars. Para ello, añadimos la siguiente dependencia:
-
-```kotlin
-// Retrofit with Kotlin serialization Converter
-
-implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
-implementation("com.squareup.okhttp3:okhttp:4.11.0")
-
-```
+El convertidor `converter-kotlinx-serialization` es el oficial de Retrofit (disponible desde la versión 2.11). En muchos tutoriales antiguos aparece en su lugar `com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter`, que era la librería externa que se usaba antes y que ya no es necesaria.
 
 ## Crear una clase de datos que represente el JSON
 
@@ -141,7 +164,7 @@ Si nuestro JSON tiene arrays, podemos utilizar la anotación `@Serializable` en 
 }
 ```
 
-Podemos crear una clase `Skill` para representar los elementos del array y utilizar la anotación `@Serializable` en la clase `Skill`. La clase `Person` quedaría de la siguiente manera:
+Como los elementos del array son simples cadenas de texto, basta con representarlo como una lista de `String`:
 
 ```kotlin
 import kotlinx.serialization.Serializable
@@ -151,23 +174,22 @@ data class Person(
     val name: String,
     val age: Int,
     val isDeveloper: Boolean,
-    val skills: List<Skill>
-) {
-    @Serializable
-    data class Skill(
-        val name: String
-    )
-}
+    val skills: List<String>
+)
 ```
 
-En el ejemplo anterior, la clase `Skill` representa los elementos del array `skills` y tiene la propiedad `name` que representa los elementos del array.
+En el ejemplo anterior, la propiedad `skills` es una `List<String>` que contendrá `["Java", "Kotlin", "Android"]`. Solo necesitamos crear una clase para los elementos cuando el array contiene **objetos**, como veremos a continuación.
 
 :::info[Sobre los arrays en json y su representación en Kotlin]
 En Kotlin, los arrays se representan como listas. Por lo tanto, si un JSON tiene un array, podemos utilizar una lista en la clase de datos de Kotlin para representar el array.
 
 No es necesario que la data class tenga el mismo nombre que el JSON, pero es recomendable para mantener la coherencia en el código.
 
-Tampoco es estrictamente necesario que todas las propiedades del JSON estén presentes en la data class, depende de lo que necesitemos en nuestra aplicación.
+Tampoco es estrictamente necesario que todas las propiedades del JSON estén presentes en la data class, depende de lo que necesitemos en nuestra aplicación. Eso sí, por defecto `kotlinx.serialization` lanza una excepción si el JSON contiene propiedades que no están en la clase; para ignorarlas hay que configurar el objeto `Json` con `ignoreUnknownKeys = true`, como veremos más abajo.
+:::
+
+:::tip[Propiedades opcionales]
+Si una propiedad puede no venir en el JSON o venir como `null`, hay que declararla como nulable y con un valor por defecto, por ejemplo `val email: String? = null`. Si no tiene valor por defecto y falta en el JSON, se lanzará una excepción al deserializar.
 :::
 
 Veamos otro ejemplo en el que tenemos un array de objetos en el JSON:
@@ -212,7 +234,7 @@ data class Person(
 
 En este caso, la clase `Project` representa los elementos del array `projects` y tiene las propiedades `name` y `description` que representan los elementos del array.
 
-Por último, veamos un ejemplo en el que todos nuestros datos están dentro de un array principal que solo contiene un dato irrelevante sobre la respuesta http y los datos:
+Por último, veamos un ejemplo muy habitual en las APIs, en el que la respuesta es un objeto que contiene un dato sobre el estado de la petición y un array con los datos que nos interesan:
 
 ```json
 {
@@ -271,7 +293,6 @@ Para deserializar un JSON en un objeto de Kotlin, utilizamos la función `decode
 Podemos deserializarlo de la siguiente manera:
 
 ```kotlin
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 fun main() {
@@ -294,7 +315,6 @@ val person = Person("John", 30, true)
 Podemos serializarlo de la siguiente manera:
 
 ```kotlin
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 fun main() {
@@ -304,15 +324,33 @@ fun main() {
 }
 ```
 
-En este caso, la variable `json` contendrá el JSON correspondiente al objeto `person`.
+En este caso, la variable `json` contendrá el JSON correspondiente al objeto `person`: `{"name":"John","age":30,"isDeveloper":true}`.
+
+### Configurar el objeto Json
+
+`Json` es la configuración por defecto, pero podemos crear una propia con distintas opciones. Las más útiles son:
+
+```kotlin
+val json = Json {
+    ignoreUnknownKeys = true // Ignora las propiedades del JSON que no están en la clase
+    coerceInputValues = true // Usa el valor por defecto si llega null en una propiedad no nulable
+    prettyPrint = true       // Genera JSON con saltos de línea e indentación
+}
+
+val person = json.decodeFromString<Person>(texto)
+```
+
+`ignoreUnknownKeys = true` es prácticamente imprescindible al trabajar con APIs reales, ya que suelen devolver muchos más campos de los que necesitamos.
 
 ## Gson vs kotlinx.serialization
 
 Hasta ahora, hemos utilizado la librería Gson para serializar y deserializar objetos de Kotlin a JSON y viceversa. Sin embargo, `kotlinx.serialization` ofrece algunas ventajas sobre Gson: 
 
-- **Seguridad en tiempo de compilación**: `kotlinx.serialization` utiliza la información de tipos en tiempo de compilación para garantizar que los datos se serializan y deserializan correctamente. Esto evita errores en tiempo de ejecución.
-- **Soporte para tipos complejos**: `kotlinx.serialization` es capaz de serializar y deserializar tipos complejos, como listas, mapas, clases anidadas, etc.
-- **Menor sobrecarga**: `kotlinx.serialization` es más eficiente en términos de rendimiento y uso de memoria que Gson.
+- **Respeta la nulabilidad de Kotlin**: Gson crea los objetos mediante reflexión sin llamar al constructor, por lo que puede dejar a `null` una propiedad declarada como no nulable (`String`) y provocar un error inesperado más adelante. `kotlinx.serialization` lanza una excepción clara al deserializar y respeta los valores por defecto de las propiedades.
+- **Sin reflexión**: el código de conversión se genera en tiempo de compilación, lo que lo hace más eficiente y compatible con las herramientas de optimización de Android (R8).
+- **Pensado para Kotlin**: soporta de forma nativa `data class`, `sealed class`, `object`, valores por defecto, etc., y funciona también en Kotlin Multiplatform.
+
+Gson, por su parte, sigue funcionando y se encuentra en muchos proyectos y tutoriales, aunque está en modo de mantenimiento y no se añaden nuevas funcionalidades.
 
 En general, si estás desarrollando una aplicación en Kotlin, es recomendable utilizar `kotlinx.serialization` en lugar de Gson para serializar y deserializar objetos de Kotlin a JSON y viceversa.
 
@@ -329,20 +367,23 @@ interface ApiService {
 
 Podemos modificar el servicio de la siguiente manera:
 
-```kotlin
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import kotlinx.serialization.json.Json
+Y crear la instancia de Retrofit con el convertidor de `kotlinx.serialization`:
 
-val contentType = "application/json".toMediaType()
-val json = Json { ignoreUnknownKeys = true }
-val retrofit = Retrofit.Builder()
+```kotlin
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
+import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
+
+private val json = Json { ignoreUnknownKeys = true }
+
+val retrofit: Retrofit = Retrofit.Builder()
     .baseUrl("https://api.example.com/")
-    .client(okHttpClient)
-    .addConverterFactory(json.asConverterFactory(contentType))
+    .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
     .build()
 ``` 
 
-En este caso, hemos añadido el convertidor de Kotlin serialization al servicio de Retrofit utilizando la extensión `asConverterFactory` de `kotlinx.serialization`.
+En este caso, hemos añadido el convertidor de Kotlin serialization al servicio de Retrofit utilizando la extensión `asConverterFactory`, que se aplica sobre nuestra configuración de `Json`. La interfaz `ApiService` no cambia: la clase `Person` solo necesita estar anotada con `@Serializable`.
 
 ### Usando Gson en lugar de Kotlin serialization
 
@@ -351,9 +392,13 @@ Si prefieres seguir utilizando Gson en lugar de Kotlin serialization, puedes mod
 ```kotlin
 val retrofit = Retrofit.Builder()
     .baseUrl("https://api.example.com/")
-    .client(okHttpClient)
-    .addConverterFactory(Gson.asConverterFactory(contentType))
+    .addConverterFactory(GsonConverterFactory.create())
     .build()
 ```
 
-En este caso, hemos añadido el convertidor de Gson al servicio de Retrofit utilizando la extensión `asConverterFactory` de Gson.
+En este caso, hemos añadido el convertidor de Gson al servicio de Retrofit con `GsonConverterFactory.create()` (dependencia `com.squareup.retrofit2:converter-gson`). Con Gson, si el nombre de una propiedad no coincide con el del JSON, se utiliza la anotación `@SerializedName("full_name")` en lugar de `@SerialName`.
+
+## Recursos
+
+- [Guía oficial de kotlinx.serialization](https://kotlinlang.org/docs/serialization.html)
+- [Codelab: Cómo obtener datos de Internet (usa kotlinx.serialization)](https://developer.android.com/codelabs/basic-android-kotlin-compose-getting-data-internet?hl=es-419)

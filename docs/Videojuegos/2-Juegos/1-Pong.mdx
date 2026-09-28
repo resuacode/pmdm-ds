@@ -10,7 +10,7 @@ Vamos a hacer una versión mínima de Pong en Unity. Este juego nos va a servir 
 
 Empezaremos creando una primera versión del juego en la que dos jugadores controlan las palas y deben golpear la pelota para que no se salga de la pantalla. En esta versión no habrá IA.
 
-Cada jugador jugará con unas teclas concretas del teclado, el jugador de la izqueirda jugará con las teclas W y S, mientras que el de la derecha jugará con las flechas arriba y abajo. La pelota se moverá sola y rebotará en las palas y en las barras superior e inferior. Si la pelota se sale de la pantalla, el jugador que no la haya golpeado perderá un punto. El juego terminará cuando uno de los jugadores llegue a 5 puntos.
+Cada jugador jugará con unas teclas concretas del teclado, el jugador de la izquierda jugará con las teclas W y S, mientras que el de la derecha jugará con las flechas arriba y abajo. La pelota se moverá sola y rebotará en las palas y en las barras superior e inferior. Si la pelota se sale de la pantalla, el jugador que no la haya golpeado perderá un punto. El juego terminará cuando uno de los jugadores llegue a 5 puntos.
 
 
 ### Creando el proyecto
@@ -81,7 +81,7 @@ Ahora ya podemos empezar con el Scripting para mover las palas y la pelota.
 
 #### Dándole vida a la pelota
 
-Para hacer que la pelota se mueva vamos a generar un Script. Para ello, nos situamos en la pestaña de **Project** y hacemos clic derecho en la carpeta **Assets** y seleccionamos **Create -> C# Script**.
+Para hacer que la pelota se mueva vamos a generar un Script. Para ello, nos situamos en la pestaña de **Project** y hacemos clic derecho en la carpeta **Assets** y seleccionamos **Create -> Scripting -> MonoBehaviour Script** (en versiones anteriores a Unity 6, **Create -> C# Script**).
 
 Lo ideal para mantener el proyecto organizado es crear una carpeta llamada **Scripts** y dentro de ella crear el script o moverlo a la misma.
 
@@ -187,7 +187,7 @@ La posición de los objetos en Unity se representa mediante un vector de 3 dimen
 La posición de los objetos se puede modificar mediante el componente **Transform** de cada objeto. Este componente contiene la posición, rotación y escala del objeto en el espacio 3D.
 :::
 
-Una vez tenemos la posición inicial de la pelota almacenada, crearemos un método llamado **Launch()** para lanzar la pelota al comienzo del juevo. Este método se encargará de asignar la velocidad a la pelota y de darle una dirección aleatoria al lanzarla.
+Una vez tenemos la posición inicial de la pelota almacenada, crearemos un método llamado **Launch()** para lanzar la pelota al comienzo del juego. Este método se encargará de asignar la velocidad a la pelota y de darle una dirección aleatoria al lanzarla.
 
 Para hacer que no siempre salga hacia el mismo lado, utilizaremos la función **Random.Range()** para generar un número aleatorio entre -1 y 1. 
 
@@ -298,7 +298,7 @@ La propiedad **Freeze Rotation** es un constraint que nos permite restringir la 
 
 Antes de continuar, vamos a añadir un método en el Script de la pelota que nos permita reiniciar la posición de la pelota al inicio del juego.
 
-Este método se llamará **Reset()** y simplemente le quitará la velocidad residual que lleve la pelota, le asignará la posición inicial de la pelota a la posición actual de la misma y volverá a lanzarla para seguir con el juevo.
+Este método se llamará **Reset()** y simplemente le quitará la velocidad residual que lleve la pelota, le asignará la posición inicial de la pelota a la posición actual de la misma y volverá a lanzarla para seguir con el juego.
 Este método debe ser **público** para poder llamarlo desde otros scripts.
 
 ```csharp title="Ball.cs"
@@ -321,6 +321,12 @@ Ya todo funciona como debería, pero todavía no podemos mover las palas para ju
 #### Configurando el InputManager
 
 Antes de empezar a programar, vamos a abrir el **Input Manager** de Unity. Para ello, vamos a **Edit -> Project Settings -> Input Manager**.
+
+:::warning[Activar el Input Manager en Unity 6]
+En este juego usaremos el sistema de entrada clásico (la clase `Input`) por su sencillez. Los proyectos creados con las plantillas de Unity 6 tienen activado por defecto solo el nuevo **Input System**, por lo que al usar `Input` aparecería el error `InvalidOperationException: You are trying to read Input using the UnityEngine.Input class...`.
+
+Para evitarlo, antes de nada vamos a **Edit -> Project Settings -> Player -> Other Settings** y en **Active Input Handling** seleccionamos **Both**. Unity nos pedirá reiniciar el editor. Tenéis más información sobre los dos sistemas en el apartado de [Scripting](../1-Unity/9-Scripting.mdx#el-input-en-unity).
+:::
 
 En este menú podemos ver los ejes de entrada que tiene configurados Unity por defecto. Estos ejes son los que utilizaremos para mover las palas.
 
@@ -348,7 +354,7 @@ Esto nos permite gestionar las entradas del jugador de forma más sencilla y fle
 
 #### Creando el Script de las palas
 
-Vamos a crear un nuevo Script para las palas. Para ello, hacemos clic derecho en la carpeta **Scripts** y seleccionamos **Create -> C# Script**. Vamos a llamarlo **Player** y lo abrimos con el editor de código. 
+Vamos a crear un nuevo Script para las palas. Para ello, hacemos clic derecho en la carpeta **Scripts** y seleccionamos **Create -> Scripting -> MonoBehaviour Script**. Vamos a llamarlo **Player** y lo abrimos con el editor de código. 
 
 Comenzaremos igual que antes asignando unas cuantas variables que necesitaremos para el movimiento de las palas. En este caso, vamos a necesitar una variable pública de tipo **float** que llamaremos **speed** y le daremos un valor de 5.0f. Esta variable será la velocidad a la que se moverán las palas.
 
@@ -390,8 +396,7 @@ public class Player : MonoBehaviour
 A continuación comenzaremos a programar el movimiento de la pala. Para ello, en el método **Update()** vamos a asignar la variable **verticalInput** a la entrada vertical del jugador. Para ello, utilizaremos la función **Input.GetAxisRaw()** y le pasaremos el nombre del eje que queremos utilizar.
 En este caso, utilizaremos el eje **VerticalLeft** para la pala izquierda y el eje **VerticalRight** para la pala derecha. Pero antes de hacer esa distinción probaremos con el **VerticalLeft** para ambas palas y luego ya lo separaremos.
 
-Detectamos el movimiento y después aplicamos velocidad al igual que con la pelota anteriormente usando el **Rigidbody2D** de la pala. Para ello, utilizamos la propiedad **velocity** del **Rigidbody2D** de la pala y le asignamos un nuevo vector con la dirección y la velocidad deseada.
-Para ello, utilizamos la propiedad **linearVelocity** del **Rigidbody2D** de la pala y le asignamos un nuevo vector con la dirección y la velocidad deseada.
+Detectamos el movimiento y después aplicamos velocidad al igual que con la pelota anteriormente usando el **Rigidbody2D** de la pala. Para ello, utilizamos la propiedad **linearVelocity** del **Rigidbody2D** de la pala y le asignamos un nuevo vector con la dirección y la velocidad deseada. Mantenemos la velocidad que tuviera en el eje X y cambiamos solo la del eje Y.
 
 ```csharp title="Player.cs"
 ...
@@ -399,7 +404,7 @@ Para ello, utilizamos la propiedad **linearVelocity** del **Rigidbody2D** de la 
     void Update()
     {
         verticalInput = Input.GetAxisRaw("VerticalLeft");
-        rb.velocity = new Vector2(rb.linearVelocity.x, verticalInput * speed);
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, verticalInput * speed);
     }
     // highlight-end
 }
@@ -410,7 +415,7 @@ La función **Input.GetAxisRaw()** nos permite obtener la entrada del jugador de
 Esto nos permite mover la pala hacia arriba y hacia abajo de forma más precisa y rápida.
 :::
 
-:::nota[Input.GetAxisRaw() vs Input.GetAxis()]
+:::note[Input.GetAxisRaw() vs Input.GetAxis()]
 La función **Input.GetAxis()** nos permite obtener la entrada del jugador de forma más suave y gradual. Esta función devuelve un valor entre -1 y 1, donde -1 representa la entrada negativa (hacia abajo) y 1 representa la entrada positiva (hacia arriba).
 Sin embargo, esta función puede ser un poco más lenta y menos precisa que **Input.GetAxisRaw()**.
 
@@ -443,7 +448,7 @@ Si es **true**, utilizaremos el eje **VerticalLeft** y si es **false**, utilizar
         {
             verticalInput = Input.GetAxisRaw("VerticalRight");
         }
-        rb.velocity = new Vector2(rb.linearVelocity.x, verticalInput * speed);
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, verticalInput * speed);
     }
 }
 ```
@@ -485,7 +490,7 @@ Vamos a añadir también dos variables públicas de tipo **TextMeshProUGUI** que
 
 :::info[Sobre el TextMeshProUGUI]
 El **TextMeshProUGUI** es un componente de Unity que nos permite mostrar texto en la pantalla de forma más avanzada y con más opciones de personalización que el componente **Text**. Este componente nos permite cambiar el tamaño, el color, la fuente y muchas otras propiedades del texto.  
-Para utilizar este componente, debemos importar el paquete **TextMeshPro** desde el **Package Manager** de Unity. Una vez importado, podemos añadir el componente **TextMeshProUGUI** a cualquier GameObject y utilizarlo para mostrar texto en la pantalla.    
+En Unity 6, TextMeshPro viene incluido en el paquete de UI (uGUI), por lo que no hace falta instalar nada desde el **Package Manager**: basta con importar sus recursos básicos (**TMP Essentials**) la primera vez que lo usamos, como veremos a continuación. En versiones anteriores de Unity, TextMeshPro era un paquete independiente que había que instalar.    
 Podemos crear un nuevo objeto de tipo **TextMeshProUGUI** desde la pestaña de la jerarquía y seleccionando **UI -> Text - TextMeshPro**. Esto creará un nuevo objeto de texto en la escena. 
 Podemos cambiar el texto, el tamaño, el color y muchas otras propiedades desde el inspector.
 :::
@@ -610,7 +615,7 @@ public class Goal : MonoBehaviour
         {
             if (isPlayerLeftGoal)
             {
-                FindAnyObjectByType<GameManager>().GoalScored(true); // true to score a foal of the left player
+                FindAnyObjectByType<GameManager>().GoalScored(true); // true to score a goal of the left player
             }
             else
             {
@@ -843,7 +848,7 @@ La cuestión ahora es, en qué momento llamamos a esta función. Debemos tener e
 
 El caso en el que la pelota se queda rebotando entre las dos paredes superior e inferior es muy improbable, pero lo tenemos en cuenta en el método por si acaso, pero no lo vamos a utilizar de momento.
 
-Partiendo de estos problemas y posibles soluciones, el momento de llamar a este método entonces es cuándo el movimiento es casi completamente horizontal y la peltoa está rebotando entre las dos palas, por lo que incluiremos la llamada a este método en el método **OnCollisionEnter2D()** y, en concreto, justo después de aumentar la velocidad de la pelota al chocar con una pala. De esta forma, si la pelota se queda rebotando entre las dos palas, la velocidad de la pelota aumentará y cambiará de dirección.
+Partiendo de estos problemas y posibles soluciones, el momento de llamar a este método entonces es cuándo el movimiento es casi completamente horizontal y la pelota está rebotando entre las dos palas, por lo que incluiremos la llamada a este método en el método **OnCollisionEnter2D()** y, en concreto, justo después de aumentar la velocidad de la pelota al chocar con una pala. De esta forma, si la pelota se queda rebotando entre las dos palas, la velocidad de la pelota aumentará y cambiará de dirección.
 
 El código completo del método **OnCollisionEnter2D()** quedaría así:
 
@@ -899,7 +904,7 @@ Podéis ordenarlas en el orden que queráis pero quizás el de arriba a abajo se
 
 Una vez hecho esto hacemos doble clic sobre la escena recién creada y esto nos la cargará en la jerarquía. Deberíamos estar ante una escena vacía con una cámara por defecto y poco más como cuándo inciamos el proyecto.
 
-Ahora lo que queremos ahcer es generar una UI a partir de un Canvas y con un título y un par de botones, uno para jugar una partida PVP y otro para jugar una partida PVE. 
+Ahora lo que queremos hacer es generar una UI a partir de un Canvas y con un título y un par de botones, uno para jugar una partida PVP y otro para jugar una partida PVE. 
 
 El cómo posicionar los elementos o la parte visual la dejo completamente a vuestra elección, lo importante de este menú es hacer que cada uno de los botones cargue su correspondiente escena.
 
@@ -1148,7 +1153,7 @@ El problema que tenemos ahora, es que si volvemos a jugar tras finalizar una par
    public void LoadMainMenu()
     {
         // highlight-next-line
-        Destroy(FindAnyObjectByType<GameManager>()); // This destroys the GameManager of the previous game
+        Destroy(FindAnyObjectByType<GameManager>().gameObject); // This destroys the GameManager of the previous game
         SceneManager.LoadScene("MainMenu"); // This loads the MainMenu scene
     }
 ```
@@ -1201,15 +1206,49 @@ Para solucionarlo, podemos cambiar la resolución a **1920x1080** o a la resoluc
 
 Con esta configuración ya podríamos exportar el juego, podemos configurar el resto de opciones a nuestro gusto. 
 
-### Haciendo una build para Android - PDTE
+### Haciendo una build para Android
 
-### Haciendo una build para WebGL - PDTE
+Para exportar a Android, primero debemos tener instalado el módulo **Android Build Support** en nuestra versión del editor, junto con sus submódulos **OpenJDK** y **Android SDK & NDK Tools**. Si no lo instalamos al instalar el editor, podemos añadirlo desde **Unity Hub -> Installs**, pulsando en el engranaje de la versión del editor y seleccionando **Add modules**. Unity instala sus propias versiones del JDK y del SDK, por lo que no hace falta tener Android Studio.
 
-Para hacer una Build para WebGL, vamos a seguir los mismos pasos que para Windows. Vamos a **File -> Build Profiles** y pulsamos sobre el botón de **Add Build Profile**.
+Con el módulo instalado, en **File -> Build Profiles** pulsamos sobre **Add Build Profile**, seleccionamos **Android** y creamos el perfil. Después pulsamos en **Switch Profile**. El cambio de plataforma puede tardar un rato, ya que Unity tiene que volver a importar los assets.
+
+Antes de compilar, conviene revisar en las **Player Settings** (**Customize player settings** en el perfil, o **Edit -> Project Settings -> Player**) las siguientes opciones de la pestaña de Android:
+
+- **Company Name**, **Product Name** y **Version**: el nombre de la app que verá el usuario y su versión.
+- **Resolution and Presentation -> Default Orientation**: para el Pong, **Landscape Left** (horizontal), ya que el juego está diseñado para una pantalla apaisada.
+- **Other Settings -> Identification -> Package Name**: el identificador único de la app, con el formato `com.empresa.juego`, igual que en las apps Android que hacemos con Android Studio.
+- **Other Settings -> Minimum API Level**: la versión mínima de Android en la que se podrá instalar el juego.
+
+Para probar el juego en un móvil real, debemos activar en él las **opciones de desarrollador** y la **depuración por USB**, igual que para ejecutar una app desde Android Studio. Con el móvil conectado, aparecerá en el desplegable **Run Device** del perfil y podremos pulsar **Build and Run**, que compila el juego, lo instala en el móvil y lo ejecuta. Si solo pulsamos **Build**, Unity genera un archivo `.apk` que podemos copiar al móvil e instalar manualmente.
+
+:::warning[Controles táctiles]
+Nuestro Pong se controla con el teclado, por lo que en un móvil sin teclado no podremos mover las palas. Para que sea jugable habría que añadir controles táctiles, por ejemplo, moviendo cada pala hacia la posición vertical del dedo que toca en su mitad de la pantalla, con `Input.touchCount` e `Input.GetTouch()` (ver el apartado de [entrada táctil](../1-Unity/9-Scripting.mdx#entrada-táctil)), o con botones en pantalla. Es una buena ampliación para practicar.
+:::
+
+:::info[APK o AAB]
+Para publicar un juego en Google Play no se usa un `.apk`, sino un **Android App Bundle** (`.aab`). Se genera marcando la opción **Build App Bundle (Google Play)** en el perfil de Android, y además hay que firmar el juego con una clave propia en **Player Settings -> Publishing Settings**.
+:::
+
+### Haciendo una build para Web
+
+La plataforma **Web** (llamada **WebGL** en versiones anteriores a Unity 6) permite jugar a nuestro juego directamente en el navegador, lo que es ideal para compartirlo en páginas como [itch.io](https://itch.io/). Necesitamos tener instalado el módulo **Web Build Support**.
+
+Para hacer una Build para Web, vamos a seguir los mismos pasos que para Windows. Vamos a **File -> Build Profiles**, pulsamos sobre el botón de **Add Build Profile**, seleccionamos **Web** y, una vez creado el perfil, pulsamos en **Switch Profile**.
 
 ![Build Profile 5](../../../static/img/apuntes_unity/pong/build_profile_5.png)
 
+Al pulsar **Build**, Unity nos pedirá una carpeta y generará en ella un archivo `index.html` junto con las carpetas `Build` y `TemplateData`.
 
+:::warning[No se puede abrir con doble clic]
+Si abrimos el `index.html` directamente con doble clic, el juego no cargará, porque los navegadores no permiten cargar sus archivos desde el disco. Para probarlo tenemos dos opciones:
+
+- Usar **Build and Run**, que compila el juego y lo abre en el navegador a través de un pequeño servidor web local.
+- Servir la carpeta con cualquier servidor web local, por ejemplo con la extensión *Live Server* de Visual Studio Code.
+:::
+
+Por defecto, Unity comprime los archivos del juego para que ocupen menos, y algunos servidores no están configurados para servir esos archivos comprimidos, lo que hace que el juego se quede cargando. Para evitar problemas al subirlo a otras webs, en las **Player Settings** de Web, en el apartado **Publishing Settings**, podemos activar la opción **Decompression Fallback**.
+
+Para publicarlo en **itch.io**, basta con comprimir en un `.zip` el **contenido** de la carpeta de la build (el `index.html` debe quedar en la raíz del zip), crear un nuevo proyecto de tipo **HTML** y subir el zip marcando la opción *This file will be played in the browser*.
 
 ## Posibles ampliaciones y mejoras
 

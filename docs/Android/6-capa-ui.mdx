@@ -1,48 +1,239 @@
-import CodeBlock from '@theme/CodeBlock';
-
 # Capa de UI
 
 En esta sección vamos a ver cómo implementar la capa de UI en una arquitectura MVVM (Model-View-ViewModel) en una aplicación Android con Jetpack Compose.
 
 ## ¿Qué es MVVM?
 
-MVVM es un patrón de arquitectura de software que se utiliza para separar la lógica de presentación de la lógica de negocio en una aplicación. En MVVM, la capa de UI se divide en tres componentes principales:
+MVVM es un patrón de arquitectura de software que se utiliza para separar la lógica de presentación de la lógica de negocio en una aplicación. En MVVM, la aplicación se divide en tres componentes principales:
 
-- **Model**: Representa los datos y la lógica de negocio de la aplicación.
+- **Model**: Representa los datos y la lógica de negocio de la aplicación (en Android, la capa de datos: repositorios y fuentes de datos).
 
-- **View**: Representa la interfaz de usuario de la aplicación.
+- **View**: Representa la interfaz de usuario de la aplicación. En nuestro caso, las funciones composables.
 
-- **ViewModel**: Actúa como un intermediario entre el Model y la View. Se encarga de manejar la lógica de presentación y de exponer los datos necesarios para que la View pueda mostrarlos. 
+- **ViewModel**: Actúa como un intermediario entre el Model y la View. Se encarga de manejar la lógica de presentación y de exponer el estado que la View necesita mostrar. 
 
 MVVM es un patrón muy utilizado en el desarrollo de aplicaciones Android, ya que facilita la separación de responsabilidades y la reutilización de código.  
-
-## Implementación de la capa de UI en MVVM
-
-Para implementar la capa de UI en una arquitectura MVVM en una aplicación Android con Jetpack Compose, puedes seguir los siguientes pasos:  
-
-1. **Definir el Model**: Define las clases y estructuras de datos que representan los datos y la lógica de negocio de tu aplicación. Por ejemplo, puedes definir una clase `User` que represente un usuario de la aplicación.
-
-2. **Definir el ViewModel**: Define una clase que extienda `ViewModel` y que contenga la lógica de presentación de tu aplicación. Por ejemplo, puedes definir un ViewModel que contenga la lógica para cargar los datos de un usuario.
-
-3. **Definir la View**: Define la interfaz de usuario de tu aplicación utilizando Jetpack Compose. Por ejemplo, puedes definir una función componible que muestre los datos de un usuario en la pantalla.
-
-4. **Conectar el ViewModel con la View**: Conecta el ViewModel con la View para que la View pueda mostrar los datos del ViewModel. Puedes utilizar `rememberViewModel` para crear una instancia del ViewModel en la View y `viewModel` para acceder a los datos del ViewModel.
-
-## Ejemplo de implementación
 
 :::info[Video explicación de la arquitectura MVVM]
 <iframe width="560" height="315" src="https://www.youtube.com/embed/Af72QxiHRh0?si=RtYClOSgTyUT39dQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 :::
 
+## ¿Por qué un ViewModel?
+
+Un `ViewModel` es una clase de Jetpack pensada para guardar el estado de una pantalla y su lógica. Sus principales ventajas son:
+
+- **Sobrevive a los cambios de configuración**: al girar la pantalla la actividad se destruye y se vuelve a crear, pero el ViewModel se mantiene, por lo que no se pierden los datos.
+- **Separa la lógica de la interfaz**: los composables solo se encargan de pintar el estado y de avisar de los eventos, lo que los hace más sencillos, reutilizables y fáciles de previsualizar.
+- **Tiene su propio ámbito de corrutinas**, `viewModelScope`, que se cancela automáticamente cuando el ViewModel deja de usarse. Es donde lanzaremos las operaciones asíncronas, como las peticiones a internet o a la base de datos.
+
+Para usar ViewModel con Compose necesitamos la dependencia `androidx.lifecycle:lifecycle-viewmodel-compose` y, para recoger los flows de forma eficiente, `androidx.lifecycle:lifecycle-runtime-compose`:
+
+```toml title="libs.versions.toml"
+[versions]
+lifecycle = "2.11.0"
+
+[libraries]
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
+```
+
+```kotlin title="app/build.gradle.kts"
+dependencies {
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+}
+```
+
+## Implementación de la capa de UI en MVVM
+
+Para implementar la capa de UI en una arquitectura MVVM con Jetpack Compose seguiremos estos pasos:
+
+1. **Definir el estado de la UI** (`UiState`): una `data class` inmutable con todo lo que la pantalla necesita mostrar.
+2. **Definir el ViewModel**: una clase que extiende de `ViewModel`, guarda el estado en un `MutableStateFlow` privado, lo expone como un `StateFlow` de solo lectura y ofrece funciones públicas para cada evento de la pantalla.
+3. **Definir la View**: las funciones composables que muestran el estado. Lo ideal es separarlas en una función que conoce al ViewModel y otra que solo recibe el estado y lambdas.
+4. **Conectar el ViewModel con la View**: obtener el ViewModel con la función `viewModel()` y recoger su estado con `collectAsStateWithLifecycle()`.
+
+## Ejemplo de implementación
+
+Vamos a verlo con una lista de la compra sencilla, en la que se pueden añadir productos, marcarlos como comprados y eliminarlos.
+
+### 1. El estado de la UI
+
+```kotlin title="ui/ListaCompraUiState.kt"
+data class Producto(
+    val id: Int,
+    val nombre: String,
+    val comprado: Boolean = false
+)
+
+data class ListaCompraUiState(
+    val productos: List<Producto> = emptyList(),
+    val nuevoProducto: String = ""
+) {
+    // Propiedad calculada a partir del estado
+    val pendientes: Int get() = productos.count { !it.comprado }
+}
+```
+
+Usamos una `data class` con propiedades `val` para que el estado sea **inmutable**: para cambiarlo no modificamos el objeto, sino que creamos una copia con `copy()`. Así es muy fácil saber cuándo y dónde cambia el estado.
+
+### 2. El ViewModel
+
+```kotlin title="ui/ListaCompraViewModel.kt"
+class ListaCompraViewModel : ViewModel() {
+
+    // Estado mutable, solo accesible desde el ViewModel
+    private val _uiState = MutableStateFlow(ListaCompraUiState())
+    // Estado de solo lectura que se expone a la UI
+    val uiState: StateFlow<ListaCompraUiState> = _uiState.asStateFlow()
+
+    private var siguienteId = 0
+
+    fun onNuevoProductoChange(texto: String) {
+        _uiState.update { it.copy(nuevoProducto = texto) }
+    }
+
+    fun anadirProducto() {
+        val nombre = _uiState.value.nuevoProducto.trim()
+        if (nombre.isBlank()) return
+
+        _uiState.update {
+            it.copy(
+                productos = it.productos + Producto(id = siguienteId++, nombre = nombre),
+                nuevoProducto = ""
+            )
+        }
+    }
+
+    fun cambiarComprado(producto: Producto) {
+        _uiState.update { estado ->
+            estado.copy(
+                productos = estado.productos.map {
+                    if (it.id == producto.id) it.copy(comprado = !it.comprado) else it
+                }
+            )
+        }
+    }
+
+    fun eliminarProducto(producto: Producto) {
+        _uiState.update { it.copy(productos = it.productos - producto) }
+    }
+}
+```
+
+Fíjate en que:
+
+- La UI **no puede modificar** el estado directamente, solo llamar a las funciones del ViewModel (los eventos).
+- Cada evento actualiza el estado con `_uiState.update { it.copy(...) }`, creando un nuevo objeto.
+- El ViewModel no sabe nada de Compose: no importa ninguna clase de la interfaz, por lo que se puede probar con tests unitarios normales.
+
+### 3. La View
+
+Separamos la pantalla en dos composables:
+
+- `ListaCompraRoute`: conoce al ViewModel, recoge su estado y conecta los eventos. Es *stateful*.
+- `ListaCompraScreen`: solo recibe el estado y lambdas. Es *stateless*, por lo que se puede reutilizar y previsualizar fácilmente.
+
+```kotlin title="ui/ListaCompraScreen.kt"
+@Composable
+fun ListaCompraRoute(
+    modifier: Modifier = Modifier,
+    viewModel: ListaCompraViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    ListaCompraScreen(
+        uiState = uiState,
+        onNuevoProductoChange = viewModel::onNuevoProductoChange,
+        onAnadir = viewModel::anadirProducto,
+        onCambiarComprado = viewModel::cambiarComprado,
+        onEliminar = viewModel::eliminarProducto,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun ListaCompraScreen(
+    uiState: ListaCompraUiState,
+    onNuevoProductoChange: (String) -> Unit,
+    onAnadir: () -> Unit,
+    onCambiarComprado: (Producto) -> Unit,
+    onEliminar: (Producto) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.padding(16.dp)) {
+        Text(
+            text = "Pendientes: ${uiState.pendientes}",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = uiState.nuevoProducto,
+                onValueChange = onNuevoProductoChange,
+                label = { Text("Producto") },
+                modifier = Modifier.weight(1f)
+            )
+            Button(onClick = onAnadir, modifier = Modifier.padding(start = 8.dp)) {
+                Text("Añadir")
+            }
+        }
+
+        LazyColumn {
+            items(uiState.productos, key = { it.id }) { producto ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = producto.comprado,
+                        onCheckedChange = { onCambiarComprado(producto) }
+                    )
+                    Text(text = producto.nombre, modifier = Modifier.weight(1f))
+                    IconButton(onClick = { onEliminar(producto) }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Eliminar ${producto.nombre}")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ListaCompraScreenPreview() {
+    ListaCompraScreen(
+        uiState = ListaCompraUiState(
+            productos = listOf(Producto(0, "Leche"), Producto(1, "Pan", comprado = true))
+        ),
+        onNuevoProductoChange = {},
+        onAnadir = {},
+        onCambiarComprado = {},
+        onEliminar = {}
+    )
+}
+```
+
+Gracias a la separación, la *preview* puede mostrar la pantalla con datos de ejemplo sin necesidad de crear un ViewModel.
+
+### 4. Conectar el ViewModel con la View
+
+En el ejemplo anterior ya lo hemos hecho en `ListaCompraRoute`:
+
+- `viewModel()` devuelve el ViewModel asociado a la pantalla. La primera vez lo crea y, en las siguientes recomposiciones o tras un giro de pantalla, devuelve **la misma instancia**. Por eso nunca debemos crear un ViewModel con su constructor (`ListaCompraViewModel()`) dentro de un composable.
+- `collectAsStateWithLifecycle()` convierte el `StateFlow` en un estado de Compose, de forma que la pantalla se recompone cada vez que el ViewModel publica un nuevo estado.
+
+:::tip[ViewModels con parámetros]
+Cuando el ViewModel necesita recibir algo en su constructor, como un repositorio, `viewModel()` no sabe cómo crearlo. En ese caso hay que proporcionarle una *factory*. Lo veremos en el apartado de [Conexión a internet](./7-conexion-internet.mdx#utilizar-el-repositorio-en-la-capa-de-ui-en-el-viewmodel).
+:::
+
+:::warning[Qué NO debe hacer un ViewModel]
+- Guardar referencias a composables, a una `Activity` o a su `Context`, ya que el ViewModel vive más que ellos y provocaría fugas de memoria.
+- Exponer un `MutableStateFlow` o una `MutableList` públicos que la UI pueda modificar directamente.
+:::
 
 ## Recursos
 
-- [Documentación oficial de Jetpack Compose](https://developer.android.com/jetpack/compose?hl=es-419): La documentación oficial de Jetpack Compose, que incluye guías, tutoriales y ejemplos para aprender a usar Compose.
-
+- [La capa de la UI - Documentación oficial](https://developer.android.com/topic/architecture/ui-layer?hl=es-419)
+- [Descripción general de ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel?hl=es-419)
+- [Codelab: ViewModel y el estado en Compose](https://developer.android.com/codelabs/basic-android-kotlin-compose-viewmodel-and-state?hl=es-419)
 - [Navegación y arquitectura de la app (MVVM) - Codelabs](https://developer.android.com/courses/android-basics-compose/unit-4?hl=es-419)
-
-- Ejercicio Lista de la compra - [Enunciado](https://github.com/resuadam2/enunciados-ejemplos-android-24?tab=readme-ov-file#app-de-lista-de-la-compra-o-to-do-list) - [Solución](https://github.com/resuadam2/ListaCompraCompose)
-
-- App de Carta Alta - [Enunciado](https://github.com/resuadam2/enunciados-ejemplos-android-24/blob/master/CartaAlta/CartaAlta.md) - [Solución](https://github.com/resuadam2/CartaAltaApp)
-
- 
+- Ejercicio Lista de la compra - [Enunciado](https://github.com/resuacode/enunciados-ejemplos-android-24?tab=readme-ov-file#app-de-lista-de-la-compra-o-to-do-list) - [Solución](https://github.com/resuacode/ListaCompraCompose)
+- App de Carta Alta - [Enunciado](https://github.com/resuacode/enunciados-ejemplos-android-24/blob/master/CartaAlta/CartaAlta.md) - [Solución](https://github.com/resuacode/CartaAltaApp)

@@ -4,7 +4,7 @@ import CodeBlock from '@theme/CodeBlock';
 
 Las clases selladas son un tipo especial de clase en Kotlin que se utilizan para representar un conjunto finito de subclases. 
 
-Las clases selladas son útiles cuando tienes un conjunto limitado de subclases y quieres asegurarte de que todas las subclases se manejan de forma segura en un bloque `when`.
+Las clases selladas son útiles cuando tienes un conjunto limitado de subclases y quieres asegurarte de que todas las subclases se manejan de forma segura en un bloque `when`. Todas las subclases directas deben declararse en el mismo paquete y módulo que la clase sellada, por lo que el compilador las conoce todas.
 
 ## Declaración de clases selladas
 
@@ -32,7 +32,32 @@ fun procesarResultado(resultado: Resultado) {
 }
 ```
 
-En el ejemplo anterior, se define una función `procesarResultado` que toma un parámetro de tipo `Resultado`. Dentro de la expresión `when`, se manejan de forma segura las subclases `Exito` y `Error` de la clase sellada `Resultado`.
+En el ejemplo anterior, se define una función `procesarResultado` que toma un parámetro de tipo `Resultado`. Dentro de la expresión `when`, se manejan de forma segura las subclases `Exito` y `Error` de la clase sellada `Resultado`. Además, gracias al *smart cast*, dentro de cada rama podemos acceder a `resultado.mensaje` sin hacer ninguna conversión.
+
+Como el compilador conoce todas las subclases, cuando usamos `when` como expresión no hace falta la rama `else`, y si en el futuro añadimos una nueva subclase, el compilador nos avisará de todos los `when` que no la contemplan.
+
+## Uso en Android: estados de la UI
+
+Un uso muy habitual de las clases (o interfaces) selladas en Android es representar los posibles estados de una pantalla que carga datos:
+
+```kotlin
+sealed interface UiState {
+    data object Cargando : UiState
+    data class Exito(val usuarios: List<String>) : UiState
+    data class Error(val mensaje: String) : UiState
+}
+
+@Composable
+fun PantallaUsuarios(estado: UiState) {
+    when (estado) {
+        UiState.Cargando -> CircularProgressIndicator()
+        is UiState.Exito -> ListaUsuarios(estado.usuarios)
+        is UiState.Error -> Text("Error: ${estado.mensaje}")
+    }
+}
+```
+
+Para los estados sin datos se usa `data object`, que es un singleton con un `toString()` legible (`Cargando` en lugar de `UiState$Cargando@1a2b3c`).
 
 Las clases selladas son una forma segura y concisa de manejar un conjunto finito de subclases en Kotlin.
 
@@ -40,7 +65,8 @@ Las clases selladas son una forma segura y concisa de manejar un conjunto finito
 
 - **Seguridad**: Las clases selladas garantizan que todas las subclases se manejen de forma segura en un bloque `when`.
 - **Concisión**: Las clases selladas permiten definir un conjunto finito de subclases de forma concisa y legible.
-- **Extensibilidad**: Las clases selladas pueden tener subclases anidadas, lo que permite una mayor extensibilidad y modularidad en el código.
+- **Control de la jerarquía**: Nadie fuera de nuestro módulo puede añadir nuevas subclases, por lo que tenemos garantizado que los casos que tratamos son todos los posibles.
+- **Flexibilidad**: A diferencia de los `enum`, cada subclase puede tener propiedades distintas y puede haber varias instancias de cada una.
 
 Las clases selladas son una característica poderosa de Kotlin que te permite representar de forma segura un conjunto finito de subclases y manejarlas de forma concisa y legible en tu código.
 

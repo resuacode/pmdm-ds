@@ -8,11 +8,11 @@ Aunque la iluminación es un tema muy complejo y que en proyectos grandes suele 
 
 Calcular la luz es uno de los procesos computacionales más costosos a nivel de recursos y es por esto que no hay un único método para calcularla. Tenemos la luz directa (realtime direct), que se aplica directamente en un objeto y se actualiza en tiempo real en cada fotograma (frame), en este tipo el dispositivo final (el hardware donde ejecutamos nuestro juego) será el encargado de procesar dicho cálculo y por ello, el rendimiento dependerá directamente de este. 
 
-Por otro lado, tenemos la luz indirecta o también llamada iluminación global (pre-computed indirect). Esta se genera a partir de un archivo que contiene los datos de la luz y, por lo tanto, no tiene que ser calculada en tiempo real. Estos archivos se generan al hacer una build del juego y dependerá del equipo en el que se compile el juego antes de generar esta build con el ejecutable. Esto dependerá completamente del tamaño de la escena y la cantidad de luces pre computadas que tenemos. Esta iluminación es más compleja pero ofrece un acabado más realista (normalmente). Esto podría hacernos pensar que es mejor usar siempre la luz indirecta pre computada, pero esta iluminación debería aplicarse solamente a objetos que no se encuentren en movimiento, ya que si prefijamos una iluminación ya calculada a un objeto en movimiento este, al moverse, no verá cambios en su iluminación y en cómo le afectan las sombras y los reflejos, por lo que no tendría sentido y no sería realista. Sólo aplicaremos luz pre compilada a los objetos inmóviles de la escena, y así deberemos indicarle a Unity, marcándolos en el inspector como estáticos o static. 
+Por otro lado, tenemos la iluminación precalculada u "horneada" (*baked*), que incluye la luz indirecta o iluminación global: la luz que rebota en unos objetos e ilumina a otros. Esta se guarda en unas texturas llamadas *lightmaps* y, por lo tanto, no tiene que ser calculada en tiempo real. Estos archivos se generan en el editor desde la ventana **Window → Rendering → Lighting**, con el botón **Generate Lighting**, y el tiempo que tarda dependerá del tamaño de la escena, de la cantidad de luces y de la potencia de nuestro equipo. Esta iluminación es más compleja pero ofrece un acabado más realista (normalmente). Esto podría hacernos pensar que es mejor usar siempre la luz indirecta pre computada, pero esta iluminación debería aplicarse solamente a objetos que no se encuentren en movimiento, ya que si prefijamos una iluminación ya calculada a un objeto en movimiento este, al moverse, no verá cambios en su iluminación y en cómo le afectan las sombras y los reflejos, por lo que no tendría sentido y no sería realista. Sólo aplicaremos luz pre compilada a los objetos inmóviles de la escena, y así deberemos indicarle a Unity, marcándolos en el inspector como estáticos o static. 
 
 ## Crear una luz en Unity
 
-Para crear una luz en Unity, simplemente hay que hacer clic en el menú "GameObject" y seleccionar la opción "Light".
+Para crear una luz en Unity, simplemente hay que hacer clic en el menú **GameObject → Light** y elegir el tipo de luz. En proyectos 2D con URP, las luces se encuentran en **GameObject → Light → 2D**.
 
 Esto creará un GameObject con un componente de luz que se puede configurar para ajustar su intensidad, color, rango, etc.
 
@@ -23,7 +23,7 @@ Unity ofrece varios tipos de luces que se pueden utilizar en una escena:
 - **Directional Light**: Luz direccional que simula la luz del sol y proyecta sombras paralelas.
 - **Point Light**: Luz puntual que emite luz en todas direcciones desde un punto y proyecta sombras en todas direcciones.
 - **Spotlight**: Luz de foco que emite luz en una dirección y proyecta sombras en un cono.
-- **Area Light**: Luz de área que emite luz desde un área y proyecta sombras en todas direcciones.
+- **Area Light**: Luz de área que emite luz desde un rectángulo o un disco. En URP solo funciona como luz precalculada (*baked*).
 
 Cada tipo de luz tiene sus propias propiedades y se puede configurar para ajustar su apariencia y comportamiento en la escena.
 
@@ -41,3 +41,17 @@ Algunas de las propiedades más comunes que se pueden configurar en una luz son:
 - **Spot Angle**: Define el ángulo del cono de una luz de foco.
 - **Shadows**: Define si la luz proyecta sombras o no.
 - **Shadow Type**: Define el tipo de sombras que proyecta la luz.
+- **Mode**: Define si la luz es **Realtime** (se calcula en cada frame), **Baked** (se precalcula) o **Mixed** (combina ambas: la luz indirecta se precalcula y la directa se calcula en tiempo real).
+
+## Luces 2D
+
+Las plantillas 2D de Unity 6 (*Universal 2D*) usan el **Renderer 2D** de URP, que tiene su propio sistema de luces para sprites. Por eso, en lugar de una luz direccional, la escena de ejemplo incluye una **Global Light 2D**, que ilumina por igual toda la escena. Si la borramos, los sprites se verán negros.
+
+Los tipos de luces 2D son:
+
+- **Global**: ilumina todos los sprites por igual.
+- **Spot**: ilumina en un círculo o en un cono desde un punto. Es la más usada para antorchas, farolas, linternas, etc.
+- **Freeform**: ilumina un área con la forma del polígono que dibujemos.
+- **Sprite**: usa un sprite como forma de la luz.
+
+Con las luces 2D y las **Shadow Caster 2D** (un componente que hace que un sprite proyecte sombras) se pueden conseguir ambientaciones muy vistosas en juegos 2D.

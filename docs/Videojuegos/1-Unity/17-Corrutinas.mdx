@@ -1,11 +1,15 @@
 # Corrutinas en Unity
 
-Vamos a ver qué son las corrutinas en Unity y cómo funcionan. Las corrutinas son una forma de ejecutar código de manera asíncrona, lo que significa que puedes pausar la ejecución de una función y reanudarla más tarde sin bloquear el hilo principal del juego.
+Vamos a ver qué son las corrutinas en Unity y cómo funcionan. Las corrutinas permiten repartir la ejecución de una función a lo largo de varios frames: puedes pausar su ejecución y reanudarla más tarde sin congelar el juego. Ojo, no se ejecutan en otro hilo: todo sigue ocurriendo en el hilo principal, pero la función "cede el turno" en cada pausa para que el resto del juego pueda seguir funcionando.
 Esto es útil para tareas que requieren esperar un tiempo determinado, como animaciones, temporizadores o esperas entre acciones.
 
 ## ¿Qué son las corrutinas?
 
-Las corrutinas son funciones que pueden pausar su ejecución y reanudarla en un momento posterior. En Unity, las corrutinas se implementan utilizando el tipo de retorno `IEnumerator`. Esto permite que la función devuelva un valor y pause su ejecución en cualquier momento utilizando la palabra clave `yield`. Cuando se llama a una corrutina, se devuelve un objeto `Coroutine` que representa la ejecución de la función.   
+Las corrutinas son funciones que pueden pausar su ejecución y reanudarla en un momento posterior. En Unity, las corrutinas se implementan como métodos cuyo tipo de retorno es `IEnumerator` (del espacio de nombres `System.Collections`). Dentro de ellos, la instrucción `yield return` indica dónde se pausa la ejecución y hasta cuándo. Para ponerlas en marcha se usa `StartCoroutine()`, que devuelve un objeto `Coroutine` que representa la ejecución de la corrutina y que podemos usar para detenerla con `StopCoroutine()`.   
+
+:::warning[No llames a la corrutina directamente]
+Si escribimos `MiCorrutina();` en lugar de `StartCoroutine(MiCorrutina());`, el código compila pero **no se ejecuta nada**. Es uno de los errores más habituales al empezar con corrutinas.
+:::
 
 ## ¿Cómo funcionan?
 
@@ -15,10 +19,6 @@ Aquí tienes un ejemplo de una corrutina que espera 2 segundos antes de imprimir
 ```csharp
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-using UnityEngine.SceneManagement;
-using UnityEngine.EventSystems;
 
 public class CorrutinaEjemplo : MonoBehaviour
 {
@@ -40,6 +40,17 @@ public class CorrutinaEjemplo : MonoBehaviour
 
 En este ejemplo, al llamar al método `IniciarCorrutina`, se inicia la corrutina `MiCorrutina`, que espera 2 segundos antes de imprimir el mensaje "¡2 segundos han pasado!" en la consola.  
 
+Las instrucciones de espera más habituales son:
+
+- `yield return null;`: espera al siguiente frame.
+- `yield return new WaitForSeconds(t);`: espera `t` segundos de tiempo de juego (se ve afectado por `Time.timeScale`, por lo que se detiene si pausamos el juego poniéndolo a 0).
+- `yield return new WaitForSecondsRealtime(t);`: espera `t` segundos reales, aunque el juego esté pausado.
+- `yield return new WaitForFixedUpdate();`: espera al siguiente paso de físicas.
+- `yield return new WaitUntil(() => condicion);`: espera hasta que se cumpla una condición.
+- `yield return StartCoroutine(OtraCorrutina());`: espera a que termine otra corrutina.
+
+Las corrutinas se detienen automáticamente si se destruye o desactiva el GameObject que las lanzó. También podemos detenerlas nosotros con `StopCoroutine(corrutina)` o detener todas las del script con `StopAllCoroutines()`.
+
 ## Ejemplo práctico
 
 Vamos a crear un ejemplo práctico de una corrutina que hace que un objeto se mueva de un punto a otro en la escena. Para ello, crearemos un script que moverá un objeto de su posición actual a una nueva posición en 2 segundos.
@@ -47,7 +58,6 @@ Vamos a crear un ejemplo práctico de una corrutina que hace que un objeto se mu
 ```csharp
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class MoverObjeto : MonoBehaviour
 {
@@ -83,9 +93,9 @@ En este ejemplo, al llamar al método `Mover`, se inicia la corrutina `MoverAObj
 
 ## Las corrutinas en Unity 6
 
-Las corrutinas clásicas (IEnumerator) siguen funcionando igual, por lo que a pesar de que Unity 6 ha introducido el nuevo sistema de tareas, las corrutinas clásicas siguen siendo una opción válida y útil para muchas situaciones. Sin embargo, el nuevo sistema de tareas ofrece una forma más moderna y flexible de manejar la asincronía en Unity.
+Las corrutinas clásicas (`IEnumerator`) siguen funcionando exactamente igual en Unity 6 y siguen siendo una opción válida y útil para muchas situaciones.
 
-Las Nuevas APIs con **UnityEngine.Awaitable y **async/await** xcon su propio sistema de corrutinas basadas en C# moderno es soportado por Unity 6. Es completamente opcional pero si que es algo más avanzado que el uso de IEnumerator.
+Sin embargo, desde Unity 2023.1 (y por tanto en Unity 6) existe una alternativa basada en las palabras clave `async` y `await` de C# moderno: la clase **`Awaitable`**, del espacio de nombres `UnityEngine`. Su uso es completamente opcional, pero permite escribir el mismo código de una forma más secuencial y es la forma natural de combinar la lógica del juego con otras operaciones asíncronas, como descargas o lecturas de ficheros.
 
 Vamos a ver un ejemplo que agrega un comportamiento visual cuando un jugador recibe daño usando una corrutina que hace que parpadee el sprite del jugador.
 
@@ -126,10 +136,8 @@ public class DamageEffect : MonoBehaviour
 
 - Con async/await:
 
-```csharp title="DamageEffect.cs"
+```csharp title="DamageEffectAsync.cs"
 using UnityEngine;
-using System.Threading.Tasks;
-using UnityEngine.Awaitable;
 
 public class DamageEffectAsync : MonoBehaviour
 {
@@ -148,20 +156,31 @@ public class DamageEffectAsync : MonoBehaviour
         if (isFlashing) return;
 
         isFlashing = true;
-        for (int i = 0; i < flashCount; i++)
+        try
         {
-            sr.color = new Color(1, 1, 1, 0); // transparente
-            await Awaitable.WaitForSecondsAsync(flashDuration);
-            sr.color = new Color(1, 1, 1, 1); // visible
-            await Awaitable.WaitForSecondsAsync(flashDuration);
+            for (int i = 0; i < flashCount; i++)
+            {
+                sr.color = new Color(1, 1, 1, 0); // transparente
+                // destroyCancellationToken cancela la espera si se destruye el objeto
+                await Awaitable.WaitForSecondsAsync(flashDuration, destroyCancellationToken);
+                sr.color = new Color(1, 1, 1, 1); // visible
+                await Awaitable.WaitForSecondsAsync(flashDuration, destroyCancellationToken);
+            }
         }
-        isFlashing = false;
+        catch (System.OperationCanceledException)
+        {
+            // El objeto se ha destruido mientras parpadeaba: no hacemos nada
+        }
+        finally
+        {
+            isFlashing = false;
+        }
     }
 }
 ```
 
 
-En ambos casos, para probarlo desde el PlayerController:
+En ambos casos, para probarlo desde el PlayerController (usando la versión que hayamos añadido al objeto, `DamageEffect` o `DamageEffectAsync`):
 
 ```csharp title="PlayerController.cs"
 void Update()
@@ -173,19 +192,26 @@ void Update()
 }
 ```
 
+:::warning[Diferencias importantes con las corrutinas]
+- Una corrutina se detiene sola al destruir o desactivar el GameObject. Un método `async` **no**: si el objeto se destruye durante un `await`, al continuar intentará acceder a un objeto que ya no existe y dará error. Por eso en el ejemplo pasamos `destroyCancellationToken`, que cancela la espera cuando se destruye el objeto.
+- Los métodos `async void` no pueden esperarse desde otro método y sus excepciones son difíciles de capturar. Solo deben usarse como punto de entrada (por ejemplo, en un método llamado desde un botón). Para métodos asíncronos que llamamos desde otros, se devuelve `Awaitable` o `Awaitable<T>`: `async Awaitable CargarNivelAsync()`.
+:::
+
 ### Ventajas de la versión async/await
 
-! Moderno (``async/await``) | Clásico (IEnumerator) |
-|------------------|---------------------|
-| Llama como un método normal | Requiere ``StartCoroutine`` |
-| Sintaxis clara y secuencial | Código algo más repetitivo |
-| Ysa await Awaitable.WaitForSecondsAsync() | Usa ``yield return new WaitForSeconds()`` |
-| Se integra naturalmente con ``Task+``, ``async``, I/O, etc. | Usa ``yield return`` |
-| Más fácil de leer y mantener | Puede ser más difícil de seguir |
-| Manejo de excepciones más sencillo | Manejo de excepciones más complicado |
+| Moderno (`async`/`await`) | Clásico (`IEnumerator`) |
+|---------------------------|-------------------------|
+| Se llama como un método normal | Requiere `StartCoroutine()` |
+| Usa `await Awaitable.WaitForSecondsAsync()` | Usa `yield return new WaitForSeconds()` |
+| Puede devolver un valor (`Awaitable<T>`) | No puede devolver valores directamente |
+| Permite capturar excepciones con `try-catch` alrededor de los `await` | No permite `yield return` dentro de un `try` con `catch` |
+| Se integra con otras APIs asíncronas de C# (ficheros, red...) | Solo funciona dentro de Unity |
+| Hay que gestionar la cancelación (`destroyCancellationToken`) | Se detiene sola al destruir o desactivar el objeto |
 
 Hay que tener en cuenta que:
 
-- Aunque esta API es más moderna, todavía está en adopción progresiva y puede no estar tan bien documentada como IEnumerator.
+- Aunque esta API es más moderna, la gran mayoría de tutoriales y ejemplos siguen usando `IEnumerator`, por lo que es imprescindible conocer ambas.
 
-- No todos los métodos de Unity son awaitable, pero puedes usarlo para delays, input, animaciones, transiciones, etc.
+- `Awaitable` ofrece esperas equivalentes a las de las corrutinas: `NextFrameAsync()`, `WaitForSecondsAsync()`, `FixedUpdateAsync()` o `EndOfFrameAsync()`, además de `BackgroundThreadAsync()` y `MainThreadAsync()` para mover trabajo pesado a otro hilo y volver al principal.
+
+- [Documentación oficial de Awaitable](https://docs.unity3d.com/Manual/async-await-support.html)

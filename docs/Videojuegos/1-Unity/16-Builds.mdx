@@ -4,9 +4,13 @@ Una vez que hemos terminado de desarrollar nuestro juego en Unity, es hora de cr
 
 Cuándo ya tenemos listo nuestro juego y queremos **probar** a **ejecutarlo fuera del entorno del Unity Engine** debemos exportarlo en una build para poder probarlo en producción y, si todo va bien, publicarlo y compartirlo. 
 
-Para ello, Unity, como vimos en un inicio, tiene múltiples plataformas a las que nos es posible exportar nuestro juego, desde WebGL para navegador, varios SO de PC o móviles hasta distintas consolas o incluso televisores inteligentes o realidad virtual. 
+Para ello, Unity, como vimos en un inicio, tiene múltiples plataformas a las que nos es posible exportar nuestro juego, desde Web (antes llamada WebGL) para navegador, varios SO de PC o móviles hasta distintas consolas o incluso televisores inteligentes o realidad virtual. 
 
-Para ver las opciones de compilación iremos a la barra principal de herramientas superior y nos iremos a la opción de **File → Build Profiles**. Aquí vamos a seleccionar en primer lugar las escenas que queremos añadir al proceso de compilación y el orden en el que queremos que se compilen. Esto podemos hacerlo arrastrando dichas escenas desde la pestaña de Project o pulsando en el botón de **Open Scene List**, que nos añadirá automáticamente las que tenemos abiertas.
+Para ver las opciones de compilación iremos a la barra principal de herramientas superior y nos iremos a la opción de **File → Build Profiles** (en versiones anteriores a Unity 6, **File → Build Settings**). Aquí vamos a seleccionar en primer lugar, en el apartado **Scene List**, las escenas que queremos incluir en el juego y su orden. Esto podemos hacerlo arrastrando dichas escenas desde la pestaña de Project o pulsando en el botón **Add Open Scenes**, que añade las que tenemos abiertas.
+
+:::warning[Escenas en la build]
+Solo las escenas de la lista se incluyen en el juego. Si intentamos cargar con `SceneManager.LoadScene()` una escena que no está en la lista, aparecerá un error indicando que no se puede cargar. La primera escena de la lista (la de índice 0) es la que se carga al arrancar el juego.
+:::
 
 ![Build Profiles](../../../static/img/apuntes_unity/build_profiles.png)
 
@@ -18,7 +22,7 @@ Por defecto, podremos exportar nuestro juego en Windows, Linux o Mac como un eje
 
 ![Switch Platform](../../../static/img/apuntes_unity/build_profiles2.png)
 
-Por último, teniendo la plataforma seleccionada, podremos acceder al **Project Settings**, en dónde podremos configurar cosas como la resolución, orientación por defecto de dispositivo, nombre de la compañía, del producto, la versión, el icono por defecto, el cursor por defecto y otros aspectos más avanzados como las librerías que se usan para compilar o qué API gráfica utilizar. Desde la documentación podemos informarnos más sobre cada una de estas opciones. 
+Por último, teniendo la plataforma seleccionada, podremos acceder a los **Player Settings** (dentro de **Edit → Project Settings → Player**), en dónde podremos configurar cosas como la resolución, orientación por defecto de dispositivo, nombre de la compañía, del producto, la versión, el icono por defecto, el cursor por defecto y otros aspectos más avanzados como las librerías que se usan para compilar o qué API gráfica utilizar. Desde la documentación podemos informarnos más sobre cada una de estas opciones. 
 
 ![Project Settings](../../../static/img/apuntes_unity/project_settings.png)
 

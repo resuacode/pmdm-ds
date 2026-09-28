@@ -2,7 +2,7 @@ import CodeBlock from '@theme/CodeBlock';
 
 # Arrays en Kotlin
 
-En Kotlin, puedes crear arrays utilizando la función `arrayOf()`. Los arrays en Kotlin son inmutables por defecto, lo que significa que no puedes modificar su tamaño una vez que se han creado.
+En Kotlin, puedes crear arrays utilizando la función `arrayOf()`. Los arrays tienen un **tamaño fijo**: no se pueden añadir ni quitar elementos una vez creados, aunque sí se puede modificar el valor de cada posición.
 
 ```kotlin
 val numeros = arrayOf(1, 2, 3, 4, 5)
@@ -57,7 +57,13 @@ val dobles = doubleArrayOf(1.0, 2.0, 3.0, 4.0, 5.0)
 val booleanos = booleanArrayOf(true, false, true, false)
 ```
 
-En el ejemplo anterior, se crean arrays de tipos primitivos `IntArray`, `DoubleArray` y `BooleanArray` con valores iniciales.
+En el ejemplo anterior, se crean arrays de tipos primitivos `IntArray`, `DoubleArray` y `BooleanArray` con valores iniciales. Estos arrays equivalen a `int[]`, `double[]` y `boolean[]` de Java y evitan el coste de almacenar cada número como un objeto.
+
+También se puede crear un array de un tamaño concreto indicando cómo calcular cada elemento:
+
+```kotlin
+val cuadrados = IntArray(5) { i -> i * i } // [0, 1, 4, 9, 16]
+```
 
 ## Operaciones con arrays
 
@@ -70,3 +76,7 @@ val indiceDeCuatro = numeros.indexOf(4)
 ```
 
 En el ejemplo anterior, se obtiene el tamaño del array `numeros`, se comprueba si el array contiene el número `3` y se obtiene el índice del número `4` en el array.
+
+:::tip[Arrays o listas]
+En Kotlin se usan mucho más las listas (`List` y `MutableList`) que los arrays, ya que tienen más operaciones y pueden cambiar de tamaño si son mutables. Los arrays se reservan para casos concretos, como mejorar el rendimiento con tipos primitivos o trabajar con APIs que los requieren.
+:::

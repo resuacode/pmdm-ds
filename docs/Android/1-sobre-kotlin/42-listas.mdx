@@ -2,7 +2,7 @@ import CodeBlock from '@theme/CodeBlock';
 
 # Listas en Kotlin
 
-En Kotlin, puedes crear listas utilizando la función `listOf()`. Las listas en Kotlin son inmutables por defecto, lo que significa que no puedes modificar su tamaño una vez que se han creado.
+En Kotlin, puedes crear listas utilizando la función `listOf()`. Las listas creadas con `listOf()` son **de solo lectura**: no se pueden añadir, quitar ni modificar elementos. Para eso existe `MutableList`, que veremos más abajo.
 
 ```kotlin
 val numeros = listOf(1, 2, 3, 4, 5)
@@ -37,28 +37,23 @@ numeros.forEach { numero ->
 
 En el ejemplo anterior, se itera sobre los elementos de la lista `numeros` utilizando un bucle `for` y la función `forEach()`.
 
-## Listas de tipos primitivos
-
-En Kotlin, puedes utilizar listas de tipos primitivos como `IntList`, `DoubleList`, `BooleanList`, etc. para mejorar el rendimiento de tu código.
-
-```kotlin
-val enteros = intListOf(1, 2, 3, 4, 5)
-val dobles = doubleListOf(1.0, 2.0, 3.0, 4.0, 5.0)
-val booleanos = booleanListOf(true, false, true, false)
-```
-
-En el ejemplo anterior, se crean listas de tipos primitivos `IntList`, `DoubleList` y `BooleanList` con valores iniciales.
-
 ## Modificación de elementos de una lista
 
-Las listas en Kotlin son inmutables por defecto, por lo que no puedes modificar los elementos de una lista una vez que se ha creado. Si necesitas una lista mutable, puedes utilizar la función `mutableListOf()`.
+Las listas creadas con `listOf()` son de solo lectura, por lo que no puedes modificar sus elementos una vez que se ha creado. Si necesitas una lista mutable, puedes utilizar la función `mutableListOf()`.
 
 ```kotlin
 val numeros = mutableListOf(1, 2, 3, 4, 5)
-numeros[0] = 10
+numeros[0] = 10     // Modifica un elemento
+numeros.add(6)      // Añade al final
+numeros.remove(3)   // Elimina el elemento 3
+numeros.removeAt(0) // Elimina el elemento de la posición 0
 ```
 
-En el ejemplo anterior, se crea una lista mutable `numeros` con los valores `1, 2, 3, 4, 5`. Se modifica el primer elemento de la lista asignándole el valor `10`.
+En el ejemplo anterior, se crea una lista mutable `numeros` con los valores `1, 2, 3, 4, 5`, se modifica su primer elemento y se añaden y eliminan elementos.
+
+:::warning[Listas y Jetpack Compose]
+Compose no detecta los cambios hechos **dentro** de una `MutableList` normal, por lo que la pantalla no se actualizaría. En Compose usaremos `mutableStateListOf()` o, mejor aún, listas de solo lectura que sustituimos por una nueva lista cada vez que cambian (`lista = lista + elemento`).
+:::
 
 ## Operaciones comunes con listas
 
@@ -68,12 +63,13 @@ Kotlin proporciona una serie de funciones de extensión para realizar operacione
 val cuadrados = numeros.map { numero -> numero * numero }
 val pares = numeros.filter { numero -> numero % 2 == 0 }
 val suma = numeros.reduce { acc, numero -> acc + numero }
-val ordenados = numeros.sortedBy { numero -> numero }
+val ordenados = numeros.sortedByDescending { numero -> numero }
+val porParidad = numeros.groupBy { numero -> if (numero % 2 == 0) "par" else "impar" }
 ```
 
-En el ejemplo anterior, se utilizan las funciones de extensión `map()`, `filter()`, `reduce()` y `sortedBy()` para realizar operaciones comunes con la lista `numeros`.
+En el ejemplo anterior, se utilizan las funciones de extensión `map()`, `filter()`, `reduce()`, `sortedByDescending()` y `groupBy()` para realizar operaciones comunes con la lista `numeros`.
 
-Estás funciones hacen lo siguiente:
+Estas funciones hacen lo siguiente:
 
 - `map()`: Aplica una función a cada elemento de la lista y devuelve una nueva lista con los resultados.
 
@@ -81,7 +77,7 @@ Estás funciones hacen lo siguiente:
 
 - `reduce()`: Combina los elementos de la lista en un solo valor utilizando una función dada.
 
-- `sortedBy()`: Ordena los elementos de la lista en función de una clave dada y devuelve una nueva lista ordenada.
+- `sortedBy()` / `sortedByDescending()`: Ordena los elementos de la lista en función de una clave dada, de forma ascendente o descendente, y devuelve una nueva lista ordenada.
 
 - `groupBy()`: Agrupa los elementos de la lista en función de una clave dada y devuelve un mapa de claves y listas de elementos.
 
@@ -101,13 +97,21 @@ Su funcionalidad es la siguiente:
 
 - `sum()`: Calcula la suma de los elementos de la lista.
 
-- `max()`: Devuelve el valor máximo de la lista.
+- `max()`: Devuelve el valor máximo de la lista. Lanza una excepción si la lista está vacía; en ese caso es mejor usar `maxOrNull()`.
 
-- `min()`: Devuelve el valor mínimo de la lista.
+- `min()`: Devuelve el valor mínimo de la lista (o `minOrNull()` si puede estar vacía).
 
 - `average()`: Calcula el promedio de los elementos de la lista.
 
 - `distinct()`: Devuelve una nueva lista con los elementos únicos de la lista original.
+
+Otras funciones muy útiles son `first()`, `last()`, `find { }` (primer elemento que cumple una condición o `null`), `any { }`, `all { }`, `none { }`, `count { }` y `sumOf { }`:
+
+```kotlin
+val primeroMayorQueTres = numeros.find { it > 3 }
+val hayNegativos = numeros.any { it < 0 }
+val totalDoble = numeros.sumOf { it * 2 }
+```
 
 ## Funciones de extensión para listas
 

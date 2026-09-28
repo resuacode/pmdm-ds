@@ -1,10 +1,10 @@
 # El lenguaje C Sharp
 
-C# es un lenguaje de programación orientado a objetos desarrollado por Microsoft. 
+C# es un lenguaje de programación orientado a objetos desarrollado por Microsoft como parte de la plataforma .NET. 
 
-Es un lenguaje de programación moderno y seguro que se utiliza para crear aplicaciones de escritorio, aplicaciones web y aplicaciones móviles. 
+Es un lenguaje de programación moderno, de tipado estático y seguro que se utiliza para crear aplicaciones de escritorio, aplicaciones web, aplicaciones móviles y, por supuesto, videojuegos, ya que es el lenguaje de scripting de Unity. 
 
-C# es un lenguaje de programación de alto nivel que se utiliza para crear aplicaciones de software de alta calidad.
+Si venimos de Java, C# nos resultará muy familiar: la sintaxis, las clases, las interfaces o las excepciones son muy parecidas.
 
 ## Sintaxis básica
 
@@ -29,25 +29,40 @@ namespace HelloWorld
 
 C# es un lenguaje de programación fuertemente tipado, lo que significa que cada variable debe tener un tipo de datos específico.    
 
-Los tipos de datos en C# se dividen en dos categorías: tipos de datos primitivos y tipos de datos de referencia.
+Los tipos de datos en C# se dividen en dos categorías: tipos por valor y tipos por referencia.
 
-### Tipos de datos primitivos
+### Tipos por valor
 
-Los tipos de datos primitivos en C# son los siguientes:
+Las variables de tipos por valor contienen directamente su dato, y al asignarlas a otra variable se copia el valor. Los más utilizados son:
 
 - `int`: Representa un número entero.
-- `float`: Representa un número de punto flotante de precisión simple.
+- `float`: Representa un número de punto flotante de precisión simple. Es el que más se usa en Unity; sus literales llevan el sufijo `f` (`5.0f`).
 - `double`: Representa un número de punto flotante de precisión doble.
 - `char`: Representa un carácter Unicode.
-- `bool`: Representa un valor booleano (verdadero o falso).
+- `bool`: Representa un valor booleano (`true` o `false`).
+- Las **estructuras** (`struct`) y las **enumeraciones** (`enum`). En Unity, tipos como `Vector2`, `Vector3`, `Quaternion` o `Color` son estructuras.
 
-### Tipos de datos de referencia
+### Tipos por referencia
 
-Los tipos de datos de referencia en C# son los siguientes:
+Las variables de tipos por referencia guardan una referencia al objeto, por lo que al asignarlas a otra variable ambas apuntan al mismo objeto. Algunos de ellos son:
 
-- `string`: Representa una secuencia de caracteres.
-- `object`: Representa cualquier tipo de datos.
-- `array`: Representa una colección de elementos del mismo tipo.
+- `string`: Representa una secuencia de caracteres (inmutable, como en Java).
+- `object`: El tipo base del que heredan todos los demás.
+- Los **arrays** (`int[]`, `string[]`...): colecciones de tamaño fijo de elementos del mismo tipo.
+- Las **clases**, incluidas las colecciones como `List<T>` o `Dictionary<TKey, TValue>` y todos los componentes de Unity (`GameObject`, `Transform`, `Rigidbody2D`...).
+
+```csharp
+int vidas = 3;
+float velocidad = 5.5f;
+string nombre = "Jugador";
+var puntos = 0; // var: el compilador deduce el tipo (int)
+
+int[] puntuaciones = { 10, 20, 30 };
+List<string> inventario = new List<string> { "Espada", "Escudo" }; // using System.Collections.Generic;
+
+// Interpolación de cadenas, equivalente a las plantillas de Kotlin
+Debug.Log($"{nombre} tiene {vidas} vidas");
+```
 
 ## Estructuras de control
 
@@ -96,7 +111,7 @@ namespace HelloWorld
 
 ## Clases y objetos en C#
 
-Las clases y objetos en C# se utilizan para modelar entidades del mundo real.
+Las clases y objetos en C# se utilizan para modelar entidades del mundo real. Una diferencia importante con Java son las **propiedades** (`{ get; set; }`), que sustituyen a los métodos `getX()` y `setX()`, de forma parecida a las propiedades de Kotlin.
 
 ```csharp
 using System;
@@ -127,4 +142,11 @@ namespace HelloWorld
 }
 ```
 
+:::info[C# en Unity]
+En Unity no escribimos un método `Main`: nuestras clases heredan de `MonoBehaviour` y es el motor quien llama a sus métodos (`Awake`, `Start`, `Update`...). Además, para que un campo aparezca en el inspector, Unity necesita que sea un campo `public` o `[SerializeField]`, no una propiedad. Puedes ver más en el apartado de [Scripting en Unity](../1-Unity/9-Scripting.mdx).
+:::
 
+## Recursos
+
+- [Documentación oficial de C#](https://learn.microsoft.com/es-es/dotnet/csharp/)
+- [Tutoriales de C# para principiantes de Microsoft](https://learn.microsoft.com/es-es/dotnet/csharp/tour-of-csharp/tutorials/)

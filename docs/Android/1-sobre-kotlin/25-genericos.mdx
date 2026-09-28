@@ -70,41 +70,57 @@ Se crea una clase `Caja` que implementa la interfaz `Contenedor` con un tipo de 
 
 ## Variance en genéricos
 
-En Kotlin, puedes utilizar la anotación `in` y `out` para especificar la variabilidad de los parámetros de tipo en clases y funciones genéricas.
+En Kotlin, puedes utilizar los modificadores `in` y `out` para especificar la varianza de los parámetros de tipo en clases e interfaces genéricas.
 
-- `in`: Indica que el parámetro de tipo solo se utiliza en posiciones de entrada (como parámetros de métodos).
-- `out`: Indica que el parámetro de tipo solo se utiliza en posiciones de salida (como valores de retorno de métodos).
+- `out` (covarianza): Indica que el parámetro de tipo solo se utiliza en posiciones de salida (como valores de retorno de métodos). La clase **produce** valores de tipo `T`.
+- `in` (contravarianza): Indica que el parámetro de tipo solo se utiliza en posiciones de entrada (como parámetros de métodos). La clase **consume** valores de tipo `T`.
 
 ```kotlin
-interface Contenedor<out T> {
-    fun obtenerContenido(): T
+interface Productor<out T> {
+    fun producir(): T
 }
 
-class Caja<in T>(val contenido: T) {
-    fun ponerContenido(nuevoContenido: T) {
-        // ...
-    }
+interface Consumidor<in T> {
+    fun consumir(elemento: T)
 }
 ```
 
-En el ejemplo anterior, se define una interfaz `Contenedor` con un parámetro de tipo `T` que solo se utiliza en posiciones de salida. La clase `Caja` tiene un parámetro de tipo `T` que solo se utiliza en posiciones de entrada.
+En el ejemplo anterior, `Productor` solo devuelve valores de tipo `T` y `Consumidor` solo los recibe. Gracias a esto:
+
+```kotlin
+val productorDeInt: Productor<Int> = object : Productor<Int> {
+    override fun producir() = 42
+}
+val productorDeNumeros: Productor<Number> = productorDeInt // Correcto gracias a out
+
+val consumidorDeNumeros: Consumidor<Number> = object : Consumidor<Number> {
+    override fun consumir(elemento: Number) = println(elemento)
+}
+val consumidorDeInt: Consumidor<Int> = consumidorDeNumeros // Correcto gracias a in
+```
+
+Un ejemplo real es `List<out E>` de Kotlin: como una `List` de solo lectura solo "produce" elementos, una `List<Int>` puede usarse donde se espera una `List<Number>`.
 
 ## Restricciones en genéricos
 
 En Kotlin, puedes utilizar restricciones para limitar los tipos de datos que se pueden utilizar en clases y funciones genéricas. Puedes utilizar restricciones para garantizar que los tipos de datos cumplan ciertos requisitos.
 
 ```kotlin
-fun <T : Number> sumar(a: T, b: T): T {
-    return a + b
+fun <T : Number> sumar(a: T, b: T): Double {
+    return a.toDouble() + b.toDouble()
 }
 
-val resultadoEntero = sumar(1, 2)
-val resultadoFlotante = sumar(1.5, 2.5)
+val resultadoEntero = sumar(1, 2) // 3.0
+val resultadoDecimal = sumar(1.5, 2.5) // 4.0
 ```
 
-En el ejemplo anterior, se define una función `sumar` que toma dos parámetros de tipo `T` que deben ser subtipos de `Number`. La función `sumar` devuelve la suma de los dos parámetros.
+En el ejemplo anterior, se define una función `sumar` que toma dos parámetros de tipo `T` que deben ser subtipos de `Number`. Gracias a esa restricción podemos llamar a los métodos de `Number`, como `toDouble()`, y devolver la suma como un `Double`.
 
-Se llama a la función `sumar` con un entero y un flotante como argumentos, y se asigna el resultado a variables de tipo `Int` y `Float`.
+:::warning[Por qué no vale `a + b`]
+`Number` no define el operador `+`, así que dentro de la función no podemos sumar directamente dos valores de tipo `T`. La restricción `T : Number` solo nos garantiza que tenemos disponibles los métodos de `Number` (`toInt()`, `toDouble()`...).
+:::
+
+Si intentamos llamar a `sumar("a", "b")`, el código no compila, ya que `String` no es un subtipo de `Number`.
 
 ## Genéricos en clases y funciones
 
@@ -125,8 +141,8 @@ interface Contenedor<T> {
     fun obtenerContenido(): T
 }
 
-fun <T : Number> sumar(a: T, b: T): T {
-    return a + b
+fun <T : Number> sumar(a: T, b: T): Double {
+    return a.toDouble() + b.toDouble()
 }
 ```
 
@@ -136,4 +152,4 @@ En el ejemplo anterior, se muestran ejemplos de clases genéricas, funciones gen
 
 - [Documentación oficial de Kotlin sobre genéricos](https://kotlinlang.org/docs/generics.html)
 - [Tutorial de Kotlin sobre genéricos](https://play.kotlinlang.org/byExample/01_introduction/06_Generics)
-- [Ejemplos de genéricos en Kotlin](https://github.com/resuadam2/kotlin-apuntes/blob/main/src/main/kotlin/p2_oop/Generics.kt)
+- [Ejemplos de genéricos en Kotlin](https://github.com/resuacode/kotlin-apuntes/blob/main/src/main/kotlin/p2_oop/Generics.kt)

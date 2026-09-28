@@ -1,19 +1,25 @@
-import CodeBlock from '@theme/CodeBlock';
-
 # Material Design en Jetpack Compose
 
-Material Design es un sistema de diseño desarrollado por Google que ayuda a los desarrolladores a crear interfaces de usuario atractivas y coherentes en aplicaciones Android. Con Jetpack Compose, puedes implementar los principios de Material Design de forma sencilla y eficiente.
+Material Design es un sistema de diseño desarrollado por Google que ayuda a los desarrolladores a crear interfaces de usuario atractivas y coherentes. Su versión actual es **Material Design 3** (también llamado *Material You*), y es la que utiliza por defecto Android Studio al crear un proyecto nuevo con Compose, a través de la librería `androidx.compose.material3`.
+
+:::warning[Material 2 y Material 3]
+En internet todavía se encuentran muchos ejemplos con la librería antigua, `androidx.compose.material` (Material 2). Se reconocen porque usan `lightColors()`, `MaterialTheme(colors = ...)`, `primaryVariant` o `typography.h1`. En Material 3 estos elementos se llaman `lightColorScheme()`, `MaterialTheme(colorScheme = ...)`, `primaryContainer` y `typography.displayLarge`. No conviene mezclar ambas librerías en un mismo proyecto.
+:::
 
 ## Temas y estilos
 
-Jetpack Compose incluye un conjunto de widgets y estilos basados en Material Design que puedes utilizar para crear interfaces de usuario modernas y atractivas. Puedes personalizar los colores, tipografías y formas de tus componentes para adaptarlos a la identidad visual de tu aplicación.
+`MaterialTheme` es un composable que aplica un tema a todos los componentes que contiene. El tema está formado por tres elementos:
+
+- **`colorScheme`**: los colores de la app (`primary`, `secondary`, `background`, `surface`, `error`...).
+- **`typography`**: los estilos de texto.
+- **`shapes`**: las formas (redondeo de las esquinas) de los componentes.
 
 ```kotlin
 @Composable
 fun MiApp() {
     MaterialTheme {
         Column {
-            Text(text = "Hola, mundo!", style = MaterialTheme.typography.title-large)
+            Text(text = "Hola, mundo!", style = MaterialTheme.typography.titleLarge)
             Button(onClick = { /* Acción */ }) {
                 Text(text = "Haz clic aquí")
             }
@@ -22,49 +28,127 @@ fun MiApp() {
 }
 ```
 
-En el ejemplo anterior, se define un componente `MiApp` que utiliza `MaterialTheme` para aplicar los estilos de Material Design a los componentes de la interfaz de usuario. Se utiliza `MaterialTheme.typography.title-large` para aplicar un estilo de tipografía grande al texto y se utiliza `Button` para mostrar un botón con el texto "Haz clic aquí".
+En el ejemplo anterior, se define un componente `MiApp` que utiliza `MaterialTheme` para aplicar los estilos de Material Design a los componentes de la interfaz de usuario. Se utiliza `MaterialTheme.typography.titleLarge` para aplicar el estilo de título grande al texto y se utiliza `Button` para mostrar un botón, que toma automáticamente el color `primary` del tema.
 
-## Widgets de Material Design
+### Estilos de texto
 
-Jetpack Compose incluye una amplia variedad de widgets de Material Design que puedes utilizar para crear interfaces de usuario complejas y atractivas. Algunos de los widgets más comunes son:
+Material 3 define 15 estilos de texto, organizados en cinco categorías con tres tamaños cada una:
 
-- `Button`: Un botón interactivo que el usuario puede pulsar para realizar una acción.
-- `TextField`: Un campo de texto que el usuario puede utilizar para introducir texto.
-- `Checkbox`: Una casilla de verificación que el usuario puede marcar o desmarcar.
-- `RadioButton`: Un botón de opción que el usuario puede seleccionar entre varias opciones.
-- `Switch`: Un interruptor que el usuario puede activar o desactivar.
+| Categoría | Estilos | Uso |
+|-----------|---------|-----|
+| Display | `displayLarge`, `displayMedium`, `displaySmall` | Textos muy grandes y cortos, como números destacados |
+| Headline | `headlineLarge`, `headlineMedium`, `headlineSmall` | Encabezados principales |
+| Title | `titleLarge`, `titleMedium`, `titleSmall` | Títulos de secciones, tarjetas o barras |
+| Body | `bodyLarge`, `bodyMedium`, `bodySmall` | Texto normal |
+| Label | `labelLarge`, `labelMedium`, `labelSmall` | Textos de botones y etiquetas |
 
-Puedes utilizar estos widgets y muchos más para crear interfaces de usuario modernas y atractivas en tus aplicaciones Android con Jetpack Compose.
+## Componentes de Material Design
+
+Material 3 incluye una amplia variedad de componentes que puedes utilizar para crear interfaces de usuario complejas y atractivas. Algunos de los más comunes son:
+
+- `Scaffold`: estructura base de una pantalla, con huecos para la barra superior (`topBar`), la inferior (`bottomBar`), un botón flotante (`floatingActionButton`) y los `Snackbar`.
+- `TopAppBar` / `CenterAlignedTopAppBar`: barra superior con título y acciones.
+- `Button`, `OutlinedButton`, `TextButton`, `FilledTonalButton` e `IconButton`: botones con distintos niveles de énfasis.
+- `FloatingActionButton`: botón flotante para la acción principal de la pantalla.
+- `TextField` y `OutlinedTextField`: campos de texto.
+- `Checkbox`, `RadioButton` y `Switch`: controles de selección.
+- `Card`: tarjeta para agrupar información relacionada.
+- `AlertDialog`: diálogo de confirmación o aviso.
+- `NavigationBar` y `NavigationBarItem`: barra de navegación inferior.
+
+Un ejemplo de pantalla con `Scaffold` y barra superior:
+
+```kotlin
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PantallaPrincipal(onAnadir: () -> Unit) {
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("Mi lista") })
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onAnadir) {
+                Icon(Icons.Default.Add, contentDescription = "Añadir")
+            }
+        }
+    ) { innerPadding ->
+        // Es importante aplicar innerPadding para que el contenido no quede debajo de las barras
+        Column(modifier = Modifier.padding(innerPadding)) {
+            Text("Contenido de la pantalla")
+        }
+    }
+}
+```
+
+:::info[`@OptIn(ExperimentalMaterial3Api::class)`]
+Algunos componentes de Material 3, como `TopAppBar`, todavía se marcan como experimentales, lo que significa que su API podría cambiar en el futuro. Para usarlos hay que añadir esta anotación a la función (Android Studio la sugiere automáticamente).
+:::
+
+Puedes consultar todos los componentes disponibles, con ejemplos, en la [documentación de Material 3 en Compose](https://developer.android.com/develop/ui/compose/designsystems/material3?hl=es-419).
 
 ## Personalización de estilos
 
-Puedes personalizar los estilos de Material Design en Jetpack Compose para adaptarlos a la identidad visual de tu aplicación. Puedes definir tus propios temas y estilos utilizando el componente `MaterialTheme` y los objetos `Typography`, `Colors` y `Shapes`.
+Al crear un proyecto nuevo, Android Studio genera el paquete `ui.theme` con tres archivos: `Color.kt`, `Type.kt` y `Theme.kt`. En ellos se definen los colores, la tipografía y la función del tema de la app, que podemos modificar para adaptarlos a la identidad visual de nuestra aplicación.
 
-```kotlin
-val MiTema = lightColors(
-    primary = Color(0xFF6200EE),
-    primaryVariant = Color(0xFF3700B3),
-    secondary = Color(0xFF03DAC6)
+```kotlin title="Color.kt"
+val Verde80 = Color(0xFF84E9B1)
+val Verde40 = Color(0xFF184E30)
+val Naranja80 = Color(0xFFFFB68A)
+val Naranja40 = Color(0xFF9A4600)
+```
+
+```kotlin title="Theme.kt"
+private val LightColorScheme = lightColorScheme(
+    primary = Verde40,
+    secondary = Naranja40
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = Verde80,
+    secondary = Naranja80
 )
 
 @Composable
-fun MiApp() {
-    MaterialTheme(colors = MiTema) {
-        Column {
-            Text(text = "Hola, mundo!", style = MaterialTheme.typography.title-large)
-            Button(onClick = { /* Acción */ }) {
-                Text(text = "Haz clic aquí")
-            }
-        }
-    }
+fun MiAppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
 }
 ```
 
-En el ejemplo anterior, se define un tema personalizado `MiTema` con colores personalizados y se utiliza `MaterialTheme` para aplicar este tema a los componentes de la interfaz de usuario. Se utiliza `MaterialTheme.typography.title-large` para aplicar un estilo de tipografía grande al texto y se utiliza `Button` para mostrar un botón con el texto "Haz clic aquí".
+En el ejemplo anterior, se definen dos esquemas de colores, uno claro y otro oscuro, y el tema elige uno u otro en función de la configuración del sistema con `isSystemInDarkTheme()`.
+
+Dentro del tema, los componentes usan estos colores automáticamente, y nosotros podemos acceder a ellos con `MaterialTheme.colorScheme`:
+
+```kotlin
+Text(
+    text = "Hola, mundo!",
+    color = MaterialTheme.colorScheme.primary,
+    style = MaterialTheme.typography.titleLarge
+)
+```
+
+:::tip[Usa los colores del tema, no colores fijos]
+Si en los composables usamos `MaterialTheme.colorScheme.primary` en lugar de `Color.Blue`, la app se adaptará automáticamente al modo oscuro y a cualquier cambio que hagamos en el tema.
+:::
+
+### Color dinámico
+
+A partir de Android 12, Material 3 permite usar **color dinámico**: el esquema de colores se genera a partir del fondo de pantalla del usuario. El `Theme.kt` que genera Android Studio ya lo incluye mediante `dynamicLightColorScheme(context)` y `dynamicDarkColorScheme(context)`, con un parámetro `dynamicColor` para activarlo o desactivarlo. Si queremos que la app mantenga siempre nuestros colores corporativos, basta con ponerlo a `false`.
+
+### Generar un tema a medida
+
+La herramienta [Material Theme Builder](https://material-foundation.github.io/material-theme-builder/) genera todos los colores de un esquema de Material 3 a partir de un color principal, y permite exportarlos directamente como archivos `Color.kt` y `Theme.kt` para Compose.
 
 ## Recursos
 
-- [Documentación oficial de Material Design](https://material.io/design): La documentación oficial de Material Design, que incluye guías, tutoriales y ejemplos para aprender a diseñar interfaces de usuario con Material Design.
-
-- [Documentación oficial de Jetpack Compose](https://developer.android.com/jetpack/compose?hl=es-419): La documentación oficial de Jetpack Compose, que incluye guías, tutoriales y ejemplos para aprender a crear interfaces de usuario con Compose.
-
+- [Documentación oficial de Material Design 3](https://m3.material.io/): Guías de diseño, componentes y recursos de Material Design.
+- [Material Design 3 en Compose](https://developer.android.com/develop/ui/compose/designsystems/material3?hl=es-419): Documentación oficial sobre cómo usar Material 3 con Jetpack Compose.
+- [Codelab: Temas de Material con Jetpack Compose](https://developer.android.com/codelabs/jetpack-compose-theming?hl=es-419)

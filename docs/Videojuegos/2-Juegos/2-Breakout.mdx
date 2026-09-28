@@ -10,7 +10,7 @@ Vamos a hacer nuestra versión de este juego en Unity 6.
 
 ## Creando el escenario
 
-Partiremos de un proyecto nuevo en Unity 2D, y lo primero que haremos será crear un nuevo proyecto en blanco. Para ello, abrimos Unity Hub y creamos un nuevo proyecto 2D. Una vez creado el proyecto, lo abrimos y nos aparecerá la pantalla de bienvenida de Unity.
+Partiremos de un proyecto nuevo en Unity 6, y lo primero que haremos será crear un nuevo proyecto en blanco. Para ello, abrimos Unity Hub y creamos un nuevo proyecto con la plantilla **Universal 2D**, igual que hicimos en el [Pong](./1-Pong.mdx). Como también usaremos la clase `Input`, recuerda poner **Active Input Handling** en **Both** (en **Edit -> Project Settings -> Player -> Other Settings**). Una vez creado el proyecto, lo abrimos y nos aparecerá la pantalla de bienvenida de Unity.
 
 Una vez creado el proyecto seleccionaremos la disposición de ventanas que más nos guste para trabajar y nosotros comenzaremos cambiando el fondo de la cámara a un color sólido oscuro, da igual el que elijáis pero tened en cuenta que después deben distinguirse bien los bloques de colores típicos del juego.
 
@@ -18,7 +18,7 @@ También sería interesante en la pantalla de **Game** seleccionar una resoluci�
 
 Empezaremos creando el escenario del juego, para ello, hay varios tutoriales que podemos seguir que nos ayudarán creando el escenario a partir de Sprites 2D. Podéis seguirlos sin problema, al final de esta sección anclaremos varios interesantes. 
 
-Sin embargo, en esta versión intentaremos crear casi todo con figuras básicas de Unity, para ello, comenzaremos delimitando el escenario por los laterales y en la parte superior utilizando 3 rectángulos 2D posicionados justo en los límiites de la cámara, de la siguiente forma:
+Sin embargo, en esta versión intentaremos crear casi todo con figuras básicas de Unity, para ello, comenzaremos delimitando el escenario por los laterales y en la parte superior utilizando 3 rectángulos 2D posicionados justo en los límites de la cámara, de la siguiente forma:
 
 ![Escenario breakout 1](../../../static/img/apuntes_unity/breakout/escenario1.png)
 
@@ -28,7 +28,7 @@ Para organizar el escenario, es recomendable crear un objeto vacío llamado "Sce
 
 Una vez creadas y posicionadas debemos añadirle un BoxCollider2D para que la pelota pueda rebotar contra las paredes. Para ello, seleccionamos los 3 rectángulos y en el inspector, añadimos un nuevo componente de tipo Box Collider 2D. Esto nos permitirá detectar las colisiones entre la bola y las paredes.
 
-A continuarción, crearemos varios bloques de diferentes colores posicionándolos en la escena de forma que ocupen una cuadrilla de ancho y media de alto más o menos, intentando reducir un poco el ancho para que se vea la separación entre ellos. 
+A continuación, crearemos varios bloques de diferentes colores posicionándolos en la escena de forma que ocupen una cuadrilla de ancho y media de alto más o menos, intentando reducir un poco el ancho para que se vea la separación entre ellos. 
 
 Para crear estos bloques simplemente seguiremos añadiendo cuadrados 2D y cambiando su color, para ello, seleccionamos el cuadrado y en el inspector, en la parte de Sprite Renderer, seleccionamos el color que queramos. Comenzaremos con una fila con diferentes colores que más adelante utilizaremos para crear prefabs. 
 
@@ -42,7 +42,7 @@ También vamos a crear un nuevo tag llamado "block" para poder identificar los b
 Para organizar los bloques, es recomendable crear un objeto vacío llamado "Blocks" y agrupar todos los bloques dentro de él. Esto nos permitirá moverlos y organizarlos mejor en la jerarquía.
 :::
 
-:::tip[Mover los bloques en la escenar]
+:::tip[Mover los bloques en la escena]
 Para mover los bloques y que ocupen siempre la misma distancia entre ellos es más fácil posicionarlos si los movemos manteniendo la tecla Control pulsada, lo cual hará que el objeto se mueva en pasos de 1 cuadrícula. Esto nos permitirá alinear los bloques de forma más sencilla.
 :::
 
@@ -78,7 +78,7 @@ Además, vamos a limitar el movimiento de la pala poniéndole límites en su eje
 
 Para ello, como siempre, vamos a organizar bien el proyecto y crear una carpeta para los Scripts, y una vez dentro, vamos acrear y abrir el script y vamos a añadir el siguiente código:
 
-```csharp title="PlayerController.cs"
+```csharp title="Player.cs"
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -86,7 +86,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float speed;
     /*
     Los límites definidos con bound nos hacen falta debido a que el jugador se puede salir de la pantalla
-    debido a que su rigidbody es quinemático, por lo que no se ve afectado por la gravedad ni puede colisionar
+    debido a que su rigidbody es cinemático, por lo que no se ve afectado por la gravedad ni puede colisionar
     con objetos estáticos.
     */
     [SerializeField] private float bound = 6.8f; // x axis bound 
@@ -101,7 +101,7 @@ public class Player : MonoBehaviour
     void PlayerMovement()
     {
         float moveInput = Input.GetAxisRaw("Horizontal");
-        // Controlaríamos el movimiento de la siguiente forma de no ser el rigidbody quinemático
+        // Controlaríamos el movimiento de la siguiente forma de no ser el rigidbody cinemático
         // transform.position += new Vector3(moveInput * speed * Time.deltaTime, 0f, 0f);
 
         Vector2 playerPosition = transform.position;
@@ -120,7 +120,7 @@ Ya podemos mover al jugador, ahora vamos a hacer que pueda lanzar la pelota, par
 
 En este script vamos a incluir un método que cuándo el jugador pulse la tecla espacio, la pelota se lance, pero debemos tener cuidado de hacer que esto se desactive en cuánto se lance, si no, podríamos relanzarla cuándo ya no toca. 
 
-Además, hay que asegurarse de que la pelota deja de ser hija del objeto del jugador tras ser lanzada, de lo contrariop odríamos mover la pelota con las flechas haciendo que siga el movimiento del jugador y sería algo injusto e injugable.
+Además, hay que asegurarse de que la pelota deja de ser hija del objeto del jugador tras ser lanzada, de lo contrario podríamos mover la pelota con las flechas haciendo que siga el movimiento del jugador y sería algo injusto e injugable.
 
 Vamos a realizar todo esto dentro de un método llamado **Launch** que se ejecutará cuándo el jugador pulse la tecla espacio.
 
@@ -149,9 +149,9 @@ public class Ball : MonoBehaviour
 
     private void Launch()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !isMoving) // Si pulsamos la barra espaciadora y la bola no se est� moviendo
+        if (Input.GetKeyDown(KeyCode.Space) && !isMoving) // Si pulsamos la barra espaciadora y la bola no se está moviendo
         {
-            isMoving = true; // La bola ya se est� moviendo
+            isMoving = true; // La bola ya se está moviendo
             transform.parent = null; // Desvinculamos la bola del jugador
             rb.linearVelocity = initialSpeed; // Le asignamos una velocidad inicial a la bola
         }
@@ -161,7 +161,7 @@ public class Ball : MonoBehaviour
 ```
 
 :::info[Sobre el Rigidbody2D]
-El Rigidbody2D de la bola debe ser dinámico para que pueda moverse y colisionar con los bloques. Si lo hacemos quinemático, no se moverá al lanzarla.
+El Rigidbody2D de la bola debe ser dinámico para que pueda moverse y colisionar con los bloques. Si lo hacemos cinemático, no se moverá al lanzarla.
 :::
 
 Ahora vamos a añadir el script a la bola y le asignamos la velocidad inicial que queramos, por ejemplo, 5 en el eje X y 10 en el eje Y.
@@ -189,7 +189,7 @@ Con el material creado y asignado vamos ahora a hacer que la bola destruya los b
 
 Con esto, la bola destruirá los bloques al chocar con ellos. También podemos ajustar la velocidad de la bola al destruir un bloque, para que sea más rápida. Para ello, creamos una variable llamada "velocityMultiplier" y la multiplicamos por la velocidad de la bola al destruir un bloque. Esto hará que la bola sea más rápida al destruir un bloque.
 
-Más adelante debemos poner un límite a este aumento de velocidad para que no se vuelva demaisado rápida, pero por ahora lo dejaremos así.
+Más adelante debemos poner un límite a este aumento de velocidad para que no se vuelva demasiado rápida, pero por ahora lo dejaremos así.
 
 Vamos a añadir también el método **VelocityFix** que se encargará de corregir la velocidad de la bola al chocar con un bloque o una pared. Esto es necesario porque si la bola choca con un bloque o una pared, puede que la velocidad no sea la correcta y la bola se quede atascada. Para ello, vamos a añadir el siguiente código:
 
@@ -197,15 +197,15 @@ Vamos a añadir también el método **VelocityFix** que se encargará de corregi
   private void VelocityFix()
   {
       float velocidadDelta = 0.5f; // Velocidad que queremos que aumente la bola
-      float velocidadMinima = 0.2f; // Velocidad m�nima que queremos que tenga la bola
+      float velocidadMinima = 0.2f; // Velocidad mínima que queremos que tenga la bola
 
-      if (Mathf.Abs(rb.linearVelocity.x) < velocidadMinima) // Si la velocidad de la bola en el eje x es menor que la m�nima
+      if (Mathf.Abs(rb.linearVelocity.x) < velocidadMinima) // Si la velocidad de la bola en el eje x es menor que la mínima
       {
           velocidadDelta = Random.value < 0.5f ? velocidadDelta : -velocidadDelta; // Elegimos un valor aleatorio entre -0.5 y 0.5
           rb.linearVelocity = new Vector2(rb.linearVelocity.x + velocidadDelta, rb.linearVelocity.y); // Aumentamos la velocidad de la bola
       }
 
-      if (Mathf.Abs(rb.linearVelocity.y) < velocidadMinima) // Si la velocidad de la bola en el eje y es menor que la m�nima
+      if (Mathf.Abs(rb.linearVelocity.y) < velocidadMinima) // Si la velocidad de la bola en el eje y es menor que la mínima
       {
           velocidadDelta = Random.value < 0.5f ? velocidadDelta : -velocidadDelta; // Elegimos un valor aleatorio entre -0.5 y 0.5
           // Otra forma de aumentar la velocidad (esta vez en el eje y)
@@ -564,7 +564,7 @@ Ya podemos eliminar el método **Start** del GameManager, ya que no lo necesitam
 
 Debemos añadir también a nuestros Scripts de la bola y el jugador los métodos que hemos llamado desde el GameManager para resetear la posición de ambos objetos.
 
-Para ello debemos recoger en el start sus positiciones iniciales dentro de un Vector2:
+Para ello debemos recoger en el start sus posiciones iniciales dentro de un Vector2:
 
 ```csharp title="Ball.cs"
     private Vector2 initialPosition;
@@ -577,7 +577,7 @@ Para ello debemos recoger en el start sus positiciones iniciales dentro de un Ve
 
     public void ResetBall()
     {
-        rb.velocity = Vector2.zero; // Reiniciamos la velocidad de la bola
+        rb.linearVelocity = Vector2.zero; // Reiniciamos la velocidad de la bola
         transform.position = initialPosition; // Reiniciamos la posición de la bola
         transform.parent = FindAnyObjectByType<Player>().transform; // Hacemos que la bola sea hija del jugador
         isMoving = false; // La bola ya no se está moviendo

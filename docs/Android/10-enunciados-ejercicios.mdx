@@ -72,7 +72,7 @@ Hacer varias versiones de la app pasando por los siguientes pasos:
 2. Añadir un botón en cada elemento para que al pulsarlo este se borre. 
 3. Añadir un CheckBox a cada elemento para marcar el item como realizado o no realizado. Este estado debe manejarse correctamente.
 4. Elevar el estado de la app para manejarlo mediante un ViewModel y su correspondiente StateFlow. 
-5. Añadir una barra superior a la app a través de un Scafold, en la barra superior debe aparecer el título de la app y un botón para elminar todos los elementos de la lista marcados como realizados de golpe.
+5. Añadir una barra superior a la app a través de un Scaffold, en la barra superior debe aparecer el título de la app y un botón para eliminar todos los elementos de la lista marcados como realizados de golpe.
 
 ### Versión 1.0 Gestionando el estado dentro de los composables
 
@@ -155,7 +155,7 @@ Se pueden utilizar elementos clickables para poner las X o las O y se pueden usa
 
 Se debe mostrar en cada momento si es el turno del jugador X o de las O. Se debe mostrar al finalizar el juego quién ha ganado o si se ha empatado y dar una opción para volver a jugar. Esto debe hacerse en un cuadro de diálogo.
 
-Este ejemplo puede basarse en [siguiente Codelab](https://developer.android.com/codelabs/basic-android-kotlin-compose-viewmodel-and-state?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-4-pathway-1%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-viewmodel-and-state#0) cuyo código final está disponible en [este repositorio](https://github.com/resuadam2/basic-android-kotlin-compose-training-unscramble).
+Este ejemplo puede basarse en [siguiente Codelab](https://developer.android.com/codelabs/basic-android-kotlin-compose-viewmodel-and-state?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-4-pathway-1%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-viewmodel-and-state#0) cuyo código final está disponible en [este repositorio](https://github.com/resuacode/basic-android-kotlin-compose-training-unscramble).
 
 #### [Solución en el Github de avidaldo](https://github.com/avidaldo/compose-tictactoe)
 
@@ -163,15 +163,15 @@ Este ejemplo puede basarse en [siguiente Codelab](https://developer.android.com/
 
 Basándonos en el mismo ejemplo que el ejercicio anterior:
 
-Este ejemplo puede basarse en [siguiente Codelab](https://developer.android.com/codelabs/basic-android-kotlin-compose-viewmodel-and-state?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-4-pathway-1%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-viewmodel-and-state#0) cuyo código final está disponible en [este repositorio](https://github.com/resuadam2/basic-android-kotlin-compose-training-unscramble).
+Este ejemplo puede basarse en [siguiente Codelab](https://developer.android.com/codelabs/basic-android-kotlin-compose-viewmodel-and-state?hl=es-419&continue=https%3A%2F%2Fdeveloper.android.com%2Fcourses%2Fpathways%2Fandroid-basics-compose-unit-4-pathway-1%3Fhl%3Des-419%23codelab-https%3A%2F%2Fdeveloper.android.com%2Fcodelabs%2Fbasic-android-kotlin-compose-viewmodel-and-state#0) cuyo código final está disponible en [este repositorio](https://github.com/resuacode/basic-android-kotlin-compose-training-unscramble).
 
 Elaborar un pequeño juego de Trivial, las preguntas deben estar contenidas en un datasource en el paquete data, se debe crear un modelo de datos acorde para almacenar cada pregunta. 
 
-La aplicación debe tener una pantalla principal dónde se muestre la puntuación máxima en porcentaje de aciertos (0% por defecto al iniciar) y se deje al usuario elegir la cantidad de pregunas que quiere responder (mínimo de 5 y máximo de 20). 
+La aplicación debe tener una pantalla principal dónde se muestre la puntuación máxima en porcentaje de aciertos (0% por defecto al iniciar) y se deje al usuario elegir la cantidad de preguntas que quiere responder (mínimo de 5 y máximo de 20). 
 
 Una vez elegida la cantidad de preguntas debe comenzar el juego en una pantalla secundaria, a partir de esta pantalla se irán respondiendo preguntas hasta llegar a las establecidas y se calculará el porcentaje de acierto que, si es superior al record se debe actualizar. 
 
-Se pueden elaborar variantes de esta aplicación añadiendo cosas como tiempos límite de respuesta, cambiando a un número de preguntas fijo pero con un máximo de errores permitido o cualquier variante que e os ocurra.
+Se pueden elaborar variantes de esta aplicación añadiendo cosas como tiempos límite de respuesta, cambiando a un número de preguntas fijo pero con un máximo de errores permitido o cualquier variante que se os ocurra.
 
 ### Versión 1.0 Con los datos en crudo desde un archivo Kotlin
 
@@ -193,11 +193,10 @@ Algunas APIs famosas de temas variados que podéis utilizar son:
 
 - [API de Star Wars](https://swapi.dev/)
 - [API de Rick and Morty](https://rickandmortyapi.com/)
-- [API de Harry Potter](https://www.potterapi.com/)
+- [API de Harry Potter](https://hp-api.onrender.com/)
 - [API de Pokémon](https://pokeapi.co/)
-- [API de Breaking Bad](https://breakingbadapi.com/)
 - [API de The Lord of the Rings](https://the-one-api.dev/)
-- [API de Studio Ghibli](https://ghibliapi.herokuapp.com/)
+- [API de Studio Ghibli](https://ghibliapi.vercel.app/)
 - [API de Juego de Tronos](https://anapioficeandfire.com/)
 - [API de Superhéroes](https://superheroapi.com/)
 - [API de Open Food Facts](https://world.openfoodfacts.org/data)
@@ -206,7 +205,11 @@ Algunas APIs famosas de temas variados que podéis utilizar son:
 - [API de The Cat API](https://thecatapi.com/)
 - [API de NASA](https://api.nasa.gov/)
 
-Hay muchas más APIs disponibles en internet, podéis buscar en [RapidAPI](https://rapidapi.com/) para encontrar más.
+Hay muchas más APIs disponibles en internet, podéis buscar en [RapidAPI](https://rapidapi.com/) o en el repositorio [public-apis](https://github.com/public-apis/public-apis) para encontrar más.
+
+:::warning[APIs con clave]
+Algunas de estas APIs (como The One API, Superhero API, OpenWeatherMap o NASA) requieren registrarse para obtener una clave (*API key*) que se envía en cada petición. Nunca subáis vuestra clave a un repositorio público: guardadla en el archivo `local.properties`, que Git ignora por defecto.
+:::
 
 ### Versión 2.0 Con los datos desde una API
 
@@ -218,7 +221,7 @@ En proceso...
 
 #### [Solución en Github](https://github.com/resuacode/TriviaApp/tree/first-api-version)
 
-### Versión 3.0 Gurardando el record en un archivo de preferencias con DataStore
+### Versión 3.0 Guardando el record en un archivo de preferencias con DataStore
 
 :::info[Video explicación de proyecto Trivial - Versión 3]
 En proceso...
@@ -226,7 +229,7 @@ En proceso...
 
 #### [Solución en Github](https://github.com/resuacode/TriviaApp/tree/record-in-datastore)
 
-### Versión 4.0 Gurardando las partidas y el record por categorías en una base de datos con Room
+### Versión 4.0 Guardando las partidas y el record por categorías en una base de datos con Room
 
 :::info[Video explicación de proyecto Trivial - Versión 4]
 En proceso...
@@ -236,7 +239,7 @@ En proceso...
 
 ## App de Pokedex
 
-API de referenica: [API de Pokémon](https://pokeapi.co/)
+API de referencia: [API de Pokémon](https://pokeapi.co/)
 
 App que trae datos de la API de Pokémon y muestra una lista de los primeros 151 Pokémon.
 

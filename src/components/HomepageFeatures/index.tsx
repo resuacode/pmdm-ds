@@ -1,3 +1,4 @@
+import type {ReactNode} from 'react';
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
@@ -5,7 +6,7 @@ import styles from './styles.module.css';
 type FeatureItem = {
   title: string;
   Svg: React.ComponentType<React.ComponentProps<'svg'>>;
-  description: JSX.Element;
+  description: ReactNode;
 };
 
 const FeatureList: FeatureItem[] = [
@@ -29,11 +30,11 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Vídeos explicativos',
-    Svg: require('@site/static/img//main/right.svg').default,
+    Svg: require('@site/static/img/main/right.svg').default,
     description: (
       <>
         Encontrarás vídeos explicativos en mi canal de YouTube.<br />
-        <a href="https://www.youtube.com/@resuadam2">¡Suscríbete!</a>
+        <a href="https://www.youtube.com/@resuacode">¡Suscríbete!</a>
       </>
     ),
   },
@@ -53,7 +54,7 @@ function Feature({title, Svg, description}: FeatureItem) {
   );
 }
 
-export default function HomepageFeatures(): JSX.Element {
+export default function HomepageFeatures(): ReactNode {
   return (
     <section className={styles.features}>
       <div className="container">

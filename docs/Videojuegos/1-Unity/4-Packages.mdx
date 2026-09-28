@@ -8,16 +8,16 @@ Los **packages** en Unity son paquetes de funcionalidades que se pueden utilizar
 
 Al instalar un package, este puede incluir un grupo de assets, librerías de código, plantillas o escenas de ejemplo, pero dependerá totalmente de la finalidad del mismo.
 
-Existen tres tipos de packages:
-- **Built-In**
-- **Verified**
-- **Preview**
+Por un lado, están los paquetes **built-in** o integrados, que son funcionalidades del propio motor que se pueden activar o desactivar según las necesitemos, como las físicas, el sistema de partículas, el audio o el cloth, entre otros.
 
-Los paquetes **built-in** o paquetes integrados son todas las funcionalidades que ya vienen incluidas por defecto en UNity como pueden ser las físicas, el sistema de partículas, la UI el cloth entre otros. 
+Por otro lado, el resto de paquetes (como Input System, Cinemachine, Shader Graph o 2D Animation) se clasifican según su **estado de desarrollo**:
 
-Los paquetes **verified** o verificados son todas aquellas funcionalidades que ya han pasado por sus etapas de pruebas y tests y que Unity como empresa que gestiona el motor considera que funcionan correctamente en cierta versión del editor
+- **Release**: paquetes que han pasado todas las pruebas y que Unity garantiza que funcionan correctamente con nuestra versión del editor. Son los que deberíamos usar normalmente.
+- **Pre-release**: paquetes que estarán disponibles como *Release* próximamente, pero que todavía están en las últimas fases de pruebas.
+- **Experimental**: paquetes en fase de desarrollo temprano, que pueden cambiar mucho, generar errores o no ser compatibles con otros paquetes. No se recomienda usarlos en proyectos serios.
+- **Deprecated**: paquetes obsoletos que ya no se mantienen y que no se deberían usar en proyectos nuevos.
 
-Por último, los **preview** son paquetes que se encuentran en fase de prueba, podemos incluirlos en nuestros proyectos pero podría generar errores o también no ser del todo compatibles con la versión de nuestro editor o con otros paquetes instalados. 
+En versiones antiguas del editor, los paquetes *Release* se llamaban *Verified* y los *Pre-release* y *Experimental* se agrupaban como *Preview*. 
 
 Al instalar un **package** o un asset de la tienda, Unity lo descarga y lo almacena en el caché global. Esto quiere decir que si para un proyecto hemos descargado un paquete o un asset y queremos utilizarlo en otro proyecto ya no hará falta volver a descargarlo de la tienda nuevamente. 
 
@@ -33,7 +33,16 @@ Instalar, desinstalar y editar un package es bastante trivial desde el package m
 
 Los packages instalados en el proyecto actual también pueden verse desde la columna izquierda de la pestaña de **Project**. 
 
-Para acabar de entender los paquetes hay que tener en cuenta los **manifiestos**, los cuales son archivos en formato json que se alojan dentro de la carpeta packages del proyecto y que sirven como registro de paquetes. Hay dos tipos, tenemos el manifiesto del proyecto (manifest.json) que almacena la información que necesita el package manager para ubicar y descargar los paquetes al igual que las dependencias del proyecto, y, por otro lado, el manifiesto del paquete (packages-lock.json), el cuál almacena información del paquete en sí, su versión y sus requerimientos. 
+Para acabar de entender los paquetes hay que tener en cuenta los archivos en formato JSON que se alojan dentro de la carpeta **Packages** del proyecto y que sirven como registro de paquetes:
+
+- **manifest.json**: el manifiesto del proyecto. Contiene la lista de paquetes que hemos añadido al proyecto y su versión. Es el que modifica el Package Manager al instalar o desinstalar paquetes.
+- **packages-lock.json**: registra la versión exacta de todos los paquetes instalados, incluidas las dependencias que se instalan automáticamente, para que el proyecto se reconstruya siempre igual en cualquier equipo.
+
+Además, cada paquete tiene su propio manifiesto, un archivo **package.json** con su nombre, versión y dependencias. 
+
+:::tip[Paquetes y Git]
+Al subir un proyecto de Unity a Git, la carpeta **Packages** sí debe incluirse (a diferencia de la carpeta *Library*, que se regenera sola), ya que en ella están `manifest.json` y `packages-lock.json`. Al abrir el proyecto en otro equipo, Unity descargará automáticamente los paquetes necesarios.
+:::
 
 Entender cómo usar los paquetes es importante ya que hay muchas funcionalidades que no están añadidas por defecto o no son paquetes built-in como puede ser el uso de Shader Graph, la animación 2D y muchos otros. Cuando estemos buscando ejemplos de cómo hacer algo en concreto y nos encontremos con algún ejemplo que utiliza funciones del editor que nosotros no tenemos, esto será seguramente porque tiene algún paquete añadido que nosotros no tenemos añadido.
 

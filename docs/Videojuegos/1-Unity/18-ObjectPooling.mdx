@@ -70,7 +70,7 @@ Puedes usar este patrón para gestionar cualquier tipo de objeto en tu juego, co
 
 ## Otro escenario de ejemplo
 
-Supongamos que queremos instanicar obstáculos, enemigos o proyectiles cada cierto tiempo. 
+Supongamos que queremos instanciar obstáculos, enemigos o proyectiles cada cierto tiempo. 
 
 En lugar de usar:
 
@@ -84,7 +84,7 @@ Y después:
 Destroy(obstacle, 2f);
 ```
 
-Usaremos un **poll de objetos** que los mantiene inactivos y listos para reutilizarse. 
+Usaremos un **pool de objetos** que los mantiene inactivos y listos para reutilizarse. 
 
 Estructuraremos la situación con 3 archivos:
 
@@ -209,6 +209,70 @@ public class PooledObject : MonoBehaviour
     - Añade el script ObstacleSpawner.cs.
 
     - Asigna un Transform como punto de aparición.
+
+## El ObjectPool integrado de Unity
+
+Desde Unity 2021, el motor incluye su propia implementación de un pool de objetos genérico, la clase `ObjectPool<T>` del espacio de nombres `UnityEngine.Pool`. En lugar de programar la lista o la cola nosotros mismos, le indicamos qué hacer en cada momento mediante funciones:
+
+```csharp title="BulletSpawner.cs"
+using UnityEngine;
+using UnityEngine.Pool;
+
+public class BulletSpawner : MonoBehaviour
+{
+    [SerializeField] private Bullet bulletPrefab;
+    private ObjectPool<Bullet> pool;
+
+    void Awake()
+    {
+        pool = new ObjectPool<Bullet>(
+            createFunc: () => {
+                Bullet bala = Instantiate(bulletPrefab);
+                bala.SetPool(pool); // La bala guarda el pool para devolverse sola
+                return bala;
+            },
+            actionOnGet: bala => bala.gameObject.SetActive(true),
+            actionOnRelease: bala => bala.gameObject.SetActive(false),
+            actionOnDestroy: bala => Destroy(bala.gameObject),
+            defaultCapacity: 10,
+            maxSize: 50
+        );
+    }
+
+    public void Disparar()
+    {
+        Bullet bala = pool.Get(); // Reutiliza una bala inactiva o crea una nueva
+        bala.transform.position = transform.position;
+    }
+}
+```
+
+```csharp title="Bullet.cs"
+using UnityEngine;
+using UnityEngine.Pool;
+
+public class Bullet : MonoBehaviour
+{
+    [SerializeField] private float lifetime = 2f;
+    private IObjectPool<Bullet> pool;
+
+    public void SetPool(IObjectPool<Bullet> pool) => this.pool = pool;
+
+    private void OnEnable() => Invoke(nameof(Liberar), lifetime);
+    private void OnDisable() => CancelInvoke();
+
+    private void Liberar() => pool.Release(this); // Devuelve la bala al pool
+}
+```
+
+Los parámetros del constructor son:
+
+- `createFunc`: cómo crear un objeto nuevo cuando no hay ninguno disponible.
+- `actionOnGet` / `actionOnRelease`: qué hacer al sacar un objeto del pool y al devolverlo (normalmente, activarlo y desactivarlo).
+- `actionOnDestroy`: qué hacer cuando el pool está lleno (`maxSize`) y se devuelve un objeto que ya no cabe.
+- `defaultCapacity` y `maxSize`: la capacidad inicial y el número máximo de objetos inactivos que guarda.
+
+Más información en la [documentación de ObjectPool](https://docs.unity3d.com/ScriptReference/Pool.ObjectPool_1.html).
 
 ## Ventajas del Object Pooling
 

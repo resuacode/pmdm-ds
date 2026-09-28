@@ -38,7 +38,7 @@ A la hora de elegir la arquitectura para tu aplicación Android, es importante t
 
 Algunos consejos para elegir la arquitectura adecuada son los siguientes:   
 
-- **Evalúa tus necesidades**: Analiza los requisitos de tu aplicación y elige la arquitectura que mejor se adapte a ellos. Por ejemplo, si tu aplicación es pequeña y sencilla, puedes optar por una arquitectura MVC o MVP. Si tu aplicación es grande y compleja, puedes optar por una arquitectura MVVM o Clean Architecture.    
+- **Evalúa tus necesidades**: Analiza los requisitos de tu aplicación y elige la arquitectura que mejor se adapte a ellos. MVC y MVP se usaban mucho en las apps Android antiguas basadas en vistas XML, pero hoy en día, con Jetpack Compose, lo habitual es usar MVVM siguiendo la guía de arquitectura de Google y, en aplicaciones grandes, añadir ideas de Clean Architecture como una capa de dominio.    
 
 - **Prueba diferentes arquitecturas**: Experimenta con diferentes arquitecturas y evalúa sus ventajas y desventajas en función de tus necesidades. No tengas miedo de probar nuevas arquitecturas y adaptarlas a tus necesidades específicas.   
 
@@ -50,7 +50,38 @@ En este curso, vamos a utilizar la arquitectura MVVM (Modelo-Vista-ViewModel) pa
 
 En la arquitectura MVVM, la vista es responsable de mostrar la interfaz de usuario, el ViewModel es responsable de manejar la lógica de presentación y el modelo es responsable de la lógica de negocio y acceso a datos. El ViewModel actúa como un intermediario entre la vista y el modelo, lo que facilita la separación de responsabilidades y la reutilización de código. 
 
-La arquitectura MVVM es una arquitectura popular en Android y es compatible con las bibliotecas y herramientas de Jetpack, como LiveData, ViewModel y Room. Utilizaremos estas bibliotecas y herramientas en nuestro curso para crear aplicaciones Android modernas y eficientes.   
+La arquitectura MVVM es la arquitectura recomendada por Google para Android y encaja con las bibliotecas de Jetpack, como ViewModel, Room o DataStore, y con los `Flow` de Kotlin. Utilizaremos estas bibliotecas y herramientas en nuestro curso para crear aplicaciones Android modernas y eficientes.   
+
+:::info[¿Y LiveData?]
+En muchos tutoriales antiguos el ViewModel expone los datos mediante `LiveData`. Con Jetpack Compose y corrutinas, la recomendación actual es usar `StateFlow` en su lugar, que es lo que haremos en el curso.
+:::
+
+## La guía de arquitectura de Android
+
+La [guía de arquitectura de apps de Google](https://developer.android.com/topic/architecture?hl=es-419) organiza una aplicación en capas:
+
+- **Capa de UI** (*UI layer*): muestra los datos en pantalla y recoge las interacciones del usuario. Está formada por los **elementos de UI** (nuestros composables) y los **contenedores de estado** (*state holders*), normalmente un **ViewModel** por pantalla, que prepara el estado que se muestra y procesa los eventos.
+- **Capa de datos** (*data layer*): contiene los datos de la app y la lógica de negocio. Está formada por **repositorios**, que exponen los datos al resto de la app, y por **fuentes de datos** (*data sources*), como una API remota (Retrofit), una base de datos local (Room) o un archivo de preferencias (DataStore).
+- **Capa de dominio** (*domain layer*), opcional: contiene casos de uso con lógica de negocio reutilizable entre varios ViewModel. Solo se añade en apps grandes.
+
+Las dependencias van siempre en un único sentido: la UI conoce a los ViewModel, los ViewModel conocen a los repositorios y los repositorios conocen a las fuentes de datos, pero nunca al revés.
+
+Además, se sigue el principio de **flujo unidireccional de datos** (UDF), que ya vimos en la [gestión del estado](./2-jetpack-compose/22-state-management.mdx): el **estado** fluye hacia abajo (de los datos al ViewModel y del ViewModel a la UI) y los **eventos** fluyen hacia arriba (de la UI al ViewModel y, si hace falta, del ViewModel a los repositorios).
+
+```
+   UI (Composables)
+   │ eventos ▲ estado (StateFlow)
+   ▼         │
+   ViewModel
+   │ llamadas ▲ datos (suspend / Flow)
+   ▼          │
+   Repositorio
+   │          ▲
+   ▼          │
+   Fuentes de datos (Retrofit, Room, DataStore)
+```
+
+Veremos cada capa en los siguientes apartados: la [capa de UI](./6-capa-ui.mdx), la conexión a internet y el repositorio en [Conexión a internet](./7-conexion-internet.mdx), y el almacenamiento local en [Persistencia de datos](./9-persistencia-datos.mdx).
 
 :::info[Video explicación de la arquitectura MVVM]
 <iframe width="560" height="315" src="https://www.youtube.com/embed/Af72QxiHRh0?si=RtYClOSgTyUT39dQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -58,12 +89,14 @@ La arquitectura MVVM es una arquitectura popular en Android y es compatible con 
 
 ## Recursos
 
-- [Documentación oficial de Android](https://developer.android.com/guide?hl=es-419): La documentación oficial de Android, que incluye guías, tutoriales y ejemplos para aprender a desarrollar aplicaciones Android.
+- [Guía de arquitectura de apps](https://developer.android.com/topic/architecture?hl=es-419): La guía oficial de Google sobre cómo estructurar una aplicación Android.
+
+- [Recomendaciones de arquitectura de Android](https://developer.android.com/topic/architecture/recommendations?hl=es-419): Resumen de buenas prácticas oficiales.
 
 - [Navegación y arquitectura de la app (MVVM) - Codelabs](https://developer.android.com/courses/android-basics-compose/unit-4?hl=es-419)
 
-- Ejercicio Lista de la compra - [Enunciado](https://github.com/resuadam2/enunciados-ejemplos-android-24?tab=readme-ov-file#app-de-lista-de-la-compra-o-to-do-list) - [Solución](https://github.com/resuadam2/ListaCompraCompose)
+- Ejercicio Lista de la compra - [Enunciado](https://github.com/resuacode/enunciados-ejemplos-android-24?tab=readme-ov-file#app-de-lista-de-la-compra-o-to-do-list) - [Solución](https://github.com/resuacode/ListaCompraCompose)
 
-- App de Carta Alta - [Enunciado](https://github.com/resuadam2/enunciados-ejemplos-android-24/blob/master/CartaAlta/CartaAlta.md) - [Solución](https://github.com/resuadam2/CartaAltaApp)
+- App de Carta Alta - [Enunciado](https://github.com/resuacode/enunciados-ejemplos-android-24/blob/master/CartaAlta/CartaAlta.md) - [Solución](https://github.com/resuacode/CartaAltaApp)
 
  

@@ -2,7 +2,7 @@ import CodeBlock from '@theme/CodeBlock';
 
 # Maps en Kotlin
 
-En Kotlin, un `Map` es una colección de pares clave-valor donde cada clave está asociada a un valor. Los `Map` en Kotlin son inmutables por defecto, lo que significa que no puedes modificar su tamaño una vez que se han creado.
+En Kotlin, un `Map` es una colección de pares clave-valor donde cada clave está asociada a un valor. Los `Map` creados con `mapOf()` son de solo lectura: no se pueden añadir, quitar ni modificar pares.
 
 ```kotlin
 val numeros = mapOf("uno" to 1, "dos" to 2, "tres" to 3)
@@ -19,7 +19,11 @@ val numeroUno = numeros["uno"]
 val numeroDos = numeros["dos"]
 ```
 
-En el ejemplo anterior, se accede a los valores asociados a las claves `"uno"` y `"dos"` del `Map` `numeros`.
+En el ejemplo anterior, se accede a los valores asociados a las claves `"uno"` y `"dos"` del `Map` `numeros`. Si la clave no existe, se obtiene `null`, por lo que el tipo de `numeroUno` es `Int?`. Si queremos un valor por defecto podemos usar `getOrDefault()` o el operador elvis:
+
+```kotlin
+val numeroCuatro = numeros["cuatro"] ?: 0
+```
 
 ## Iteración sobre un Map
 
@@ -37,28 +41,18 @@ numeros.forEach { (clave, valor) ->
 
 En el ejemplo anterior, se itera sobre los pares clave-valor del `Map` `numeros` utilizando un bucle `for` y la función `forEach()`.
 
-## Maps de tipos primitivos
-
-En Kotlin, puedes utilizar `Map` de tipos primitivos como `IntMap`, `DoubleMap`, `BooleanMap`, etc. para mejorar el rendimiento de tu código.
-
-```kotlin
-val enteros = intMapOf(1 to "uno", 2 to "dos", 3 to "tres")
-val dobles = doubleMapOf(1.0 to "uno", 2.0 to "dos", 3.0 to "tres")
-val booleanos = booleanMapOf(true to "verdadero", false to "falso")
-```
-
-En el ejemplo anterior, se crean `Map` de tipos primitivos `IntMap`, `DoubleMap` y `BooleanMap` con pares clave-valor iniciales.
-
 ## Modificación de elementos de un Map
 
-Los `Map` en Kotlin son inmutables por defecto, por lo que no puedes modificar los elementos de un `Map` una vez que se ha creado. Si necesitas un `Map` mutable, puedes utilizar la función `mutableMapOf()`.
+Como los `Map` creados con `mapOf()` son de solo lectura, no puedes modificar sus elementos una vez que se ha creado. Si necesitas un `Map` mutable, puedes utilizar la función `mutableMapOf()`.
 
 ```kotlin
 val numeros = mutableMapOf("uno" to 1, "dos" to 2, "tres" to 3)
-numeros["uno"] = 10
+numeros["uno"] = 10     // Modifica el valor de una clave existente
+numeros["cuatro"] = 4   // Añade un nuevo par
+numeros.remove("dos")   // Elimina un par por su clave
 ```
 
-En el ejemplo anterior, se crea un `Map` mutable `numeros` con los pares clave-valor `"uno" -> 1`, `"dos" -> 2` y `"tres" -> 3`. Se modifica el valor asociado a la clave `"uno"` asignándole el valor `10`.
+En el ejemplo anterior, se crea un `Map` mutable `numeros` con los pares clave-valor `"uno" -> 1`, `"dos" -> 2` y `"tres" -> 3`. Se modifica el valor asociado a la clave `"uno"`, se añade la clave `"cuatro"` y se elimina la clave `"dos"`.
 
 ## Operaciones con Maps
 
@@ -88,4 +82,4 @@ Estas operaciones sirven para lo siguiente:
 
 Los `Map` en Kotlin son una forma eficiente de almacenar y acceder a datos asociados a claves. Puedes utilizar `Map` para representar relaciones entre objetos y realizar operaciones comunes con ellos de forma sencilla y eficiente.
 
-Para más información sobre los `Map` en Kotlin, puedes consultar la [documentación oficial de Kotlin sobre Maps](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/).`;
+Para más información sobre los `Map` en Kotlin, puedes consultar la [documentación oficial de Kotlin sobre Maps](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-map/).

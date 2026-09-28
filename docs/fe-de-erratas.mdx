@@ -116,6 +116,7 @@ No se incluyen las faltas de ortografía ni las secciones nuevas que se han aña
 - ❌ Mencionaba una función `provideAppTheme()` que **no existe** y llamaba a `MaterialTheme` "modificador". **Correcto:** `MaterialTheme` es un composable.
 - 🔄 Usaba la API de Material 2 (`MaterialTheme(colors = lightColors())`). **Correcto en Material 3:** `MaterialTheme(colorScheme = lightColorScheme())`.
 - 🔄 `Divider` ahora es `HorizontalDivider` / `VerticalDivider`.
+- 🔄 Los ejemplos usaban `Icons.Default.*` sin indicar ninguna dependencia. Desde Material 3 1.4.0, `material3` ya no incluye la librería de iconos: hay que añadir `material-icons-core` o usar Material Symbols como recursos `drawable`.
 - ❌ Usaba `Modifier.align()` fuera de un contenedor, lo que **no compila**: solo está disponible dentro de `Column`, `Row` o `Box`. Además, los valores se escriben con mayúscula y prefijo: `Alignment.CenterHorizontally`, no `centerHorizontally`.
 - ❌ `Alignment(0.25f, 0.75f)` **no existe**. **Correcto:** `BiasAlignment(horizontalBias, verticalBias)`, con valores entre -1 y 1.
 - ❌ Las descripciones de `SpaceAround` y `SpaceEvenly` eran imprecisas y no dejaban clara la diferencia: `SpaceAround` deja en los extremos la mitad de espacio que entre elementos y `SpaceEvenly` deja el mismo espacio en todas partes.

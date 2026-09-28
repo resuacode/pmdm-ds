@@ -161,6 +161,33 @@ fun Greeting(name: String) {
 
 En el ejemplo anterior, se utiliza la función `Row` para organizar el texto y el icono en una fila horizontal.
 
+:::warning[Si `Icons.Default.Favorite` no se reconoce]
+Los iconos de `Icons` no forman parte de Material 3, sino de la librería `material-icons-core`. Hasta la versión 1.4.0 de Material 3 (septiembre de 2025) llegaba incluida como dependencia de `material3`, pero ya no, así que en un proyecto nuevo Android Studio no encuentra `Icons` ni sus iconos. Hay dos formas de solucionarlo:
+
+**Opción 1: añadir la librería de iconos.** Es lo más rápido y permite usar los ejemplos de los apuntes tal cual. En `gradle/libs.versions.toml`:
+
+```toml
+[libraries]
+androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
+```
+
+Y en `app/build.gradle.kts`:
+
+```kotlin
+implementation(libs.androidx.compose.material.icons.core)
+```
+
+No lleva versión porque la gestiona el BOM de Compose (si no la resolviera, añade `version = "1.7.8"`). Esta librería incluye los iconos más habituales (`Add`, `Delete`, `Favorite`, `Home`, `Search`, `Settings`...), pero Google ya no la mantiene y no va a recibir iconos nuevos. Existe también `material-icons-extended` con el catálogo completo, pero pesa mucho y tampoco se mantiene, así que no conviene usarla.
+
+**Opción 2: usar Material Symbols como recursos.** Es lo que recomienda Google actualmente. Se descarga el icono en formato Android (XML) desde [Material Symbols](https://fonts.google.com/icons), o se importa con *File → New → Vector Asset* en Android Studio, se guarda en `res/drawable` y se usa con `painterResource`:
+
+```kotlin
+Icon(painterResource(R.drawable.favorite), contentDescription = null)
+```
+
+Requiere un paso más por cada icono, pero da acceso a todo el catálogo actual sin depender de una librería congelada.
+:::
+
 ### Ejemplo de función con Box
 
 ```kotlin

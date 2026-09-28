@@ -28,19 +28,19 @@ No se incluyen las faltas de ortografía ni las secciones nuevas que se han aña
   **Correcto:** también pueden declararse en el nivel superior de un archivo.
 - ❌ Llamaba "lista mutable" a `listOf()`. **Correcto:** es una lista de **solo lectura**.
 
-### [Expresiones vs. sentencias](./Android/1-sobre-kotlin/12-expresiones-vs-sentencias.mdx)
+### [Expresiones vs. sentencias](./Android/1-sobre-kotlin/13-expresiones-vs-sentencias.mdx)
 
 - ❌ Presentaba el `if` únicamente como sentencia.
   **Correcto:** en Kotlin `if`, `when` y `try` son **expresiones** y devuelven un valor (`val x = if (a > b) a else b`). Por eso Kotlin no tiene operador ternario.
 - ❌ **Decía** que Kotlin es un lenguaje funcional. **Correcto:** es multiparadigma (orientado a objetos y funcional).
 
-### [Funciones y lambdas](./Android/1-sobre-kotlin/13-funciones-lambdas.mdx)
+### [Funciones y lambdas](./Android/1-sobre-kotlin/14-funciones-lambdas.mdx)
 
 - ❌ **Decía** que, para modificar un parámetro dentro de una función, hay que declararlo como `var`.
   **Correcto:** los parámetros son siempre de solo lectura y no se pueden declarar `var`; hay que copiarlos en una variable local.
 - ❌ La explicación de qué lambda indicaba los tipos (`suma` o `resta`) estaba al revés.
 
-### [Null safety](./Android/1-sobre-kotlin/14-null-safety.mdx)
+### [Null safety](./Android/1-sobre-kotlin/15-null-safety.mdx)
 
 - ❌ El ejemplo de los operadores `?.`, `?:` y `!!` declaraba tres veces la variable `longitud`, lo que **no compila**.
 - ❌ **Decía** que los tipos nulables se inicializan "con la función `null`". **Correcto:** `null` es un valor, no una función.
@@ -91,7 +91,7 @@ No se incluyen las faltas de ortografía ni las secciones nuevas que se han aña
 - ❌ Las secciones de listas, maps y sets "de tipos primitivos" usaban funciones que **no existen** en la librería estándar de Kotlin: `intListOf`, `doubleListOf`, `booleanListOf`, `intMapOf`, `doubleMapOf`, `booleanMapOf`, `intSetOf`, `doubleSetOf` y `booleanSetOf`. Se han eliminado.
 - ❌ Las operaciones de conjuntos `symmetricDifference()`, `containsAny()`, `isSubset()`, `isSuperset()` e `isDisjoint()` **no existen** en Kotlin. Se han sustituido por las equivalentes reales: `union`, `intersect`, `subtract`, `containsAll`, `any { it in otro }` y `none { it in otro }`.
 
-### [Corrutinas](./Android/1-sobre-kotlin/51-corrutinas.mdx)
+### [Corrutinas](./Android/1-sobre-kotlin/61-corrutinas.mdx)
 
 - ❌ La mayoría de ejemplos llamaban a `launch` y `async` directamente dentro de `suspend fun main()`, lo que **no compila**: estas funciones solo pueden llamarse dentro de un `CoroutineScope`. **Correcto:** usar `runBlocking` (en un `main` de consola) o `coroutineScope { }`.
 - ❌ El ejemplo de `launch` y `async` tenía dos funciones `main` y dos `obtenerDatos` en el mismo bloque.

@@ -80,7 +80,7 @@ val otroNumero: Int = otroTexto.toInt()
 val noEsNumero = "hola".toIntOrNull() // null, en lugar de lanzar una excepción
 ```
 
-En el primer ejemplo, se convierte un número entero a una cadena de texto utilizando la función `toString()`. En el segundo ejemplo, se convierte una cadena de texto a un número entero utilizando la función `toInt()`, que lanza una `NumberFormatException` si el texto no es un número válido. Si no estamos seguros del contenido, es preferible usar `toIntOrNull()`, que devuelve `null` en ese caso.
+En el primer ejemplo, se convierte un número entero a una cadena de texto utilizando la función `toString()`. En el segundo ejemplo, se convierte una cadena de texto a un número entero utilizando la función `toInt()`, que lanza una `NumberFormatException` si el texto no es un número válido. Si no estamos seguros del contenido, es preferible usar `toIntOrNull()`, que devuelve `null` en ese caso. Veremos más funciones de este tipo en el apartado de [funciones útiles de la librería estándar](./51-funciones-libreria-estandar.mdx#las-funciones-ornull).
 
 :::info[Sin conversiones implícitas]
 A diferencia de Java, Kotlin no convierte automáticamente un tipo numérico en otro "más grande". Por ejemplo, no se puede asignar un `Int` a una variable `Long` sin llamar antes a `toLong()`.

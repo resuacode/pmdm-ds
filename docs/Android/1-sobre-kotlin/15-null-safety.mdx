@@ -82,6 +82,10 @@ nombre?.let { println("El nombre tiene ${it.length} letras") }
 El operador `!!` le dice al compilador "confía en mí, esto nunca es nulo". Si nos equivocamos, la app se cierra con una `NullPointerException`. Siempre que sea posible, es preferible usar `?.`, `?:`, una comprobación con `if` o `let`.
 :::
 
+:::tip[Más funciones para trabajar con nulos]
+La librería estándar incluye muchas funciones pensadas para combinarse con estos operadores, como `toIntOrNull()`, `firstOrNull()`, `orEmpty()`, `isNullOrBlank()` o `takeIf { }`. Las veremos en el apartado de [funciones útiles de la librería estándar](./51-funciones-libreria-estandar.mdx).
+:::
+
 ## Funciones de extensión de seguridad de nulos
 
 En Kotlin, puedes utilizar funciones de extensión para agregar funcionalidades a los tipos de datos nulos.

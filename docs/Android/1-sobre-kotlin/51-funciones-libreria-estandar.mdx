@@ -1,0 +1,299 @@
+# Funciones útiles de la librería estándar
+
+La librería estándar de Kotlin incluye cientos de pequeñas funciones que nos ahorran escribir código repetitivo. Muchas de ellas son [funciones de extensión](./14-funciones-lambdas.mdx#funciones-de-extensión-extension-functions) que se llaman con un punto sobre un valor (`texto.toIntOrNull()`), y muchas otras reciben una lambda que se escribe entre llaves justo después de la llamada, gracias a la sintaxis de [trailing lambdas](./14-funciones-lambdas.mdx#trailing-lambdas) (`numero.takeIf { it > 0 }`).
+
+No hace falta memorizarlas todas. Lo importante es conocer las más habituales y, sobre todo, sus **convenciones de nombres**, porque se repiten en toda la librería. Si sabemos lo que significa el sufijo `OrNull`, sabremos lo que hace cualquier función que lo lleve aunque no la hayamos visto nunca.
+
+:::tip[Cómo descubrir funciones nuevas]
+En Android Studio (o IntelliJ), al escribir un punto después de una variable, el autocompletado nos muestra todas las funciones disponibles para ese tipo. Si empezamos a escribir `OrNull` o `OrElse`, nos aparecerán todas las variantes que existen.
+:::
+
+## Las funciones `...OrNull`
+
+Muchas funciones de Kotlin lanzan una excepción cuando no pueden hacer su trabajo. Por ejemplo, `toInt()` lanza una `NumberFormatException` si el texto no es un número, y `first()` lanza una `NoSuchElementException` si la lista está vacía.
+
+Para casi todas ellas existe una versión con el sufijo **`OrNull`** que, en lugar de lanzar una excepción, devuelve `null`:
+
+```kotlin
+val edad = "25".toIntOrNull()       // 25
+val noEsNumero = "hola".toIntOrNull() // null
+val precio = "9.99".toDoubleOrNull()  // 9.99
+
+val numeros = listOf(3, 8, 1)
+val vacia = emptyList<Int>()
+
+numeros.firstOrNull()  // 3
+vacia.firstOrNull()    // null (first() lanzaría una excepción)
+numeros.getOrNull(5)   // null (numeros[5] lanzaría una excepción)
+numeros.maxOrNull()    // 8
+vacia.maxOrNull()      // null
+numeros.firstOrNull { it > 5 } // 8, el primero que cumple la condición
+```
+
+En el ejemplo anterior, todas las funciones terminadas en `OrNull` devuelven un tipo nulable (`Int?`, `Double?`...), por lo que el compilador nos obliga a tener en cuenta que el resultado puede ser `null`. Lo habitual es combinarlas con el operador elvis `?:` que vimos en el apartado de [null safety](./15-null-safety.mdx) para dar un valor por defecto:
+
+```kotlin
+val textoIntroducido = "abc"
+val cantidad = textoIntroducido.toIntOrNull() ?: 0 // 0
+```
+
+:::info[La convención `...OrNull`]
+- `funcion()`: devuelve el resultado o **lanza una excepción** si no puede.
+- `funcionOrNull()`: devuelve el resultado o **`null`** si no puede.
+
+Usaremos la versión `OrNull` siempre que el fallo sea algo normal y esperable, como que el usuario escriba letras en un campo numérico o que una lista esté vacía. En una app Android esto es muy importante: una excepción que no capturamos cierra la app.
+:::
+
+## Las funciones `...OrElse` y `...OrDefault`
+
+Si en lugar de `null` queremos obtener directamente un valor por defecto, tenemos las variantes `OrElse` y `OrDefault`:
+
+```kotlin
+val colores = listOf("Rojo", "Verde", "Azul")
+
+colores.getOrElse(10) { "Sin color" } // "Sin color"
+
+val stock = mapOf("manzanas" to 5, "peras" to 0)
+
+stock.getOrDefault("plátanos", 0)       // 0
+stock.getOrElse("plátanos") { 0 }       // 0
+```
+
+La diferencia entre ellas es que `getOrDefault` recibe directamente el valor por defecto, mientras que `getOrElse` recibe una **lambda** que calcula ese valor. La lambda solo se ejecuta si de verdad hace falta, lo que es útil cuando calcular el valor por defecto es costoso.
+
+En los `Map` mutables existe también `getOrPut`, que devuelve el valor de una clave y, si no existe, lo calcula con la lambda, lo **guarda** en el mapa y lo devuelve:
+
+```kotlin
+val cache = mutableMapOf<Int, String>()
+
+val usuario = cache.getOrPut(1) {
+    println("Buscando el usuario 1...")
+    "Ana"
+}
+```
+
+En el ejemplo anterior, la primera vez que pedimos la clave `1` no existe, así que se ejecuta la lambda, se guarda `"Ana"` y se devuelve. Las siguientes veces se devuelve directamente `"Ana"` sin volver a ejecutar la lambda.
+
+## Funciones para nulos y valores vacíos
+
+Hay otro grupo de funciones muy usadas para tratar a la vez los valores nulos y los vacíos (una cadena `""` o una lista sin elementos):
+
+```kotlin
+val nombre: String? = null
+val apellido = ""
+val comentario = "   "
+
+nombre.isNullOrEmpty()      // true: es null
+apellido.isNullOrEmpty()    // true: está vacío
+comentario.isNullOrBlank()  // true: solo tiene espacios
+
+nombre.orEmpty()            // "": sustituye null por una cadena vacía
+
+apellido.ifEmpty { "Sin apellido" }  // "Sin apellido"
+comentario.ifBlank { "Sin comentarios" } // "Sin comentarios"
+```
+
+Su funcionamiento es el siguiente:
+
+- `isNullOrEmpty()`: devuelve `true` si el valor es `null` o está vacío. Existe para cadenas y colecciones.
+- `isNullOrBlank()`: igual que la anterior, pero también considera vacía una cadena que solo tiene espacios. Es la que se suele usar para validar lo que escribe un usuario en un formulario.
+- `orEmpty()`: convierte un `String?` en un `String` (o una `List<T>?` en una `List<T>`), sustituyendo `null` por un valor vacío.
+- `ifEmpty { }` e `ifBlank { }`: devuelven el propio valor si no está vacío, o el resultado de la lambda si lo está.
+
+```kotlin
+fun validarNombre(nombre: String?): String {
+    if (nombre.isNullOrBlank()) {
+        return "El nombre es obligatorio"
+    }
+    return "Hola, ${nombre.trim()}"
+}
+```
+
+Fíjate en que, después de comprobar `isNullOrBlank()`, el compilador ya sabe que `nombre` no es `null` y nos deja llamar a `nombre.trim()` directamente (*smart cast*).
+
+## `takeIf` y `takeUnless`
+
+La función `takeIf` recibe una condición en forma de lambda. Si el valor la cumple, devuelve el **propio valor**; si no la cumple, devuelve **`null`**. `takeUnless` hace justo lo contrario: devuelve el valor si **no** cumple la condición.
+
+```kotlin
+val numero = 42
+
+numero.takeIf { it > 0 }      // 42
+numero.takeIf { it > 100 }    // null
+numero.takeUnless { it > 100 } // 42
+```
+
+Por sí solas no parecen muy útiles, pero su potencia está en que nos permiten "filtrar" un único valor dentro de una cadena de llamadas y convertirlo en `null` si no es válido. Combinadas con `?.`, `?:` y `let`, dan lugar a código muy compacto:
+
+```kotlin
+val textoEdad = "150"
+
+val edad = textoEdad
+    .toIntOrNull()          // 150 (o null si no es un número)
+    ?.takeIf { it in 0..120 } // null, porque 150 no es una edad válida
+    ?: 18                   // valor por defecto
+
+println(edad) // 18
+```
+
+En el ejemplo anterior, en una sola expresión convertimos el texto a número, comprobamos que es una edad razonable y, si algo falla, usamos `18` como valor por defecto. Sin estas funciones necesitaríamos varios `if` y variables intermedias.
+
+Otro uso habitual es ejecutar código solo si se cumple una condición:
+
+```kotlin
+val email = "ana@correo.com"
+
+email.takeIf { it.contains("@") }?.let {
+    println("Enviando correo a $it")
+}
+```
+
+:::info[`takeIf` y las scope functions]
+En la documentación oficial de Kotlin, `takeIf` y `takeUnless` aparecen en la misma página que las [scope functions](./31-scope-functions.mdx), ya que se usan muy a menudo junto a `let`. La diferencia es que `takeIf` no ejecuta un bloque de código sobre el objeto, sino que decide si nos quedamos con él o no.
+:::
+
+:::warning[No abuses de las cadenas de llamadas]
+Encadenar `takeIf`, `let` y `?:` es muy cómodo, pero si la cadena se hace muy larga el código acaba siendo más difícil de leer que un simple `if`. Úsalas cuando hagan el código más claro, no solo porque se pueda.
+:::
+
+## Funciones de colecciones que reciben una lambda
+
+En el apartado de [listas](./42-listas.mdx) ya vimos las funciones más habituales para trabajar con colecciones: `map`, `filter`, `forEach`, `find`, `any`, `all`, `count`, `sumOf`... Todas ellas reciben una lambda que se aplica a cada elemento. Estas son algunas más que se usan mucho:
+
+```kotlin
+val entradas = listOf("4", "hola", "15", "", "8")
+
+val numeros = entradas.mapNotNull { it.toIntOrNull() } // [4, 15, 8]
+
+val (pequenos, grandes) = numeros.partition { it < 10 } // [4, 8] y [15]
+
+val mayor = numeros.maxByOrNull { it } // 15
+```
+
+- `mapNotNull { }`: como `map`, pero descarta los resultados que sean `null`. Combinada con `toIntOrNull()` es la forma más sencilla de quedarnos solo con los textos que son números válidos.
+- `filterNotNull()`: elimina los `null` de una colección y convierte una `List<Int?>` en una `List<Int>`.
+- `partition { }`: divide la colección en dos listas, la de los elementos que cumplen la condición y la de los que no. Se recoge con desestructuración, como vimos en las [data classes](./23-data-classes.mdx).
+- `maxByOrNull { }` y `minByOrNull { }`: devuelven el elemento con el mayor o menor valor según lo que indique la lambda, o `null` si la colección está vacía.
+
+Un ejemplo con objetos, que es como las usaremos en las apps:
+
+```kotlin
+data class Alumno(val nombre: String, val nota: Double)
+
+val clase = listOf(
+    Alumno("Ana", 8.5),
+    Alumno("Luis", 4.0),
+    Alumno("Marta", 9.2),
+)
+
+val mejorAlumno = clase.maxByOrNull { it.nota }?.nombre // "Marta"
+val alumnosPorNombre = clase.associateBy { it.nombre }  // Map<String, Alumno>
+val notaDeLuis = alumnosPorNombre["Luis"]?.nota         // 4.0
+```
+
+En el ejemplo anterior, `associateBy { }` crea un `Map` en el que la clave es el resultado de la lambda (el nombre) y el valor es el propio objeto, lo que nos permite buscar alumnos por su nombre de forma directa.
+
+## `repeat`
+
+La función `repeat` ejecuta una lambda el número de veces que le indiquemos. Dentro de la lambda, `it` es el número de vuelta, empezando por `0`:
+
+```kotlin
+repeat(3) {
+    println("Vuelta número $it") // 0, 1 y 2
+}
+```
+
+Es una alternativa más legible a `for (i in 0..<3)` cuando solo queremos repetir algo y no recorrer ningún rango ni colección. Vimos los bucles en el apartado de [estructuras de control](./12-estructuras-control.mdx).
+
+## `buildString` y `buildList`
+
+Las funciones `buildString`, `buildList` y `buildMap` nos permiten construir una cadena, una lista o un mapa paso a paso dentro de una lambda y obtener al final un resultado de **solo lectura**:
+
+```kotlin
+val ticket = buildString {
+    appendLine("TICKET DE COMPRA")
+    appendLine("----------------")
+    append("Total: ")
+    append(12.5)
+    append(" €")
+}
+
+val menu = buildList {
+    add("Inicio")
+    add("Perfil")
+    if (esAdministrador) {
+        add("Administración")
+    }
+}
+```
+
+En el ejemplo anterior, dentro de `buildString` podemos llamar directamente a `append()` y `appendLine()` (el objeto que se está construyendo es `this`, como en `apply`), y dentro de `buildList` a `add()`. Esto es muy útil cuando el contenido depende de condiciones, como la opción de administración del menú, y evita tener que crear una lista mutable y convertirla después.
+
+## `runCatching`
+
+La función `runCatching` ejecuta una lambda y captura cualquier excepción que se produzca dentro de ella. En lugar de lanzar la excepción, devuelve un objeto `Result` que contiene el valor obtenido o el error:
+
+```kotlin
+val resultado = runCatching { "abc".toInt() }
+
+resultado.isSuccess          // false
+resultado.getOrNull()        // null
+resultado.getOrDefault(0)    // 0
+
+resultado
+    .onSuccess { println("El número es $it") }
+    .onFailure { println("Error: ${it.message}") }
+```
+
+En el ejemplo anterior, `"abc".toInt()` lanza una `NumberFormatException`, pero `runCatching` la captura y la guarda en `resultado`. Con `getOrNull()`, `getOrDefault()` u `onFailure { }` decidimos qué hacer en caso de error. Es una alternativa más compacta a un bloque `try-catch`.
+
+:::warning[`runCatching` y las corrutinas]
+`runCatching` captura **todas** las excepciones, incluida la `CancellationException` que usan las [corrutinas](./61-corrutinas.mdx) para cancelarse. Por eso, dentro de una corrutina (por ejemplo, al hacer una petición a internet desde un ViewModel) es preferible usar un `try-catch` que capture solo las excepciones que esperamos, como veremos en el apartado de [conexión a internet](../7-conexion-internet.mdx).
+:::
+
+## `require`, `check` y `error`
+
+Estas funciones sirven para comprobar que los datos son correctos y detener el programa con un mensaje claro si no lo son. El mensaje se escribe dentro de una lambda, que solo se ejecuta si la comprobación falla:
+
+```kotlin
+fun retirarDinero(saldo: Double, cantidad: Double): Double {
+    require(cantidad > 0) { "La cantidad debe ser positiva" }
+    check(saldo >= cantidad) { "Saldo insuficiente" }
+    return saldo - cantidad
+}
+```
+
+- `require(condicion) { mensaje }`: lanza una `IllegalArgumentException` si la condición es `false`. Se usa para comprobar los **argumentos** que recibe una función.
+- `check(condicion) { mensaje }`: lanza una `IllegalStateException` si la condición es `false`. Se usa para comprobar el **estado** del programa o del objeto.
+- `requireNotNull(valor) { mensaje }`: lanza una excepción si el valor es `null` y, si no lo es, lo devuelve como no nulable.
+- `error(mensaje)`: lanza siempre una `IllegalStateException`. Es muy útil detrás de un elvis cuando un `null` es un error que no debería ocurrir nunca:
+
+```kotlin
+val usuario = buscarUsuario(id) ?: error("No existe el usuario con id $id")
+```
+
+:::info[¿Por qué el mensaje va en una lambda?]
+Si el mensaje fuera un parámetro normal, se construiría siempre, aunque la comprobación fuera correcta. Al ir en una lambda, solo se construye cuando de verdad hay un error. Es la misma idea que vimos en `getOrElse`: las lambdas permiten **retrasar** un cálculo hasta que hace falta.
+:::
+
+## Resumen
+
+| Función | Qué devuelve | Ejemplo |
+|---------|--------------|---------|
+| `toIntOrNull()`, `firstOrNull()`, `getOrNull()`... | El resultado o `null` | `"12".toIntOrNull() ?: 0` |
+| `getOrElse { }`, `getOrDefault()` | El resultado o un valor por defecto | `lista.getOrElse(5) { "" }` |
+| `isNullOrEmpty()`, `isNullOrBlank()` | `true` si es `null` o está vacío | `if (texto.isNullOrBlank()) ...` |
+| `orEmpty()`, `ifEmpty { }`, `ifBlank { }` | El valor o un sustituto si es `null` o vacío | `nombre.orEmpty()` |
+| `takeIf { }`, `takeUnless { }` | El propio valor o `null` | `n.takeIf { it > 0 }` |
+| `mapNotNull { }`, `partition { }`, `maxByOrNull { }` | Colecciones transformadas | `textos.mapNotNull { it.toIntOrNull() }` |
+| `repeat(n) { }` | Nada, repite la lambda `n` veces | `repeat(3) { println(it) }` |
+| `buildString { }`, `buildList { }` | Una cadena o lista de solo lectura | `buildList { add(1) }` |
+| `runCatching { }` | Un `Result` con el valor o el error | `runCatching { x.toInt() }.getOrNull()` |
+| `require { }`, `check { }`, `error()` | Lanzan una excepción si algo no es válido | `require(edad >= 0) { "..." }` |
+
+:::tip[Recursos]
+- [Documentación oficial de Kotlin sobre `takeIf` y `takeUnless`](https://kotlinlang.org/docs/scope-functions.html#takeif-and-takeunless)
+- [Documentación oficial de Kotlin sobre las operaciones con colecciones](https://kotlinlang.org/docs/collection-operations.html)
+- [Documentación oficial de Kotlin sobre las excepciones y las funciones `require` y `check`](https://kotlinlang.org/docs/exceptions.html)
+- [Referencia de la librería estándar de Kotlin](https://kotlinlang.org/api/core/kotlin-stdlib/)
+:::

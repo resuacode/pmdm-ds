@@ -1,0 +1,429 @@
+# Estructuras de control en Kotlin
+
+Las estructuras de control nos permiten decidir qué código se ejecuta y cuántas veces. En Kotlin se dividen en dos grandes grupos:
+
+- **Estructuras condicionales**: ejecutan un bloque de código u otro en función de una condición (`if`, `else` y `when`).
+- **Estructuras repetitivas o bucles**: repiten un bloque de código mientras se cumpla una condición o para cada elemento de un rango o colección (`for`, `while` y `do-while`).
+
+Muchas de ellas se parecen a las de Java, pero Kotlin añade algunas diferencias importantes que hacen el código más corto y más seguro.
+
+## Estructuras condicionales
+
+### `if` y `else`
+
+La estructura `if` evalúa una condición de tipo `Boolean` y, si es `true`, ejecuta el bloque de código que tiene a continuación. De forma opcional, se puede añadir un bloque `else` que se ejecuta cuando la condición es `false`.
+
+```kotlin
+val edad = 20
+
+if (edad >= 18) {
+    println("Eres mayor de edad")
+} else {
+    println("Eres menor de edad")
+}
+```
+
+En el ejemplo anterior, como `edad` vale `20`, la condición `edad >= 18` es `true` y se muestra por consola el mensaje `Eres mayor de edad`.
+
+Si necesitamos comprobar varias condiciones seguidas, podemos encadenarlas con `else if`. Las condiciones se evalúan en orden y solo se ejecuta el bloque de la **primera** que se cumpla:
+
+```kotlin
+val temperatura = 25
+
+if (temperatura < 0) {
+    println("Hace muchísimo frío")
+} else if (temperatura < 15) {
+    println("Hace frío")
+} else if (temperatura < 30) {
+    println("Se está bien")
+} else {
+    println("Hace calor")
+}
+```
+
+En el ejemplo anterior, las dos primeras condiciones son `false` y la tercera (`temperatura < 30`) es `true`, por lo que se muestra `Se está bien` y el resto de condiciones ya no se evalúan.
+
+Las condiciones pueden combinarse con los operadores lógicos `&&` (y), `||` (o) y `!` (no):
+
+```kotlin
+val tieneEntrada = true
+val esMayorDeEdad = edad >= 18
+
+if (tieneEntrada && esMayorDeEdad) {
+    println("Puedes pasar al concierto")
+}
+
+if (!tieneEntrada || !esMayorDeEdad) {
+    println("No puedes pasar")
+}
+```
+
+Si el bloque solo tiene una línea, las llaves pueden omitirse, aunque es recomendable usarlas para que el código sea más fácil de leer y de modificar:
+
+```kotlin
+if (edad >= 18) println("Eres mayor de edad")
+```
+
+### `if` como expresión
+
+A diferencia de Java, en Kotlin `if` es una **expresión**, es decir, devuelve un valor: el de la última línea de la rama que se ejecuta. Esto nos permite asignar el resultado de un `if` directamente a una variable:
+
+```kotlin
+val mensaje = if (edad >= 18) "Eres mayor de edad" else "Eres menor de edad"
+```
+
+Cuando usamos `if` como expresión, el `else` es **obligatorio**, ya que la variable necesita un valor en todos los casos.
+
+:::info[Kotlin no tiene operador ternario]
+En Java existe el operador ternario `condicion ? valor1 : valor2`. En Kotlin no existe, porque no le hace falta: el propio `if` hace esa función. Veremos más sobre esto en el apartado de [expresiones vs. sentencias](./13-expresiones-vs-sentencias.mdx).
+:::
+
+Si las ramas tienen varias líneas, el valor devuelto es el de la última:
+
+```kotlin
+val precioFinal = if (esSocio) {
+    println("Aplicando descuento de socio")
+    precio * 0.8
+} else {
+    precio
+}
+```
+
+### `when`
+
+La estructura `when` compara un valor con varias opciones y ejecuta la rama de la primera que coincida. Es el equivalente al `switch` de Java, pero mucho más potente.
+
+```kotlin
+val diaSemana = 3
+
+when (diaSemana) {
+    1 -> println("Lunes")
+    2 -> println("Martes")
+    3 -> println("Miércoles")
+    4 -> println("Jueves")
+    5 -> println("Viernes")
+    6, 7 -> println("Fin de semana")
+    else -> println("Día no válido")
+}
+```
+
+En el ejemplo anterior, se compara `diaSemana` con cada una de las opciones. Como vale `3`, se muestra `Miércoles`. Algunas cosas a tener en cuenta:
+
+- Se pueden agrupar varios valores en la misma rama separándolos con comas (`6, 7 ->`).
+- La rama `else` se ejecuta si no coincide ninguna de las anteriores, como el `default` de Java.
+- Si una rama tiene varias líneas, su código se escribe entre llaves: `1 -> { ... }`.
+
+:::info[Diferencias con el `switch` de Java]
+En el `when` de Kotlin no hace falta escribir `break` al final de cada rama: solo se ejecuta la rama que coincide y después se sale del `when`. Esto evita uno de los errores más habituales del `switch` de Java, que es olvidar el `break` y que se ejecuten también las ramas siguientes.
+:::
+
+Además de valores concretos, en las ramas de un `when` podemos comprobar si el valor está dentro de un rango con `in` (o fuera de él con `!in`), o si es de un tipo concreto con `is`:
+
+```kotlin
+val nota = 7
+
+when (nota) {
+    in 0..4 -> println("Suspenso")
+    in 5..6 -> println("Aprobado")
+    in 7..8 -> println("Notable")
+    in 9..10 -> println("Sobresaliente")
+    else -> println("Nota no válida")
+}
+```
+
+```kotlin
+fun describir(valor: Any) {
+    when (valor) {
+        is String -> println("Es un texto de ${valor.length} letras")
+        is Int -> println("Es un número entero")
+        is Boolean -> println("Es un booleano")
+        else -> println("Es otra cosa")
+    }
+}
+```
+
+En el segundo ejemplo, en la rama `is String` el compilador ya sabe que `valor` es un `String`, por lo que podemos usar `valor.length` directamente sin hacer ninguna conversión. Esto se conoce como *smart cast* y lo veremos también en el apartado de [null safety](./15-null-safety.mdx#smart-casts).
+
+### `when` sin argumento
+
+El `when` también puede usarse sin ningún valor entre paréntesis. En ese caso, cada rama es una condición de tipo `Boolean` y se ejecuta la primera que sea `true`. Es una forma más limpia de escribir una cadena larga de `if - else if`:
+
+```kotlin
+val temperatura = 25
+
+when {
+    temperatura < 0 -> println("Hace muchísimo frío")
+    temperatura < 15 -> println("Hace frío")
+    temperatura < 30 -> println("Se está bien")
+    else -> println("Hace calor")
+}
+```
+
+El ejemplo anterior hace exactamente lo mismo que el ejemplo de `else if` que vimos antes, pero se lee con más facilidad.
+
+### `when` como expresión
+
+Igual que `if`, `when` también es una expresión y puede devolver un valor:
+
+```kotlin
+val calificacion = when (nota) {
+    in 0..4 -> "Suspenso"
+    in 5..6 -> "Aprobado"
+    in 7..8 -> "Notable"
+    in 9..10 -> "Sobresaliente"
+    else -> "Nota no válida"
+}
+```
+
+Cuando usamos `when` como expresión, el compilador nos obliga a cubrir **todos** los casos posibles, normalmente con una rama `else`. La excepción son las [enumeraciones](./24-enum-classes.mdx) y las [clases selladas](./26-sealed-classes.mdx): si ponemos una rama para cada uno de sus valores, el `else` no es necesario.
+
+:::tip[`when` en Android]
+En las apps que haremos con Jetpack Compose usaremos `when` constantemente, por ejemplo, para mostrar una pantalla u otra en función del estado de la UI (cargando, con datos o con error).
+:::
+
+## Rangos
+
+Antes de ver los bucles, conviene conocer los **rangos**, ya que se usan muchísimo con el bucle `for` y con `when`. Un rango representa una secuencia de valores entre un inicio y un fin.
+
+```kotlin
+val delUnoAlDiez = 1..10         // 1, 2, 3, ..., 10 (incluye el 10)
+val delCeroAlNueve = 0..<10      // 0, 1, 2, ..., 9 (no incluye el 10)
+val delCeroAlNueveBis = 0 until 10 // Igual que el anterior
+val cuentaAtras = 10 downTo 1    // 10, 9, 8, ..., 1
+val pares = 0..10 step 2         // 0, 2, 4, 6, 8, 10
+val letras = 'a'..'e'            // a, b, c, d, e
+```
+
+En el ejemplo anterior se crean varios rangos:
+
+- `..` crea un rango que **incluye** los dos extremos.
+- `..<` y `until` crean un rango que **no incluye** el último valor. Son muy útiles para recorrer posiciones, que empiezan en `0` y terminan en el tamaño menos uno.
+- `downTo` crea un rango descendente.
+- `step` indica de cuánto en cuánto avanza el rango.
+
+Con el operador `in` podemos comprobar si un valor está dentro de un rango:
+
+```kotlin
+val edad = 25
+
+if (edad in 18..65) {
+    println("Está en edad laboral")
+}
+```
+
+## Estructuras repetitivas
+
+### El bucle `for`
+
+En Kotlin, el bucle `for` sirve para recorrer cualquier cosa que se pueda recorrer: un rango, una cadena de texto, un array o una colección. Su sintaxis es `for (elemento in loQueRecorremos)`.
+
+```kotlin
+for (i in 1..5) {
+    println("Vuelta número $i")
+}
+```
+
+En el ejemplo anterior, la variable `i` toma en cada vuelta un valor del rango `1..5`, por lo que el bucle se ejecuta 5 veces y muestra los mensajes de `Vuelta número 1` a `Vuelta número 5`.
+
+:::info[Diferencia con Java]
+En Kotlin no existe el `for` clásico de Java `for (int i = 0; i < 10; i++)`. En su lugar se recorre un rango: `for (i in 0..<10)`. La variable del bucle (`i`) se declara sin `val` ni `var` y no se puede modificar dentro del bucle.
+:::
+
+Podemos usar cualquiera de los rangos que hemos visto antes:
+
+```kotlin
+for (i in 10 downTo 0 step 2) {
+    print("$i ") // 10 8 6 4 2 0
+}
+```
+
+Para recorrer una colección, no hace falta usar índices: la variable del bucle toma directamente el valor de cada elemento.
+
+```kotlin
+val frutas = listOf("Manzana", "Pera", "Plátano")
+
+for (fruta in frutas) {
+    println(fruta)
+}
+```
+
+Si además del elemento necesitamos su posición, tenemos dos opciones: recorrer las posiciones con `indices` o recorrer los pares posición - valor con `withIndex()`.
+
+```kotlin
+for (i in frutas.indices) {
+    println("En la posición $i está ${frutas[i]}")
+}
+
+for ((indice, fruta) in frutas.withIndex()) {
+    println("En la posición $indice está $fruta")
+}
+```
+
+En el ejemplo anterior, los dos bucles muestran lo mismo. `frutas.indices` es el rango de posiciones válidas de la lista (`0..2`) y `withIndex()` nos da en cada vuelta la posición y el valor a la vez.
+
+También podemos recorrer las letras de una cadena de texto:
+
+```kotlin
+for (letra in "Kotlin") {
+    println(letra)
+}
+```
+
+:::tip[`for` o `forEach`]
+Las colecciones también tienen la función `forEach { }`, que veremos en los apartados de [arrays](./41-arrays.mdx) y [listas](./42-listas.mdx). Hacen prácticamente lo mismo, pero `for` es una estructura del lenguaje y `forEach` es una función que recibe una lambda, lo que tiene alguna consecuencia que veremos más abajo con `break` y `continue`.
+:::
+
+### El bucle `while`
+
+El bucle `while` repite un bloque de código **mientras** una condición sea `true`. La condición se comprueba **antes** de cada vuelta, por lo que si es `false` desde el principio, el bloque no se ejecuta ninguna vez.
+
+```kotlin
+var contador = 0
+
+while (contador < 5) {
+    println("El contador vale $contador")
+    contador++
+}
+```
+
+En el ejemplo anterior, el bucle se ejecuta mientras `contador` sea menor que `5`. En cada vuelta se muestra su valor y se incrementa en `1`, por lo que se muestran los valores del `0` al `4`.
+
+Se suele usar `while` cuando no sabemos de antemano cuántas vueltas tiene que dar el bucle:
+
+```kotlin
+var numero = 1
+
+while (numero < 1000) {
+    numero *= 2
+}
+
+println(numero) // 1024
+```
+
+:::warning[Cuidado con los bucles infinitos]
+Si la condición de un `while` nunca llega a ser `false`, el bucle no terminará nunca y el programa se quedará bloqueado. Asegúrate siempre de que dentro del bucle hay algo que acaba haciendo que la condición deje de cumplirse (en los ejemplos anteriores, `contador++` y `numero *= 2`).
+:::
+
+### El bucle `do-while`
+
+El bucle `do-while` es igual que `while`, pero la condición se comprueba **después** de cada vuelta. Por eso, el bloque se ejecuta **al menos una vez**, aunque la condición sea `false` desde el principio.
+
+```kotlin
+var intentos = 0
+
+do {
+    intentos++
+    val dado = (1..6).random()
+    println("Intento $intentos: ha salido un $dado")
+} while (dado != 6)
+
+println("Has sacado un 6 en $intentos intentos")
+```
+
+En el ejemplo anterior, se tira un dado (un número aleatorio del `1` al `6`) hasta que sale un `6`. Como tenemos que tirar el dado al menos una vez antes de poder comprobar el resultado, `do-while` encaja perfectamente.
+
+Fíjate en que la variable `dado` se declara dentro del bloque `do` y aun así se puede usar en la condición del `while`. Esto es posible en Kotlin, pero no en Java.
+
+### `repeat`
+
+Cuando solo queremos repetir algo un número de veces concreto y no necesitamos recorrer nada, Kotlin nos ofrece la función `repeat`:
+
+```kotlin
+repeat(3) {
+    println("¡Hola!")
+}
+```
+
+En el ejemplo anterior, se muestra `¡Hola!` tres veces. `repeat` no es una estructura del lenguaje como `for`, sino una función de la librería estándar que recibe el número de repeticiones y una lambda con el código a repetir. Dentro de la lambda, `it` es el número de vuelta, empezando en `0`. La veremos junto a otras funciones de este tipo en el apartado de [funciones útiles de la librería estándar](./51-funciones-libreria-estandar.mdx).
+
+## Control de los bucles: `break` y `continue`
+
+Dentro de un bucle podemos alterar su funcionamiento normal con dos palabras reservadas:
+
+- `break`: termina el bucle inmediatamente y continúa con el código que haya después.
+- `continue`: salta el resto de la vuelta actual y pasa directamente a la siguiente.
+
+```kotlin
+for (i in 1..10) {
+    if (i == 3) continue // Nos saltamos el 3
+    if (i == 6) break    // Paramos al llegar al 6
+    println(i)
+}
+// Muestra: 1, 2, 4, 5
+```
+
+En el ejemplo anterior, cuando `i` vale `3` se ejecuta `continue` y no se llega a mostrar, y cuando vale `6` se ejecuta `break` y el bucle termina, por lo que solo se muestran el `1`, `2`, `4` y `5`.
+
+### Etiquetas
+
+Si tenemos bucles anidados, `break` y `continue` afectan solo al bucle más interno. Si queremos que afecten a un bucle exterior, podemos ponerle una **etiqueta**: un nombre seguido de `@` delante del bucle, que después usamos con `break@nombre` o `continue@nombre`.
+
+```kotlin
+buscar@ for (fila in 1..3) {
+    for (columna in 1..3) {
+        if (fila * columna == 4) {
+            println("Encontrado en la fila $fila, columna $columna")
+            break@buscar // Salimos de los dos bucles a la vez
+        }
+    }
+}
+```
+
+En el ejemplo anterior, al encontrar la primera casilla cuyo producto es `4` (fila `2`, columna `2`), `break@buscar` termina el bucle exterior, y con él también el interior. Con un `break` normal solo saldríamos del bucle de las columnas y seguiríamos buscando en la fila siguiente.
+
+:::warning[`break` y `continue` no sirven para `forEach`]
+`break` y `continue` funcionan con los bucles `for`, `while` y `do-while`, pero `forEach` no es un bucle, sino una función que recibe una lambda, así que no podemos detenerlo con `break`. Para saltar al siguiente elemento dentro de un `forEach` se usa `return@forEach`, que hace lo mismo que `continue`:
+
+```kotlin
+listOf(1, 2, 3, 4).forEach {
+    if (it == 2) return@forEach // Pasa al siguiente elemento
+    println(it)
+}
+// Muestra: 1, 3, 4
+```
+
+Si necesitamos terminar el recorrido antes de tiempo, lo más sencillo es usar un bucle `for`.
+:::
+
+## Ejemplo completo
+
+Juntemos todo lo visto en un ejemplo clásico, el juego *FizzBuzz*: recorremos los números del 1 al 15 y mostramos `Fizz` si el número es múltiplo de 3, `Buzz` si es múltiplo de 5, `FizzBuzz` si es múltiplo de los dos, y el propio número en cualquier otro caso.
+
+```kotlin title="Versión con if - else if"
+fun main() {
+    for (numero in 1..15) {
+        if (numero % 3 == 0 && numero % 5 == 0) {
+            println("FizzBuzz")
+        } else if (numero % 3 == 0) {
+            println("Fizz")
+        } else if (numero % 5 == 0) {
+            println("Buzz")
+        } else {
+            println(numero)
+        }
+    }
+}
+```
+
+```kotlin title="Versión con when como expresión"
+fun main() {
+    for (numero in 1..15) {
+        val texto = when {
+            numero % 15 == 0 -> "FizzBuzz"
+            numero % 3 == 0 -> "Fizz"
+            numero % 5 == 0 -> "Buzz"
+            else -> numero.toString()
+        }
+        println(texto)
+    }
+}
+```
+
+Las dos versiones hacen lo mismo, pero la segunda es más corta y separa mejor las dos tareas: primero **decidimos** qué texto corresponde a cada número y después lo **mostramos**. Fíjate en que el orden de las ramas es importante: si la comprobación de `FizzBuzz` no fuera la primera, el `15` entraría en la rama de `Fizz`.
+
+:::tip[Recursos]
+- [Documentación oficial de Kotlin sobre condicionales y bucles](https://kotlinlang.org/docs/control-flow.html)
+- [Documentación oficial de Kotlin sobre rangos](https://kotlinlang.org/docs/ranges.html)
+- [Documentación oficial de Kotlin sobre break, continue y etiquetas](https://kotlinlang.org/docs/returns.html)
+- [Kotlin Playground](https://play.kotlinlang.org/): Un entorno de programación en línea para probar y aprender Kotlin.
+:::

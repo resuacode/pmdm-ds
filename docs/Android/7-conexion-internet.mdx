@@ -4,7 +4,7 @@
 
 Las corrutinas en Android son la forma recomendada de escribir código asíncrono. Permiten ejecutar tareas largas, como una petición HTTP o una consulta a la base de datos, **sin bloquear el hilo principal**, que es el encargado de dibujar la interfaz y responder al usuario. Si lo bloqueamos, la app se congela y, pasados unos segundos, Android muestra el diálogo de "La aplicación no responde" (ANR).
 
-Ya vimos los conceptos básicos en el apartado de [corrutinas en Kotlin](./1-sobre-kotlin/51-corrutinas.mdx). Recordemos que una función que puede pausar su ejecución sin bloquear el hilo se marca con la palabra clave `suspend`:
+Ya vimos los conceptos básicos en el apartado de [corrutinas en Kotlin](./1-sobre-kotlin/61-corrutinas.mdx). Recordemos que una función que puede pausar su ejecución sin bloquear el hilo se marca con la palabra clave `suspend`:
 
 ```kotlin
 object Timer {

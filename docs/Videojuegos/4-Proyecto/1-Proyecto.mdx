@@ -1,0 +1,166 @@
+# Proyecto de videojuego: enunciado y requisitos
+
+La parte de videojuegos del módulo se evalúa mediante un **proyecto propio** que iréis desarrollando a lo largo de todo el curso. Tenéis libertad total para elegir el tipo de juego: el género, la temática, la estética y si es en **2D o en 3D**. Lo que sí tienen que cumplir todos los juegos es una serie de **requisitos mínimos**, que son los que aseguran el aprobado. A partir de ahí, todo lo que añadáis y lo bien que lo resolváis es lo que hará que la nota suba.
+
+La entrega funcionará como una **game jam**: todos los juegos se publicarán en una misma página de itch.io en una fecha límite común. A diferencia de una game jam normal, además del juego tendréis que entregar su **documentación**, en forma de un documento de diseño (GDD) que iréis completando mientras desarrolláis el juego.
+
+En esta sección encontraréis:
+
+1. **Esta página**: cómo funciona el proyecto, las normas y los requisitos mínimos.
+2. [**Rúbrica de evaluación**](./2-Rubrica.mdx): cómo se puntúa el proyecto sobre 100 puntos.
+3. [**Documento de diseño (GDD)**](./3-GDD.mdx): los apartados obligatorios del GDD.
+
+## Cómo funciona
+
+- **Motor**: Unity 6, con el pipeline de render URP (plantillas *Universal 2D* o *Universal 3D*).
+- **Trabajo individual**: cada alumno o alumna desarrolla su propio juego.
+- **Duración**: el proyecto se desarrolla durante todo el bloque de videojuegos, en paralelo a los apartados del curso. Muchos de los contenidos que vamos viendo en clase (audio, UI, luces, animaciones, builds...) son justo los que necesitaréis para cumplir los requisitos.
+- **Control de versiones**: el proyecto debe estar en un repositorio de Git (por ejemplo, en GitHub) desde el principio, con commits frecuentes a lo largo del curso. El historial de commits sirve para ver cómo ha ido evolucionando el proyecto.
+- **Entrega final**: en la fecha límite, que se indicará en clase, el juego debe estar publicado en la página de la game jam de itch.io junto con su GDD.
+
+:::tip[Empezad pequeño]
+El error más habitual en una game jam es plantear un juego demasiado grande y no llegar a terminarlo. Es mucho mejor un juego pequeño, completo y bien pulido que uno enorme a medio hacer. Primero conseguid que funcione todo lo mínimo y después id añadiendo mejoras.
+:::
+
+### Hitos recomendados
+
+Para que el proyecto no se os acumule al final, os recomendamos seguir estos hitos. Las fechas se irán indicando en clase.
+
+| Hito | Qué debería estar hecho |
+|------|-------------------------|
+| 1. Concepto | Idea del juego, género, estética y primeras secciones del GDD (resumen, jugabilidad y mecánicas previstas). Repositorio creado. |
+| 2. Prototipo | Las mecánicas principales funcionando con gráficos provisionales (cubos, sprites básicos) en una escena de prueba. |
+| 3. Estructura | Menú principal, menú de pausa, menú de opciones, pantallas de victoria y derrota, créditos y el flujo completo entre escenas. |
+| 4. Contenido | Todos los niveles montados, con los gráficos, la música y los efectos de sonido definitivos. |
+| 5. Pulido | Iluminación, efectos visuales, partículas, *game feel*, corrección de errores y pruebas con otras personas. |
+| 6. Entrega | Build final publicada en itch.io y GDD completo, incluido el postmortem. |
+
+## Uso de inteligencia artificial generativa
+
+- ✅ **Se permite** usar herramientas de IA generativa (ChatGPT, Claude, Copilot, Gemini...) como ayuda para escribir el **código** del juego.
+- ❌ **No se permite** usar IA generativa para crear ningún recurso **gráfico** (sprites, texturas, modelos 3D, fondos, iconos, animaciones, interfaz), la **música**, los **efectos de sonido** ni los **efectos visuales**.
+
+Esta prohibición incluye también los recursos de terceros que hayan sido generados con IA: antes de usar un asset descargado, comprobad que su autor no indica que se ha creado con IA (en itch.io, por ejemplo, se suele indicar en la descripción o en las etiquetas).
+
+Si usáis IA para el código, tenéis que:
+
+- **Declararlo** en el apartado correspondiente del [GDD](./3-GDD.mdx#14-declaración-de-uso-de-ia): qué herramientas habéis usado y para qué partes del juego.
+- **Entender** el código que entregáis. En cualquier momento se os puede pedir que expliquéis cómo funciona cualquier parte de vuestro proyecto o que hagáis algún cambio en él.
+
+## Recursos de terceros
+
+Podéis usar recursos (*assets*) sacados de internet: gráficos, modelos, música, efectos de sonido, fuentes, etc. Para ello:
+
+- Su **licencia** debe permitir usarlos en vuestro juego. Las más habituales son **CC0** (dominio público, se pueden usar sin condiciones) y **CC BY** (se pueden usar siempre que se cite al autor). Leed siempre la licencia antes de descargar un recurso.
+- **Todos** los recursos de terceros deben aparecer en la pantalla de **créditos** del juego y en el apartado de [recursos de terceros del GDD](./3-GDD.mdx#13-recursos-de-terceros), indicando el nombre del recurso, su autor, su licencia y el enlace de donde se ha descargado.
+
+Algunas páginas donde encontrar recursos: [Kenney](https://kenney.nl/assets), [itch.io (assets)](https://itch.io/game-assets/free), [OpenGameArt](https://opengameart.org/), [Unity Asset Store](https://assetstore.unity.com/), [Freesound](https://freesound.org/) y [Google Fonts](https://fonts.google.com/).
+
+:::warning[Cuidado con la coherencia]
+No se evalúa la calidad del arte ni de la música, pero **sí se evalúa que sean coherentes entre sí**. Al mezclar recursos de autores distintos es muy fácil acabar con un juego en el que cada elemento tiene un estilo diferente: personajes en *pixel art* de distintas resoluciones, un fondo realista, una interfaz genérica y una música que no encaja con la ambientación. Intentad elegir recursos de un mismo autor o pack, o que compartan paleta, resolución y estilo.
+:::
+
+## Requisitos mínimos
+
+Para aprobar el proyecto, el juego debe cumplir **todos** los requisitos de esta lista. Si falta alguno, o no funciona correctamente, el proyecto no estará aprobado, como se explica en la [rúbrica](./2-Rubrica.mdx#cálculo-de-la-nota).
+
+### 1. Menú principal
+
+El juego empieza en un menú principal con, al menos, las opciones **Jugar**, **Opciones**, **Créditos** y **Salir**. Todas ellas deben funcionar (el botón **Salir** cierra el juego con `Application.Quit()` en la build).
+
+### 2. Menú de pausa
+
+Durante la partida, el jugador puede pausar el juego con una tecla o botón (por ejemplo, `Esc` o `Start` en un mando). Mientras está en pausa:
+
+- El juego se detiene de verdad: los enemigos, las físicas, los temporizadores y las animaciones del juego se paran (por ejemplo, con `Time.timeScale = 0`).
+- Se muestra un menú con, al menos, las opciones **Continuar**, **Opciones** y **Volver al menú principal**.
+
+### 3. Pantallas de victoria y derrota
+
+- Al **perder** (por ejemplo, al quedarse sin vidas o sin tiempo) se muestra una pantalla de derrota.
+- Al **terminar** el juego se muestra una pantalla de victoria.
+- Las dos pantallas permiten, como mínimo, **volver a jugar** (reiniciar el nivel o la partida) y **volver al menú principal**.
+
+### 4. Menú de opciones
+
+- Se puede acceder a él tanto desde el **menú principal** como desde el **menú de pausa**.
+- Permite cambiar el volumen de la **música** y el de los **efectos de sonido** por separado, con el resultado aplicándose en el momento. Lo más sencillo es usar un [Audio Mixer](../1-Unity/14-Audio.mdx#configuración-de-un-audio-mixer) con un grupo para la música y otro para los efectos.
+- Los valores elegidos se mantienen al cambiar de escena.
+
+Además, podéis añadir las opciones que queráis: resolución, pantalla completa, calidad gráfica, brillo, sensibilidad del ratón, mapeado de controles, selector de idioma... Estas opciones extra **suben la nota**, como se indica en la rúbrica.
+
+### 5. Pantalla de créditos
+
+- Es accesible desde el **menú principal**.
+- Incluye el nombre del autor o autora del juego y **todos** los recursos de terceros utilizados, con su autor, su licencia y su enlace (o, si el texto es muy largo, una referencia clara a dónde se pueden consultar todos).
+- Es recomendable (y se valora) que los créditos se muestren también al terminar el juego.
+
+### 6. Varios niveles diferenciados
+
+El juego tiene, como mínimo, **3 niveles**. Para que un nivel cuente como **diferenciado** no basta con cambiar de sitio los elementos: cada nivel debe tener una distribución propia y, además, aportar algo nuevo respecto a los anteriores, como una mecánica, un tipo de enemigo u obstáculo, una ambientación distinta o un aumento claro de la dificultad.
+
+### 7. Varias escenas de juego
+
+Además de las escenas de los menús, el juego tiene, como mínimo, **2 escenas de juego** distintas entre las que se pasa durante la partida. Los niveles pueden estar cada uno en su propia escena, o varios niveles pueden compartir escena, siempre que haya al menos 2 escenas de juego.
+
+### 8. Al menos 3 mecánicas diferentes
+
+El juego tiene, como mínimo, **3 mecánicas** diferentes que funcionan correctamente. Una mecánica es una acción que puede hacer el jugador o un sistema con el que interactúa y que cambia el estado del juego: saltar, disparar, hacer un *dash*, recoger objetos, empujar cajas, activar interruptores, usar un inventario, lanzar hechizos, construir... El **movimiento básico** del personaje (andar o moverse en varias direcciones) **no cuenta** como mecánica.
+
+### 9. Música y efectos de sonido
+
+El juego tiene **música de fondo** y **efectos de sonido** para las acciones principales del jugador (por ejemplo, saltar, atacar, recibir daño, recoger un objeto o pulsar un botón del menú). Sin ellos, el menú de opciones no tendría sentido.
+
+### 10. Build jugable y publicada
+
+- El juego se entrega como una **build para Windows** que funciona sin tener Unity instalado. De forma opcional, se puede publicar además una build para [Web](../2-Juegos/1-Pong.mdx#haciendo-una-build-para-web), que se puede jugar directamente en el navegador.
+- Se puede jugar **de principio a fin** sin errores que impidan continuar (quedarse atascado, caer fuera del mapa, que un botón no funcione...).
+- Está publicado en la página de la game jam de itch.io, con una descripción del juego, algunas capturas de pantalla y los controles.
+
+### 11. GDD completo
+
+Se entrega el [documento de diseño (GDD)](./3-GDD.mdx) con **todos los apartados obligatorios** completados y actualizados con el estado final del juego.
+
+### 12. Organización del proyecto
+
+El proyecto de Unity debe estar ordenado, de forma que cualquier persona que lo abra pueda encontrar las cosas con facilidad:
+
+- La carpeta `Assets` está organizada en **subcarpetas por tipo de recurso** (por ejemplo, `Scenes`, `Scripts`, `Prefabs`, `Sprites` o `Models`, `Materials`, `Animations`, `Audio/Music`, `Audio/SFX`, `UI`, `Fonts`...), sin archivos sueltos en la raíz de `Assets`.
+- Los **packs de recursos de terceros** están en una carpeta propia (por ejemplo, `Assets/ThirdParty/NombreDelPack`), sin mezclarse con los recursos propios.
+- Los archivos tienen **nombres descriptivos**: nada de `New Material`, `Script2` o `SampleScene`.
+- No quedan **escenas de prueba** ni recursos importados que no se usan, como las escenas de demostración que traen muchos packs.
+- En el **Package Manager** solo están instalados los paquetes que usa el juego. Si instalasteis alguno para probarlo y no lo usáis, hay que quitarlo. No hace falta quitar los que vienen por defecto con la plantilla.
+- La lista de escenas de los **Build Profiles** contiene solo las escenas del juego, en el orden correcto.
+- El repositorio no incluye las carpetas que genera Unity (`Library`, `Temp`, `Logs`, `Build`...), gracias al [`.gitignore` de Unity](#qué-hay-que-entregar).
+
+### 13. Condiciones de la entrega
+
+- Se cumplen las normas de [uso de IA generativa](#uso-de-inteligencia-artificial-generativa): no hay recursos gráficos, música, efectos de sonido ni efectos visuales generados con IA, y el uso de IA para el código está declarado en el GDD.
+- Todos los recursos de terceros tienen una licencia que permite usarlos y aparecen en los créditos.
+- El proyecto está en un repositorio de Git con un historial de commits a lo largo del curso, y no un único commit al final.
+
+## Qué hace que suba la nota
+
+Cumplir los requisitos mínimos es lo necesario para aprobar. A partir de ahí, en la [rúbrica](./2-Rubrica.mdx) se valora, entre otras cosas:
+
+- La calidad y la complejidad de las **mecánicas** y cómo se combinan entre ellas.
+- El **diseño de los niveles** y la curva de dificultad.
+- La calidad de los **controles** y su adecuación al tipo de juego.
+- La **cámara**, la **iluminación** y los **efectos visuales y de partículas**.
+- La **música** y los **efectos de sonido**.
+- La **coherencia** estética entre los gráficos, la interfaz y el sonido.
+- El ***game feel***: que el juego responda de forma satisfactoria a lo que hace el jugador.
+- Las **opciones extra** del menú de opciones y otras funcionalidades, como el guardado de la partida.
+- La calidad y el seguimiento del **GDD** a lo largo del curso.
+
+## Qué hay que entregar
+
+En la página de la game jam de itch.io, antes de la fecha límite:
+
+1. La **build** del juego para Windows en un archivo `.zip` (y, de forma opcional, la build para Web).
+2. El **GDD** en PDF, que también debe estar en el repositorio.
+3. El **enlace al repositorio** de Git con el proyecto de Unity completo.
+
+:::info[El `.gitignore` de Unity]
+Un proyecto de Unity genera muchas carpetas que no deben subirse al repositorio, como `Library`, `Temp`, `Logs` o `Build`. Antes del primer commit, añadid el `.gitignore` oficial para Unity, que podéis encontrar en el repositorio [github/gitignore](https://github.com/github/gitignore/blob/main/Unity.gitignore). GitHub también permite elegirlo al crear un repositorio nuevo.
+:::

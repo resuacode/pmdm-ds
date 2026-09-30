@@ -1,0 +1,201 @@
+# Rúbrica de evaluación
+
+El proyecto se puntúa sobre **100 puntos**, divididos en dos bloques:
+
+- **Bloque A. Requisitos mínimos (50 puntos)**: comprueba que el juego cumple cada uno de los [requisitos mínimos](./1-Proyecto.mdx#requisitos-mínimos). Si están todos completos, se obtienen los 50 puntos y el proyecto está aprobado.
+- **Bloque B. Calidad y ampliaciones (50 puntos)**: valora cómo de bien está resuelto el juego y todo lo que se ha añadido por encima de lo mínimo. Es lo que hace que la nota suba del 5.
+
+## Cálculo de la nota
+
+La nota del proyecto sobre 10 es la suma de los puntos de los dos bloques dividida entre 10.
+
+- Si se cumplen **todos** los requisitos mínimos (todos los criterios del bloque A en **Completo**), la nota es la suma de los dos bloques.
+- Si **algún** requisito mínimo no se cumple por completo, el proyecto **no está aprobado**: la nota es la suma de los dos bloques, con un **máximo de 4**.
+
+:::info[Ejemplo]
+Un juego que cumple todos los requisitos mínimos (50 puntos) y obtiene 28 puntos en el bloque B tiene una nota de (50 + 28) / 10 = **7,8**.
+
+Un juego al que le falta el menú de opciones obtiene 45 puntos en el bloque A. Aunque saque 30 puntos en el bloque B, como no cumple todos los requisitos mínimos su nota es **4**, y no 7,5.
+:::
+
+## Bloque A. Requisitos mínimos (50 puntos)
+
+Cada criterio se valora con tres niveles:
+
+- **Completo**: se cumple todo lo que indica el requisito y funciona correctamente. Se obtiene la puntuación completa.
+- **Parcial**: está hecho, pero le falta algo o no funciona del todo bien. Se obtiene la mitad de la puntuación.
+- **No presente**: no está hecho o no funciona. Se obtienen 0 puntos.
+
+| Criterio | Qué se comprueba | Puntos |
+|----------|------------------|:------:|
+| A1. Menú principal | Opciones **Jugar**, **Opciones**, **Créditos** y **Salir**, todas funcionando. | 4 |
+| A2. Menú de pausa | Se abre con una tecla o botón, detiene el juego por completo y tiene **Continuar**, **Opciones** y **Volver al menú principal**. | 5 |
+| A3. Victoria y derrota | Hay pantalla de derrota al perder y de victoria al terminar. Las dos permiten **volver a jugar** y **volver al menú principal**. | 5 |
+| A4. Menú de opciones | Accesible desde el menú principal **y** desde el de pausa. Volumen de música y de efectos por separado, aplicados al momento y mantenidos entre escenas. | 5 |
+| A5. Créditos | Accesibles desde el menú principal. Incluyen al autor o autora y **todos** los recursos de terceros con autor, licencia y enlace. | 4 |
+| A6. Niveles diferenciados | Al menos **3 niveles**, cada uno con distribución propia y algo nuevo respecto a los anteriores. | 6 |
+| A7. Escenas de juego | Al menos **2 escenas de juego**, además de las de menús, entre las que se pasa durante la partida. | 3 |
+| A8. Mecánicas | Al menos **3 mecánicas** diferentes que funcionan correctamente (el movimiento básico no cuenta). | 6 |
+| A9. Música y efectos de sonido | Música de fondo y efectos de sonido para las acciones principales del jugador. | 3 |
+| A10. Build jugable y publicada | Build para Windows que se puede jugar de principio a fin sin errores bloqueantes, publicada en itch.io con descripción, capturas y controles. | 4 |
+| A11. GDD completo | Todos los apartados obligatorios del GDD completados y actualizados con el estado final del juego. | 3 |
+| A12. Organización del proyecto | `Assets` organizada en subcarpetas por tipo, packs de terceros en su propia carpeta, nombres descriptivos, sin escenas ni recursos sin usar, solo los paquetes necesarios y las escenas correctas en los Build Profiles. | 2 |
+| **Total** | | **50** |
+
+:::danger[Condiciones de la entrega]
+Además de los criterios anteriores, el proyecto debe cumplir las [condiciones de la entrega](./1-Proyecto.mdx#13-condiciones-de-la-entrega): no usar IA generativa para gráficos, música, efectos de sonido ni efectos visuales, declarar el uso de IA para el código, tener la licencia de todos los recursos de terceros y usar un repositorio de Git a lo largo del curso. Si alguna de estas condiciones no se cumple, el proyecto no estará aprobado, independientemente de la puntuación obtenida.
+:::
+
+## Bloque B. Calidad y ampliaciones (50 puntos)
+
+Cada criterio se valora con cuatro niveles, del **0** (no se ha trabajado) al **3** (excelente). Para alcanzar un nivel hay que cumplir lo que indica su descripción y, además, todo lo de los niveles anteriores.
+
+### B1. Calidad y complejidad de las mecánicas (6 puntos)
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | Las mecánicas tienen errores frecuentes o son triviales (por ejemplo, recoger objetos sin ningún efecto en la partida). |
+| 1 | 2 | Hay 3 mecánicas que funcionan correctamente, pero son sencillas y no se relacionan entre sí. |
+| 2 | 4 | Hay **4 o más** mecánicas, o 3 mecánicas que **se combinan** entre sí para resolver situaciones (por ejemplo, un *dash* que permite romper ciertos bloques). |
+| 3 | 6 | Hay **5 o más** mecánicas que se combinan entre sí y al menos un **sistema complejo** bien implementado: enemigos con una IA con varios estados, un jefe final con fases, un inventario, un sistema de diálogos, generación procedural, un sistema de guardado de la partida, etc. |
+
+### B2. Diseño de niveles y progresión (5 puntos)
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | Los niveles son casi iguales entre sí o no tienen ningún reto. |
+| 1 | 2 | Los niveles son diferentes, pero la dificultad no está equilibrada (hay saltos bruscos o el primer nivel es de los más difíciles). |
+| 2 | 3,5 | La dificultad aumenta de forma progresiva y las mecánicas se **presentan de forma gradual**: el jugador aprende cada una en una situación sencilla antes de tener que usarla en una difícil. |
+| 3 | 5 | Además, cada nivel tiene una **identidad propia** (ambientación, reto principal) y hay contenido opcional que invita a explorar o a rejugar: secretos, coleccionables, objetivos secundarios, puntuaciones o tiempos que superar. |
+
+### B3. Controles (4 puntos)
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | Los controles responden con retraso, son confusos o no son adecuados para el tipo de juego. |
+| 1 | 1,5 | Los controles funcionan y se indican en algún lugar del juego. |
+| 2 | 3 | Los controles son precisos y responden al momento, están bien elegidos para el género y se explican **dentro del juego** (tutorial, indicaciones en pantalla). |
+| 3 | 4 | Además, se puede jugar con **teclado y con mando** (o con controles táctiles, en un juego para móvil), y se incluyen ayudas al control cuando tienen sentido, como [coyote time](../1-Unity/20-CoyoteTime.mdx), *jump buffer* o apuntado asistido. |
+
+### B4. Cámara (4 puntos)
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | La cámara da problemas: deja al jugador fuera del plano, atraviesa paredes, muestra zonas fuera del escenario o se mueve de forma brusca. |
+| 1 | 1,5 | La cámara sigue al jugador o encuadra la acción correctamente, de forma básica. |
+| 2 | 3 | La cámara se mueve de forma **suavizada**, tiene **límites** para no mostrar zonas fuera del escenario y está pensada para que el jugador vea lo que necesita (por ejemplo, más espacio en la dirección en la que se mueve). |
+| 3 | 4 | Además, la cámara reacciona a lo que ocurre en el juego: sacudidas en los impactos, cambios de encuadre o de zoom según la zona o la situación, transiciones suaves entre cámaras (por ejemplo, con Cinemachine), etc. |
+
+:::note[Juegos con cámara fija]
+Si el diseño del juego necesita una cámara fija (un juego de puzles de una sola pantalla, por ejemplo), se valorará que el encuadre sea adecuado en todos los niveles y que la cámara reaccione a lo que ocurre (sacudidas, zoom, transiciones) para los niveles 2 y 3.
+:::
+
+### B5. Iluminación (4 puntos)
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | Se usa la iluminación por defecto de la plantilla, sin modificar. |
+| 1 | 1,5 | Se han colocado y configurado luces propias, pero sin una intención clara. |
+| 2 | 3 | La iluminación **refuerza la ambientación** y ayuda a jugar (resalta objetos importantes o caminos), combinando varios tipos de luces. |
+| 3 | 4 | Además, hay iluminación **dinámica** que cambia con lo que ocurre en el juego (disparos, explosiones, antorchas, ciclo de día y noche...), cada nivel tiene su propia atmósfera y se usa **postprocesado** (bloom, viñeta, corrección de color...) con criterio. |
+
+### B6. Efectos visuales y de partículas (4 puntos)
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | No hay efectos visuales ni de partículas. |
+| 1 | 1,5 | Hay 1 o 2 efectos visuales o sistemas de partículas. |
+| 2 | 3 | Hay **3 o más** efectos distintos asociados a las acciones y eventos principales (impactos, muertes, recogida de objetos, aparición de enemigos...). |
+| 3 | 4 | Hay **5 o más** efectos distintos, coherentes con la estética del juego, que se usan también en el entorno (polvo, lluvia, hojas, humo...) o en la interfaz. |
+
+### B7. Música y efectos de sonido (4 puntos)
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | Solo hay lo mínimo: una música y algunos efectos, con volúmenes desequilibrados (efectos que tapan la música o al revés). |
+| 1 | 1,5 | Hay efectos de sonido para la mayoría de las acciones y los volúmenes están equilibrados. |
+| 2 | 3 | Hay **músicas distintas** para los menús y para el juego (o para cada nivel o situación) y hay efectos de sonido para **todas** las acciones y eventos importantes, incluida la interfaz. |
+| 3 | 4 | Además, hay sonido ambiente, los efectos que se repiten mucho tienen **variaciones** (varios clips o cambios aleatorios de tono) y la música cambia de forma suave entre escenas o situaciones (por ejemplo, al aparecer un jefe o al entrar en pausa). |
+
+### B8. Coherencia estética (5 puntos)
+
+En este criterio **no se valora la calidad** de los gráficos ni de la música, sino que **encajen entre sí** y con la temática del juego.
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | Se mezclan estilos claramente diferentes (por ejemplo, *pixel art* con 3D realista o sprites de resoluciones muy distintas) y la música no encaja con la ambientación. |
+| 1 | 2 | Hay un estilo predominante, pero varios elementos no encajan con él. |
+| 2 | 3,5 | Los gráficos del juego son coherentes entre sí y la música y los sonidos encajan con la ambientación. Solo hay algún elemento aislado que desentona. |
+| 3 | 5 | Todo el juego tiene una identidad visual y sonora coherente: los gráficos, la **interfaz**, las **fuentes** tipográficas, los efectos, la música y los sonidos comparten estilo y paleta, y así se justifica en el apartado de dirección de arte del GDD. |
+
+### B9. *Game feel* (6 puntos)
+
+El *game feel* es la sensación que transmite el juego al jugar: que cada acción del jugador tenga una respuesta clara y satisfactoria. Para valorarlo se cuentan las técnicas de *game feel* que se usan **de forma adecuada** en el juego, como las siguientes:
+
+- Sacudida de cámara (*screen shake*) en los impactos o explosiones.
+- Pausa breve del juego al golpear (*hit stop* o *freeze frame*).
+- Retroceso (*knockback*) al golpear o recibir daño.
+- Parpadeo o cambio de color al recibir daño.
+- Deformación de los objetos al saltar o chocar (*squash and stretch*).
+- Partículas en las acciones del jugador (polvo al saltar o aterrizar, estela al hacer un *dash*...).
+- Animaciones de la interfaz (botones que reaccionan al pasar por encima, barras de vida que bajan de forma animada, textos que aparecen con una animación...).
+- Transiciones entre escenas (fundidos, cortinillas).
+- Números o textos que aparecen al hacer daño o conseguir puntos.
+- Vibración del mando.
+- Efectos de sonido que acompañan a cada acción del jugador.
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | No se usa ninguna técnica de *game feel*: las acciones no tienen ninguna respuesta más allá de su efecto en la partida. |
+| 1 | 2 | Se usan 1 o 2 técnicas. |
+| 2 | 4 | Se usan 3 o 4 técnicas. |
+| 3 | 6 | Se usan **5 o más** técnicas, bien ajustadas (sin exagerar ni molestar al jugar) y aplicadas de forma constante en todo el juego. |
+
+### B10. Opciones y funcionalidades extra (3 puntos)
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | El menú de opciones solo tiene el volumen de la música y el de los efectos. |
+| 1 | 1 | Hay **1** opción extra (por ejemplo, pantalla completa o resolución). |
+| 2 | 2 | Hay **2 o 3** opciones extra y **todas las opciones se guardan** entre partidas (por ejemplo, con `PlayerPrefs`). |
+| 3 | 3 | Hay **4 o más** opciones extra, entre ellas al menos una de las más complejas: **mapeado de controles** o **selector de idioma**. Todas se guardan entre partidas. |
+
+### B11. Calidad y seguimiento del GDD (5 puntos)
+
+| Nivel | Puntos | Descripción |
+|:-----:|:------:|-------------|
+| 0 | 0 | Los apartados son muy genéricos o no se corresponden con el juego entregado. |
+| 1 | 2 | Todos los apartados están completos y se corresponden con el juego, pero son superficiales. |
+| 2 | 3,5 | Los apartados son detallados e incluyen material visual (bocetos, mapas de los niveles, diagrama de flujo de escenas, capturas...). |
+| 3 | 5 | Además, el **diario de desarrollo** tiene entradas a lo largo de todo el curso que coinciden con el historial del repositorio, se documentan las **pruebas con jugadores** y los cambios hechos a partir de ellas, y el **postmortem** es una reflexión honesta y concreta sobre el proyecto. |
+
+## Hoja de puntuación
+
+| Criterio | Máximo | Puntos |
+|----------|:------:|:------:|
+| **Bloque A. Requisitos mínimos** | **50** | |
+| A1. Menú principal | 4 | |
+| A2. Menú de pausa | 5 | |
+| A3. Victoria y derrota | 5 | |
+| A4. Menú de opciones | 5 | |
+| A5. Créditos | 4 | |
+| A6. Niveles diferenciados | 6 | |
+| A7. Escenas de juego | 3 | |
+| A8. Mecánicas | 6 | |
+| A9. Música y efectos de sonido | 3 | |
+| A10. Build jugable y publicada | 4 | |
+| A11. GDD completo | 3 | |
+| A12. Organización del proyecto | 2 | |
+| **Bloque B. Calidad y ampliaciones** | **50** | |
+| B1. Calidad y complejidad de las mecánicas | 6 | |
+| B2. Diseño de niveles y progresión | 5 | |
+| B3. Controles | 4 | |
+| B4. Cámara | 4 | |
+| B5. Iluminación | 4 | |
+| B6. Efectos visuales y de partículas | 4 | |
+| B7. Música y efectos de sonido | 4 | |
+| B8. Coherencia estética | 5 | |
+| B9. *Game feel* | 6 | |
+| B10. Opciones y funcionalidades extra | 3 | |
+| B11. Calidad y seguimiento del GDD | 5 | |
+| **Total** | **100** | |

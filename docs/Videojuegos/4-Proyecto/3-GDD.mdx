@@ -1,0 +1,292 @@
+# Documento de diseño del juego (GDD)
+
+El **GDD** (*Game Design Document*) es el documento en el que se describe cómo es un videojuego: su idea, sus mecánicas, sus niveles, su estética, cómo está hecho... En los estudios de videojuegos sirve para que todo el equipo tenga claro qué se está construyendo, y se va actualizando a medida que el juego cambia durante el desarrollo.
+
+En este proyecto, el GDD es parte de la entrega y se evalúa en la [rúbrica](./2-Rubrica.mdx) (criterios A11 y B11). No es un documento que se escriba al final: tenéis que empezarlo **al principio del proyecto** e ir completándolo y corrigiéndolo **a medida que desarrolláis el juego**. En la entrega final, el GDD debe describir el juego tal y como es, no como lo imaginabais al principio.
+
+## Formato
+
+- El GDD se escribe en un archivo **Markdown** llamado `GDD.md`, dentro de una carpeta `Docs` en la raíz del repositorio del proyecto. Así queda guardado en el historial de Git cómo ha ido evolucionando.
+- Las imágenes (bocetos, mapas, capturas, diagramas) se guardan en la carpeta `Docs/img` y se enlazan desde el documento.
+- En la entrega final, además, se exporta a **PDF** y se sube a la página de itch.io.
+
+Al final de esta página tenéis una [plantilla](#plantilla) con todos los apartados para copiarla y empezar a rellenarla.
+
+## Apartados obligatorios
+
+La columna **Hito** indica en qué momento del proyecto debería estar escrita una primera versión de cada apartado, según los [hitos recomendados](./1-Proyecto.mdx#hitos-recomendados). Todos los apartados deben estar completos y actualizados en la entrega final.
+
+| Apartado | Hito |
+|----------|:----:|
+| 1. Ficha del juego | 1 |
+| 2. Concepto | 1 |
+| 3. Historia y ambientación | 1 |
+| 4. Jugabilidad | 1 |
+| 5. Mecánicas | 1 y 2 |
+| 6. Controles | 2 |
+| 7. Niveles | 4 |
+| 8. Personajes y enemigos | 4 |
+| 9. Interfaz y flujo de pantallas | 3 |
+| 10. Dirección de arte | 4 |
+| 11. Sonido y música | 4 |
+| 12. Efectos visuales y *game feel* | 5 |
+| 13. Recursos de terceros | Desde el hito 1, cada vez que se añada un recurso |
+| 14. Declaración de uso de IA | Desde el hito 1, cada vez que se use |
+| 15. Aspectos técnicos | 3 |
+| 16. Diario de desarrollo | Durante todo el proyecto |
+| 17. Pruebas con jugadores | 5 |
+| 18. Postmortem | 6 |
+
+### 1. Ficha del juego
+
+Una tabla con los datos básicos del juego:
+
+- **Título** del juego.
+- **Autor** o autora.
+- **Género** (plataformas, *shooter*, puzles, *roguelike*, aventura...).
+- **Dimensiones**: 2D o 3D.
+- **Plataformas** para las que se hace la build (Windows y, opcionalmente, Web).
+- **Versión de Unity** y **pipeline** de render.
+- **Público objetivo** y **clasificación por edad** orientativa (PEGI).
+- **Duración** aproximada de una partida completa.
+- **Enlaces** al repositorio y a la página de itch.io.
+
+### 2. Concepto
+
+- **Resumen** (*elevator pitch*): una o dos frases que expliquen de qué va el juego, como si se lo contarais a alguien en un ascensor. Por ejemplo: *"Un plataformas 2D en el que un pequeño robot tiene que escapar de una fábrica invirtiendo la gravedad para esquivar las trampas"*.
+- **Pilares de diseño**: entre 3 y 5 ideas clave que definen la experiencia que queréis transmitir y que os ayudarán a decidir qué añadir y qué no (por ejemplo: *"Movimiento rápido y preciso"*, *"Cada nivel enseña algo nuevo"*, *"Ambiente inquietante"*).
+- **Referencias**: juegos en los que os habéis inspirado y qué habéis tomado de cada uno.
+- **Qué lo hace diferente**: qué tiene vuestro juego que no tengan sus referencias.
+
+### 3. Historia y ambientación
+
+- **Premisa**: dónde y cuándo ocurre el juego y qué está pasando.
+- **Protagonista**: quién es y qué quiere conseguir.
+- **Cómo se cuenta la historia** en el juego: textos, diálogos, escenas, el propio escenario...
+
+Si el juego no tiene historia (por ejemplo, un juego de puzles abstracto), basta con describir la **ambientación** y la sensación que se busca.
+
+### 4. Jugabilidad
+
+- **Objetivo** del juego: qué tiene que conseguir el jugador para ganar.
+- **Bucle de juego** (*core loop*): las acciones que el jugador repite una y otra vez durante la partida. Por ejemplo, en un juego de mazmorras: *explorar → luchar contra enemigos → conseguir recompensas → mejorar al personaje → explorar una zona más difícil*. Se recomienda acompañarlo de un pequeño diagrama.
+- **Condiciones de victoria y de derrota**: cuándo se gana y cuándo se pierde (vidas, tiempo, salud...).
+- **Progresión**: cómo aumenta la dificultad a lo largo del juego y qué consigue el jugador al avanzar.
+
+### 5. Mecánicas
+
+Una tabla con **todas** las mecánicas del juego. Para cada una:
+
+| Mecánica | Descripción | Control | Nivel en el que aparece |
+|----------|-------------|---------|:-----------------------:|
+| Doble salto | El jugador puede saltar una segunda vez en el aire, una sola vez hasta tocar el suelo. | `Espacio` / botón `A` | 1 |
+| Inversión de la gravedad | Invierte la gravedad del jugador, que pasa a caminar por el techo. Tiene 2 segundos de recarga. | `E` / botón `B` | 2 |
+
+Debajo de la tabla, explicad cómo se **combinan** las mecánicas entre sí y cualquier detalle importante de su funcionamiento (valores de velocidad, tiempos de recarga, daño...).
+
+### 6. Controles
+
+Una tabla con todas las acciones y su control en cada dispositivo compatible (teclado y ratón, mando, pantalla táctil):
+
+| Acción | Teclado | Mando |
+|--------|---------|-------|
+| Moverse | `A` / `D` o flechas | Joystick izquierdo |
+| Saltar | `Espacio` | Botón `A` |
+| Pausa | `Esc` | `Start` |
+
+Indicad también cómo se enseñan los controles al jugador (tutorial, indicaciones en pantalla, menú de controles...).
+
+### 7. Niveles
+
+Para **cada** nivel:
+
+- **Nombre** y **objetivo** del nivel.
+- **Qué aporta de nuevo**: la mecánica, el enemigo, el obstáculo o la ambientación que lo diferencia de los anteriores.
+- **Mapa o boceto** del nivel (puede estar hecho a mano y fotografiado).
+- **Escena** de Unity en la que está.
+- **Duración** aproximada y **dificultad** respecto al resto.
+- **Contenido opcional**, si lo hay: secretos, coleccionables, objetivos secundarios...
+
+### 8. Personajes y enemigos
+
+- **Personaje del jugador**: sus características (vida, velocidad, habilidades...) y cómo cambian a lo largo del juego, si lo hacen.
+- **Enemigos**, **obstáculos** y **personajes no jugables**: para cada uno, qué hace, cómo se comporta (su IA, si la tiene, con los estados por los que pasa), cómo se le derrota o se le evita y en qué niveles aparece.
+
+### 9. Interfaz y flujo de pantallas
+
+- **Diagrama de flujo** de todas las pantallas y escenas del juego y de cómo se pasa de unas a otras: menú principal, opciones, créditos, niveles, pausa, victoria, derrota...
+- **HUD**: qué información se muestra en pantalla durante la partida (vida, puntuación, tiempo, munición...) y dónde. Se recomienda incluir una captura o un boceto.
+- **Menús**: descripción de cada menú y de sus opciones, incluidas **todas las opciones** del menú de opciones.
+
+### 10. Dirección de arte
+
+- **Estilo visual**: *pixel art*, *low poly*, dibujado a mano, realista... y resolución de los sprites o nivel de detalle de los modelos.
+- **Paleta de colores** principal.
+- **Tipografías** utilizadas.
+- **Tablero de referencias** (*moodboard*): imágenes que muestren la estética que se busca.
+- **Justificación de la coherencia**: cómo habéis elegido los recursos para que encajen entre sí (un mismo autor o pack, una paleta común, la misma resolución...) y qué habéis hecho con los que no encajaban (modificarlos, sustituirlos...).
+
+### 11. Sonido y música
+
+- **Estilo musical** y cómo encaja con la ambientación.
+- **Lista de pistas de música**, indicando en qué pantallas o situaciones suena cada una.
+- **Lista de efectos de sonido**, indicando a qué acción o evento corresponde cada uno.
+- Cómo se ha organizado el audio en Unity: grupos del **Audio Mixer**, variaciones de los efectos, transiciones entre músicas...
+
+### 12. Efectos visuales y *game feel*
+
+- **Efectos visuales y de partículas**: lista de efectos y en qué momento aparecen.
+- **Iluminación**: cómo se ha iluminado cada nivel y qué postprocesado se usa.
+- **Cámara**: cómo se comporta y por qué.
+- **Técnicas de *game feel***: cuáles se usan y en qué acciones (sacudida de cámara al recibir daño, partículas al aterrizar, animaciones de los botones...).
+
+### 13. Recursos de terceros
+
+Una tabla con **todos** los recursos que no habéis creado vosotros, que debe coincidir con la pantalla de créditos del juego:
+
+| Recurso | Tipo | Autor | Licencia | Enlace | Dónde se usa |
+|---------|------|-------|----------|--------|--------------|
+| Pixel Platformer | Sprites | Kenney | CC0 | [kenney.nl](https://kenney.nl/assets/pixel-platformer) | Personaje y escenarios de todos los niveles |
+
+Si habéis modificado algún recurso (cambiado sus colores, recortado un sonido...), indicadlo también.
+
+### 14. Declaración de uso de IA
+
+- **Herramientas** de IA generativa que habéis usado (ChatGPT, Claude, Copilot, Gemini...).
+- **Para qué** las habéis usado: qué scripts o partes del código se han hecho con ayuda de la IA y cómo (generar el código entero, corregir errores, explicar un concepto, revisar el código...).
+- **Qué habéis cambiado** en lo que os ha dado la IA y qué problemas os ha dado, si los ha habido.
+- **Confirmación** de que no se ha usado IA generativa para ningún recurso gráfico, música, efecto de sonido ni efecto visual.
+
+Si no habéis usado IA, indicadlo igualmente en este apartado.
+
+### 15. Aspectos técnicos
+
+- **Estructura del proyecto**: organización de las carpetas de `Assets` (siguiendo el requisito de [organización del proyecto](./1-Proyecto.mdx#12-organización-del-proyecto)) y lista de escenas.
+- **Arquitectura del código**: los scripts principales y de qué se encarga cada uno (por ejemplo, `GameManager`, `AudioManager`, `PlayerController`...), y cómo se comunican entre sí. Si usáis patrones como *singleton*, [object pooling](../1-Unity/18-ObjectPooling.mdx) o máquinas de estados, explicad dónde y por qué.
+- **Paquetes** de Unity utilizados (Input System, Cinemachine, TextMeshPro...).
+- **Guardado de datos**: qué se guarda (opciones, progreso, puntuaciones) y cómo (`PlayerPrefs`, archivos JSON...), si se hace.
+- **Problemas técnicos** importantes que os habéis encontrado y cómo los habéis resuelto.
+- **Errores conocidos** que no se han podido corregir antes de la entrega.
+
+### 16. Diario de desarrollo
+
+Un registro con **fecha** de lo que se ha ido haciendo, desde el inicio del proyecto hasta la entrega. No hace falta escribir cada día, pero sí cada vez que se avance en el proyecto (como referencia, al menos una entrada por semana). En cada entrada:
+
+- Qué se ha hecho.
+- Qué problemas han surgido.
+- Qué decisiones de diseño se han tomado o cambiado, y por qué.
+
+Las entradas deben coincidir con el historial de commits del repositorio.
+
+### 17. Pruebas con jugadores
+
+Antes de la entrega, dejad que al menos **3 personas** prueben el juego (compañeros, familia, amigos...) sin explicarles nada antes. Para cada prueba:
+
+- Quién lo ha probado y con qué versión del juego.
+- Qué ha observado: dónde se ha atascado, qué no ha entendido, qué le ha gustado y qué no.
+- Qué cambios habéis hecho en el juego a partir de ello.
+
+### 18. Postmortem
+
+Una reflexión final sobre el proyecto, escrita después de terminarlo:
+
+- **Qué ha salido bien**.
+- **Qué ha salido mal** o no ha dado tiempo a hacer, y por qué.
+- **Diferencias** entre el juego que teníais pensado al principio y el que habéis entregado.
+- **Qué habéis aprendido**.
+- **Qué haríais de forma diferente** si empezarais de nuevo.
+
+## Plantilla
+
+Podéis copiar esta plantilla en el archivo `Docs/GDD.md` de vuestro repositorio y empezar a rellenarla:
+
+```markdown
+# Nombre del juego - Documento de diseño (GDD)
+
+## 1. Ficha del juego
+
+| | |
+|---|---|
+| Título | |
+| Autor/a | |
+| Género | |
+| 2D / 3D | |
+| Plataformas | Windows |
+| Versión de Unity y pipeline | Unity 6 - URP |
+| Público objetivo y PEGI | |
+| Duración de una partida | |
+| Repositorio | |
+| Página de itch.io | |
+
+## 2. Concepto
+
+### Resumen
+
+### Pilares de diseño
+
+### Referencias
+
+### Qué lo hace diferente
+
+## 3. Historia y ambientación
+
+## 4. Jugabilidad
+
+### Objetivo
+
+### Bucle de juego
+
+### Condiciones de victoria y derrota
+
+### Progresión
+
+## 5. Mecánicas
+
+| Mecánica | Descripción | Control | Nivel en el que aparece |
+|----------|-------------|---------|-------------------------|
+| | | | |
+
+## 6. Controles
+
+| Acción | Teclado | Mando |
+|--------|---------|-------|
+| | | |
+
+## 7. Niveles
+
+### Nivel 1: nombre
+
+## 8. Personajes y enemigos
+
+## 9. Interfaz y flujo de pantallas
+
+### Diagrama de flujo
+
+### HUD
+
+### Menús
+
+## 10. Dirección de arte
+
+## 11. Sonido y música
+
+## 12. Efectos visuales y game feel
+
+## 13. Recursos de terceros
+
+| Recurso | Tipo | Autor | Licencia | Enlace | Dónde se usa |
+|---------|------|-------|----------|--------|--------------|
+| | | | | | |
+
+## 14. Declaración de uso de IA
+
+## 15. Aspectos técnicos
+
+## 16. Diario de desarrollo
+
+### AAAA-MM-DD
+
+## 17. Pruebas con jugadores
+
+## 18. Postmortem
+```

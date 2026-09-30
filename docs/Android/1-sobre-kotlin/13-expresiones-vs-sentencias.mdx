@@ -33,7 +33,7 @@ if (numero > 0) {
 En el ejemplo anterior, el `if (numero > 0) { ... } else { ... }` (que vimos en el apartado de [estructuras de control](./12-estructuras-control.mdx)) se utiliza como sentencia: evalúa la condición y ejecuta el bloque de código correspondiente, pero no usamos ningún valor resultante. Otras sentencias típicas son las asignaciones (`x = 5`) o los bucles `for` y `while`.
 
 :::info[`if`, `when` y `try` son expresiones en Kotlin]
-A diferencia de Java, en Kotlin `if`, `when` y `try` son **expresiones**: devuelven el valor de la última línea de la rama que se ejecuta. Por eso Kotlin no tiene el operador ternario `condicion ? a : b`, ya que no le hace falta.
+A diferencia de Java, en Kotlin `if`, `when` y `try` son **expresiones**: devuelven el valor de la última línea de la rama que se ejecuta. Por eso Kotlin no tiene el operador ternario `condicion ? a : b`, ya que no le hace falta. Veremos `try` como expresión en el apartado de [excepciones](./16-excepciones.mdx#2-try-es-una-expresión).
 
 ```kotlin
 val mensaje = if (numero > 0) "El número es positivo" else "El número es negativo o cero"

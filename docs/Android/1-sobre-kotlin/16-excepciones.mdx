@@ -1,0 +1,350 @@
+# Excepciones en Kotlin
+
+Una excepción es un error que se produce mientras el programa se está ejecutando, por ejemplo, al intentar convertir a número un texto que no lo es, al dividir un número entero entre cero o al acceder a una posición que no existe en una lista. Cuando se produce una excepción y nadie la captura, el programa se detiene. En una app Android, esto significa que **la app se cierra** y el usuario ve el mensaje de que la aplicación se ha detenido.
+
+Kotlin gestiona las excepciones de forma muy parecida a Java, con `try`, `catch`, `finally` y `throw`, pero con algunas diferencias importantes que veremos a lo largo de este apartado.
+
+## Algunas excepciones habituales
+
+Todas las excepciones heredan de la clase `Throwable`, y las que usaremos normalmente heredan de `Exception`. Estas son algunas de las que nos encontraremos más a menudo:
+
+- `NumberFormatException`: al convertir a número un texto que no es válido (`"hola".toInt()`).
+- `ArithmeticException`: al dividir un número **entero** entre cero (`10 / 0`).
+- `IndexOutOfBoundsException`: al acceder a una posición que no existe en una lista o un array (`lista[10]`).
+- `NoSuchElementException`: al pedir un elemento que no existe, por ejemplo `first()` sobre una lista vacía.
+- `NullPointerException`: al usar el operador `!!` sobre un valor que es `null`, como vimos en [null safety](./15-null-safety.mdx).
+- `IllegalArgumentException`: cuando una función recibe un argumento que no es válido.
+- `IllegalStateException`: cuando se hace algo que no está permitido en el estado actual del programa o del objeto.
+
+```kotlin
+val numero = "hola".toInt()   // NumberFormatException
+val division = 10 / 0         // ArithmeticException
+val lista = listOf(1, 2, 3)
+val elemento = lista[10]      // IndexOutOfBoundsException
+```
+
+:::info[Dividir entre cero con decimales]
+Solo la división de números **enteros** entre cero lanza una `ArithmeticException`. Si dividimos un `Double` entre cero no se produce ningún error: el resultado es `Infinity` (`10.0 / 0` vale `Infinity`).
+:::
+
+## Capturar excepciones: `try` y `catch`
+
+Para evitar que una excepción detenga el programa, escribimos el código que puede fallar dentro de un bloque `try` y el código que queremos ejecutar si falla dentro de un bloque `catch`:
+
+```kotlin
+val texto = "hola"
+
+try {
+    val numero = texto.toInt()
+    println("El número es $numero")
+} catch (e: NumberFormatException) {
+    println("'$texto' no es un número válido")
+}
+
+println("El programa continúa")
+```
+
+En el ejemplo anterior, `texto.toInt()` lanza una `NumberFormatException`. En ese momento se deja de ejecutar el bloque `try` (el primer `println` nunca se llega a ejecutar) y se salta al bloque `catch`, que muestra un mensaje de error. Después, el programa continúa con normalidad.
+
+Dentro del `catch`, la variable `e` contiene la excepción, con información sobre lo que ha pasado:
+
+- `e.message`: el mensaje de error, de tipo `String?`.
+- `e.printStackTrace()`: muestra por consola la traza completa del error, es decir, la cadena de llamadas que ha llevado hasta él. En Android, esta traza aparece en el **Logcat** de Android Studio y es la mejor pista para encontrar dónde está el fallo.
+
+### Varios bloques `catch`
+
+Un mismo `try` puede tener varios bloques `catch` para tratar de forma distinta cada tipo de excepción. Se comprueban en orden y solo se ejecuta el **primero** cuyo tipo coincida con la excepción:
+
+```kotlin
+fun dividir(dividendo: String, divisor: String) {
+    try {
+        val resultado = dividendo.toInt() / divisor.toInt()
+        println("Resultado: $resultado")
+    } catch (e: NumberFormatException) {
+        println("Los dos valores tienen que ser números enteros")
+    } catch (e: ArithmeticException) {
+        println("No se puede dividir entre cero")
+    } catch (e: Exception) {
+        println("Error inesperado: ${e.message}")
+    }
+}
+
+dividir("10", "2")    // Resultado: 5
+dividir("10", "dos")  // Los dos valores tienen que ser números enteros
+dividir("10", "0")    // No se puede dividir entre cero
+```
+
+:::warning[El orden de los `catch` importa]
+Los `catch` deben ir de la excepción más **concreta** a la más **general**. Como todas las excepciones heredan de `Exception`, si pusiéramos `catch (e: Exception)` el primero, capturaría todos los errores y los otros dos bloques nunca llegarían a ejecutarse.
+:::
+
+### El bloque `finally`
+
+De forma opcional, detrás de los `catch` podemos añadir un bloque `finally`. Su código se ejecuta **siempre**, tanto si se ha producido una excepción como si no. Se usa para tareas que tienen que hacerse pase lo que pase, como cerrar un archivo o una conexión, o parar un indicador de carga.
+
+```kotlin
+fun cargarDatos() {
+    println("Mostrando indicador de carga...")
+    try {
+        val datos = "abc".toInt()
+        println("Datos cargados: $datos")
+    } catch (e: NumberFormatException) {
+        println("Error al cargar los datos")
+    } finally {
+        println("Ocultando indicador de carga")
+    }
+}
+```
+
+En el ejemplo anterior, falle o no la carga de los datos, el indicador de carga siempre se oculta.
+
+## Lanzar excepciones: `throw`
+
+Nosotros también podemos lanzar excepciones con la palabra reservada `throw`, seguida de un objeto de excepción. Lo haremos cuando detectemos una situación que nuestra función no puede resolver:
+
+```kotlin
+fun calcularPrecioFinal(precio: Double, descuento: Int): Double {
+    if (descuento !in 0..100) {
+        throw IllegalArgumentException("El descuento debe estar entre 0 y 100, y es $descuento")
+    }
+    return precio * (100 - descuento) / 100
+}
+```
+
+En el ejemplo anterior, si el descuento no está entre `0` y `100`, la función lanza una `IllegalArgumentException` con un mensaje que explica el problema. Quien llame a la función puede capturarla con un `try-catch`.
+
+:::info[Diferencia con Java]
+En Kotlin no se usa la palabra `new` para crear objetos, tampoco al crear excepciones: en Java se escribe `throw new IllegalArgumentException(...)` y en Kotlin `throw IllegalArgumentException(...)`.
+:::
+
+:::tip[`require` y `check`]
+Comprobaciones como la del ejemplo anterior son tan habituales que Kotlin tiene funciones para escribirlas en una sola línea: `require(descuento in 0..100) { "El descuento debe estar entre 0 y 100" }`. Las veremos en el apartado de [funciones útiles de la librería estándar](./51-funciones-libreria-estandar.mdx#require-check-y-error).
+:::
+
+## Diferencias con Java
+
+La sintaxis de `try`, `catch`, `finally` y `throw` es casi igual en los dos lenguajes, pero Kotlin cambia algunas cosas importantes.
+
+### 1. En Kotlin no hay excepciones comprobadas
+
+En Java existen las **excepciones comprobadas** (*checked exceptions*), como `IOException` o `InterruptedException`. Si llamamos a un método que puede lanzar una de ellas, el compilador nos **obliga** a capturarla con un `try-catch` o a declarar con `throws` que nuestro método también puede lanzarla. Si no lo hacemos, el código no compila.
+
+```java title="Java"
+public void esperar() {
+    try {
+        Thread.sleep(1000); // Puede lanzar InterruptedException
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+}
+
+// O bien declarar la excepción con throws, y que la trate quien llame al método
+public String leerArchivo(String ruta) throws IOException {
+    return Files.readString(Path.of(ruta));
+}
+```
+
+En Kotlin **todas las excepciones son no comprobadas**: el compilador nunca nos obliga a capturarlas ni a declararlas.
+
+```kotlin title="Kotlin"
+import java.io.File
+
+fun esperar() {
+    Thread.sleep(1000) // No es obligatorio capturar nada
+}
+
+fun leerArchivo(ruta: String): String {
+    return File(ruta).readText() // Tampoco hace falta declarar throws
+}
+```
+
+Los creadores de Kotlin tomaron esta decisión porque, en la práctica, las excepciones comprobadas de Java hacen que se escriban muchísimos `try-catch` vacíos o que solo muestran la traza, únicamente para que el código compile.
+
+:::warning[Que no sea obligatorio no significa que no haya que hacerlo]
+El compilador de Kotlin no nos avisa, pero `leerArchivo` sigue pudiendo fallar si el archivo no existe. Somos nosotros quienes tenemos que saber qué funciones pueden lanzar excepciones (lo indica su documentación) y capturarlas cuando tenga sentido. En Android esto es especialmente importante con las operaciones que dependen de algo externo, como leer archivos o [conectarse a internet](../7-conexion-internet.mdx).
+:::
+
+:::info[La anotación `@Throws`]
+Si escribimos una función en Kotlin que se va a llamar desde código Java, podemos indicarle a Java qué excepciones comprobadas lanza con la anotación `@Throws(IOException::class)`. Dentro de un proyecto solo en Kotlin no la necesitaremos.
+:::
+
+### 2. `try` es una expresión
+
+Como vimos en el apartado de [expresiones vs. sentencias](./13-expresiones-vs-sentencias.mdx), en Kotlin `try` es una **expresión** y devuelve un valor: el de la última línea del `try` si todo va bien, o el de la última línea del `catch` si se produce una excepción.
+
+En Java, `try` es una sentencia, así que para obtener un valor tenemos que declarar la variable antes y asignarla en cada bloque:
+
+```java title="Java"
+int numero;
+try {
+    numero = Integer.parseInt(texto);
+} catch (NumberFormatException e) {
+    numero = 0;
+}
+```
+
+En Kotlin podemos asignar directamente el resultado del `try`:
+
+```kotlin title="Kotlin"
+val numero = try {
+    texto.toInt()
+} catch (e: NumberFormatException) {
+    0
+}
+```
+
+Además de ser más corto, esto nos permite declarar `numero` con `val` en lugar de `var`, ya que se asigna una sola vez. El bloque `finally`, si lo hay, no afecta al valor devuelto.
+
+### 3. `throw` también es una expresión
+
+En Kotlin, `throw` también es una expresión, así que podemos usarlo en sitios donde se espera un valor, por ejemplo, detrás del operador elvis `?:`:
+
+```kotlin title="Kotlin"
+data class Usuario(val nombre: String?)
+
+fun obtenerNombre(usuario: Usuario?): String {
+    val nombre = usuario?.nombre ?: throw IllegalArgumentException("El usuario no tiene nombre")
+    return nombre.uppercase()
+}
+```
+
+En Java necesitaríamos un `if` aparte para comprobar el valor antes de usarlo:
+
+```java title="Java"
+public String obtenerNombre(Usuario usuario) {
+    if (usuario == null || usuario.getNombre() == null) {
+        throw new IllegalArgumentException("El usuario no tiene nombre");
+    }
+    return usuario.getNombre().toUpperCase();
+}
+```
+
+:::info[El tipo `Nothing`]
+El tipo de la expresión `throw` es `Nothing`, un tipo especial de Kotlin que significa "esta expresión nunca termina normalmente". Gracias a él, el compilador sabe que en el ejemplo anterior `nombre` nunca puede ser `null`, y por eso es de tipo `String` y no `String?`.
+:::
+
+### 4. No hay *multi-catch*
+
+En Java se pueden capturar varios tipos de excepción en un mismo bloque separándolos con `|`:
+
+```java title="Java"
+try {
+    int resultado = Integer.parseInt(a) / Integer.parseInt(b);
+} catch (NumberFormatException | ArithmeticException e) {
+    System.out.println("Operación no válida");
+}
+```
+
+Kotlin no tiene esta sintaxis. Si queremos tratar varias excepciones de la misma forma, podemos escribir un `catch` para cada una o capturar una más general y distinguir el tipo con un [`when`](./12-estructuras-control.mdx#when):
+
+```kotlin title="Kotlin"
+try {
+    val resultado = a.toInt() / b.toInt()
+} catch (e: Exception) {
+    when (e) {
+        is NumberFormatException, is ArithmeticException -> println("Operación no válida")
+        else -> throw e // Las demás excepciones las volvemos a lanzar
+    }
+}
+```
+
+En el ejemplo anterior, si la excepción no es de ninguno de los dos tipos que esperamos, la volvemos a lanzar con `throw e` para no ocultar errores que no sabemos tratar.
+
+### 5. `use` en lugar de *try-with-resources*
+
+En Java, para trabajar con recursos que hay que cerrar después de usarlos (archivos, conexiones...) se usa el *try-with-resources*, que cierra el recurso automáticamente al terminar:
+
+```java title="Java"
+try (BufferedReader lector = new BufferedReader(new FileReader("datos.txt"))) {
+    System.out.println(lector.readLine());
+} catch (IOException e) {
+    System.out.println("No se ha podido leer el archivo");
+}
+```
+
+En Kotlin no existe esta sintaxis. En su lugar se usa la función `use`, que recibe una lambda con el recurso y lo cierra al terminar, tanto si se produce una excepción como si no:
+
+```kotlin title="Kotlin"
+import java.io.File
+import java.io.IOException
+
+try {
+    File("datos.txt").bufferedReader().use { lector ->
+        println(lector.readLine())
+    }
+} catch (e: IOException) {
+    println("No se ha podido leer el archivo")
+}
+```
+
+Fíjate en que `use` se encarga de **cerrar** el recurso, pero no de **capturar** la excepción: si el archivo no existe, la excepción sigue lanzándose, por lo que la capturamos con un `try-catch` normal.
+
+## Crear nuestras propias excepciones
+
+Además de usar las excepciones que ya existen, podemos crear las nuestras para representar errores propios de nuestra aplicación. Para ello, creamos una clase que herede de `Exception`, como veremos en el apartado de [herencia](./21-poo.mdx#herencia):
+
+```kotlin
+class SaldoInsuficienteException(
+    val saldo: Double,
+    val cantidad: Double,
+) : Exception("Saldo insuficiente: tienes $saldo € e intentas retirar $cantidad €")
+
+fun retirar(saldo: Double, cantidad: Double): Double {
+    if (cantidad > saldo) {
+        throw SaldoInsuficienteException(saldo, cantidad)
+    }
+    return saldo - cantidad
+}
+
+fun main() {
+    try {
+        retirar(50.0, 80.0)
+    } catch (e: SaldoInsuficienteException) {
+        println(e.message)
+        println("Te faltan ${e.cantidad - e.saldo} €")
+    }
+}
+```
+
+En el ejemplo anterior, la clase `SaldoInsuficienteException` pasa un mensaje a la clase `Exception` y además guarda el saldo y la cantidad, lo que nos permite usarlos en el `catch` para dar más información.
+
+:::info[`Exception` o `RuntimeException`]
+En Java, para que una excepción propia sea no comprobada hay que heredar de `RuntimeException`. En Kotlin da igual, ya que no hay excepciones comprobadas, por lo que normalmente heredaremos de `Exception`. Por convención, el nombre de la clase termina en `Exception`.
+:::
+
+## Buenas prácticas
+
+- **Captura excepciones concretas**. Es mejor `catch (e: NumberFormatException)` que `catch (e: Exception)`, porque así no ocultamos errores que no esperábamos y que indican un fallo en nuestro código.
+- **No dejes un `catch` vacío**. Si capturamos una excepción y no hacemos nada con ella, el error desaparece sin dejar rastro y será muy difícil encontrarlo. Como mínimo, muestra un mensaje o la traza.
+- **Usa las excepciones para lo excepcional**. Si un fallo es normal y esperable, como que el usuario escriba letras en un campo numérico, es más sencillo y más propio de Kotlin evitar la excepción con funciones como `toIntOrNull()`, que devuelven `null` en lugar de lanzarla. Las veremos en el apartado de [funciones útiles de la librería estándar](./51-funciones-libreria-estandar.mdx#las-funciones-ornull).
+- **Ten cuidado con las corrutinas**. Capturar `Exception` de forma genérica dentro de una corrutina también captura la excepción que se usa para cancelarla. Lo veremos en el apartado de [corrutinas](./61-corrutinas.mdx#excepciones).
+
+```kotlin title="Con excepciones"
+val cantidad = try {
+    textoIntroducido.toInt()
+} catch (e: NumberFormatException) {
+    0
+}
+```
+
+```kotlin title="Sin excepciones, más idiomático en Kotlin"
+val cantidad = textoIntroducido.toIntOrNull() ?: 0
+```
+
+## Resumen
+
+| | Java | Kotlin |
+|---|---|---|
+| Excepciones comprobadas | Sí, obligan a usar `try-catch` o `throws` | No, ninguna es obligatoria |
+| `try` | Sentencia | Expresión, devuelve un valor |
+| `throw` | Sentencia | Expresión de tipo `Nothing` (se puede usar tras `?:`) |
+| Crear la excepción | `throw new Excepcion(...)` | `throw Excepcion(...)` |
+| Varias excepciones en un `catch` | `catch (A \| B e)` | Varios `catch` o un `when` dentro del `catch` |
+| Cerrar recursos | *try-with-resources* | Función `use { }` |
+| Excepción propia no comprobada | Hereda de `RuntimeException` | Hereda de `Exception` |
+
+:::tip[Recursos]
+- [Documentación oficial de Kotlin sobre excepciones](https://kotlinlang.org/docs/exceptions.html)
+- [Documentación oficial de Kotlin sobre el tipo `Nothing`](https://kotlinlang.org/docs/exceptions.html#the-nothing-type)
+- [Kotlin Playground](https://play.kotlinlang.org/): Un entorno de programación en línea para probar y aprender Kotlin.
+:::

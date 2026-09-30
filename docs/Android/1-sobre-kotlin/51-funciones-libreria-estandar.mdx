@@ -245,7 +245,7 @@ resultado
     .onFailure { println("Error: ${it.message}") }
 ```
 
-En el ejemplo anterior, `"abc".toInt()` lanza una `NumberFormatException`, pero `runCatching` la captura y la guarda en `resultado`. Con `getOrNull()`, `getOrDefault()` u `onFailure { }` decidimos qué hacer en caso de error. Es una alternativa más compacta a un bloque `try-catch`.
+En el ejemplo anterior, `"abc".toInt()` lanza una `NumberFormatException`, pero `runCatching` la captura y la guarda en `resultado`. Con `getOrNull()`, `getOrDefault()` u `onFailure { }` decidimos qué hacer en caso de error. Es una alternativa más compacta a un bloque `try-catch`, que vimos en el apartado de [excepciones](./16-excepciones.mdx).
 
 :::warning[`runCatching` y las corrutinas]
 `runCatching` captura **todas** las excepciones, incluida la `CancellationException` que usan las [corrutinas](./61-corrutinas.mdx) para cancelarse. Por eso, dentro de una corrutina (por ejemplo, al hacer una petición a internet desde un ViewModel) es preferible usar un `try-catch` que capture solo las excepciones que esperamos, como veremos en el apartado de [conexión a internet](../7-conexion-internet.mdx).

@@ -213,9 +213,126 @@ class DetalleViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 Aunque sea tentador pasar un objeto completo a la siguiente pantalla, lo recomendable es pasar solo lo mínimo, normalmente su **identificador**, y que la pantalla de destino (o su ViewModel) obtenga el resto de datos desde el repositorio. Así los datos siempre están actualizados y la ruta es sencilla.
 :::
 
-## Navigation 3
+## Navigation 3 (contenido adicional, no entra en examen)
 
 En 2025 Google publicó **Navigation 3**, una nueva librería de navegación diseñada desde cero para Compose, en la que la pila de pantallas es una simple lista de rutas que controlamos nosotros. Navigation Compose, la que se explica en estos apuntes, sigue siendo totalmente válida y es la que utilizan la mayoría de proyectos y codelabs, pero conviene saber que existe la nueva librería. Más información en la [documentación de Navigation 3](https://developer.android.com/guide/navigation/navigation-3?hl=es-419).
+
+:::tip[Contenido adicional (no entra en examen): qué cambia en Navigation 3]
+Este apartado es solo para quien tenga curiosidad o quiera usar Navigation 3 en su proyecto. **No forma parte de la materia de examen.**
+
+**La idea principal: la pila es nuestra**
+
+En Navigation Compose, la pila de pantallas está "escondida" dentro del `NavController`: no la manipulamos directamente, sino que le pedimos al `NavController` que navegue (`navigate`) o que vuelva atrás (`popBackStack`), y él se encarga de actualizarla.
+
+En Navigation 3 desaparece el `NavController`. La pila de pantallas (*back stack*) es simplemente **una lista de rutas que creamos y modificamos nosotros**, y la librería se limita a mostrar en pantalla la ruta que está al final de la lista. Es la misma filosofía que el resto de Compose: **la interfaz es una función del estado**, y aquí el estado es esa lista.
+
+- Navegar a una pantalla → **añadir** una ruta a la lista: `backStack.add(Perfil)`.
+- Volver atrás → **quitar** la última ruta de la lista: `backStack.removeLastOrNull()`.
+- Cualquier otra operación (vaciar la pila, sustituir una pantalla, volver al inicio...) → usar las funciones normales de una lista de Kotlin.
+
+**Equivalencias con lo visto en el tema**
+
+| Navigation Compose (este tema) | Navigation 3 |
+|---|---|
+| Rutas con `@Serializable` | Rutas con `@Serializable` que además implementan la interfaz `NavKey` |
+| `rememberNavController()` | `rememberNavBackStack(rutaInicial)`, que devuelve una lista de rutas |
+| `NavHost` | `NavDisplay` |
+| `startDestination = Inicio` | La ruta que pasamos al crear la pila |
+| `composable<Ruta> { ... }` | `entry<Ruta> { ... }` dentro de un `entryProvider` |
+| `navController.navigate(Perfil)` | `backStack.add(Perfil)` |
+| `navController.popBackStack()` | `backStack.removeLastOrNull()` |
+| `popUpTo`, `launchSingleTop`... | Operaciones normales de lista (`clear`, `removeAll`, `contains`...) |
+| `backStackEntry.toRoute<Detalle>()` | La propia ruta llega como parámetro de `entry<Detalle> { ruta -> ... }` |
+
+**Otros añadidos**
+
+- **Recuperar argumentos es más directo**: como la pila contiene las propias rutas, en `entry<Detalle> { detalle -> ... }` recibimos directamente el objeto `Detalle` con sus propiedades. No hace falta `toRoute()`.
+- **Gestión del botón "atrás" explícita**: `NavDisplay` recibe un parámetro `onBack` en el que decidimos qué hacer cuando el usuario pulsa "atrás" (normalmente, quitar la última ruta).
+- **Varias pantallas a la vez (*scenes*)**: Navigation 3 permite mostrar varias rutas de la pila al mismo tiempo, por ejemplo una lista y su detalle uno al lado del otro en tablets o móviles plegables. Con Navigation Compose esto era bastante más complicado.
+- **Decoradores de entradas**: permiten añadir comportamiento a cada pantalla de la pila, como conservar su estado o tener un ViewModel propio para cada entrada (con la librería `lifecycle-viewmodel-navigation3`).
+
+**Dependencias**
+
+Navigation 3 sigue usando `kotlinx.serialization` para las rutas, así que el plugin y la librería de serialización se configuran igual que al principio del tema. Solo cambian las librerías de navegación:
+
+```toml title="libs.versions.toml"
+[versions]
+nav3Core = "1.0.0"
+
+[libraries]
+androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "nav3Core" }
+androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "nav3Core" }
+```
+
+```kotlin title="app/build.gradle.kts"
+dependencies {
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+}
+```
+
+**Ejemplo sencillo**
+
+El mismo ejemplo del tema (inicio, perfil y detalle con un argumento) hecho con Navigation 3:
+
+```kotlin
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
+import kotlinx.serialization.Serializable
+
+// 1. Rutas: igual que antes, pero implementando NavKey
+@Serializable
+data object Inicio : NavKey
+
+@Serializable
+data object Perfil : NavKey
+
+@Serializable
+data class Detalle(val id: Int) : NavKey
+
+@Composable
+fun MyApp() {
+    // 2. La pila de pantallas: una lista que empieza con la ruta Inicio
+    val backStack = rememberNavBackStack(Inicio)
+
+    // 3. NavDisplay muestra la última ruta de la lista
+    NavDisplay(
+        backStack = backStack,
+        // Qué hacer al pulsar "atrás": quitar la última pantalla
+        onBack = { backStack.removeLastOrNull() },
+        // Qué composable se muestra para cada ruta
+        entryProvider = entryProvider {
+            entry<Inicio> {
+                PantallaInicio(
+                    onIrAPerfil = { backStack.add(Perfil) },
+                    onIrADetalle = { id -> backStack.add(Detalle(id)) }
+                )
+            }
+            entry<Perfil> {
+                PantallaPerfil(
+                    onVolver = { backStack.removeLastOrNull() }
+                )
+            }
+            // La ruta llega como parámetro, con sus argumentos
+            entry<Detalle> { detalle ->
+                PantallaDetalle(id = detalle.id)
+            }
+        }
+    )
+}
+```
+
+Las pantallas (`PantallaInicio`, `PantallaPerfil`, `PantallaDetalle`) no cambian en absoluto: siguen recibiendo lambdas para los eventos de navegación, tal y como se explicó en el apartado de [navegación usando lambdas](#navegación-entre-pantallas-usando-lambdas). Esa es una de las ventajas de no pasar el `navController` a las pantallas: podemos cambiar de librería de navegación sin tocarlas.
+
+Por último, algo equivalente a `popUpTo<Inicio> { inclusive = true }` tras un login sería, simplemente, vaciar la lista y añadir la nueva pantalla:
+
+```kotlin
+backStack.clear()
+backStack.add(Inicio)
+```
+:::
 
 ## Recursos
 

@@ -1,0 +1,152 @@
+# MCP para Unity
+
+Cuando un agente trabaja en un proyecto de Unity sin MCP, solo puede ver los scripts. No sabe qué objetos hay en la escena, qué componentes tienen, qué referencias faltan por asignar en el inspector ni qué errores aparecen en la consola al darle al Play. Por eso, muchas veces nos propone soluciones que no encajan con nuestra escena, o no consigue encontrar la causa de un error.
+
+Un **servidor MCP para Unity** conecta el agente con el **editor abierto**, de forma que puede consultar y modificar la escena, los componentes, los assets y la configuración del proyecto, y leer la consola. Actualmente hay dos opciones muy utilizadas:
+
+- **Unity MCP**, el servidor **oficial** de Unity, que forma parte del paquete **AI Assistant**.
+- **MCP for Unity**, un proyecto de código abierto publicado en GitHub por **CoplayDev**, que es el más utilizado por la comunidad.
+
+:::warning[Herramientas en evolución]
+Las dos herramientas cambian muy rápido. Los pasos de este apartado son los de octubre de 2026: si algo no coincide con lo que veis en vuestro editor, consultad la documentación enlazada en cada apartado.
+:::
+
+## Unity MCP (oficial)
+
+El servidor oficial se incluye en el paquete **AI Assistant** (`com.unity.ai.assistant`), junto con el asistente de IA integrado en el editor. Está en **beta abierta** desde mayo de 2026.
+
+### Requisitos
+
+- **Unity 6** (6000.0) o posterior.
+- El paquete **AI Assistant** instalado en el proyecto, desde el Package Manager.
+- El proyecto **conectado a Unity Cloud**.
+- Acceso a las herramientas de **Unity AI**, con una prueba o una suscripción. Consultad las condiciones actuales en la [página de Unity AI](https://unity.com/features/ai).
+- Un agente compatible con MCP, como Claude Code, Cursor, Windsurf, GitHub Copilot en VS Code, Codex o Gemini CLI.
+
+### Puesta en marcha
+
+1. **Comprobar el bridge**. Con el paquete instalado, ve a **Edit → Project Settings → AI → Unity MCP** (según la versión del paquete, puede aparecer como *Unity MCP Server*) y comprueba que **Unity Bridge** aparece como *Running*. Se arranca solo al abrir el editor; si aparece como *Stopped*, pulsa **Start**.
+2. **Configurar el agente**. En la misma página, despliega la sección **Integrations**, selecciona tu agente y pulsa **Configure**. Si tu agente no aparece en la lista, al final de la sección hay un ejemplo de configuración para copiarlo manualmente. El servidor es un programa llamado *relay*, que Unity instala en la carpeta `.unity/relay/` de tu usuario y que se arranca con el argumento `--mcp`.
+3. **Aprobar la conexión**. La primera vez que el agente se conecta, aparece en la sección **Pending Connections**. Comprueba que es tu agente y pulsa **Accept**. Los agentes aprobados se reconectan automáticamente las siguientes veces.
+4. **Probar**. Con Unity abierto, abre el agente y pídele algo sencillo que solo pueda hacer a través del editor, como *"Lee la consola de Unity y resume los avisos y errores que haya"*.
+
+### Qué permite hacer
+
+Las herramientas del servidor oficial permiten:
+
+- **Escenas**: leer la jerarquía y crear, modificar y eliminar GameObjects.
+- **Scripts**: crear, leer y modificar scripts de C#.
+- **Consola**: leer los mensajes, avisos y errores.
+- **Componentes**: leer y modificar los valores de los componentes de los objetos.
+- **Builds**: consultar la plataforma y la configuración de la build.
+- **Herramientas propias**: podemos programar nuestras propias herramientas en C# para que el agente las use.
+
+Documentación: [Unity MCP en el manual de AI Assistant](https://docs.unity3d.com/Packages/com.unity.ai.assistant@2.11/manual/integration/unity-mcp-landing.html).
+
+## MCP for Unity (CoplayDev)
+
+[MCP for Unity](https://github.com/CoplayDev/unity-mcp) es un proyecto de **código abierto** (licencia MIT) y **gratuito**. No necesita ninguna cuenta ni suscripción, y funciona con Unity 2021.3 LTS y versiones posteriores, incluido Unity 6.
+
+### Requisitos
+
+- **Unity 2021.3 LTS** o posterior.
+- **Git** instalado, para añadir el paquete desde su URL.
+- **Python 3.10** o posterior y **uv**, un gestor de paquetes de Python. El asistente de instalación del paquete comprueba si los tenéis y os indica cómo instalarlos.
+- Un agente compatible con MCP, como Claude Code, Cursor, GitHub Copilot en VS Code, Windsurf, Codex o Gemini CLI.
+
+### Puesta en marcha
+
+1. **Instalar el paquete**. En Unity, ve a **Window → Package Manager**, pulsa **+ → Add package from git URL...** e introduce esta dirección:
+
+   ```
+   https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main
+   ```
+
+   También se puede instalar desde la Asset Store o con OpenUPM (`openupm add com.coplaydev.unity-mcp`).
+
+2. **Completar el asistente**. Al terminar la instalación, se abre un asistente que comprueba que Python y uv están instalados. Cuando todo aparezca en verde, selecciona los agentes que tienes instalados y pulsa el botón para configurarlos.
+3. **Comprobar el servidor**. Abre **Window → MCP for Unity**. El panel muestra el estado de la conexión, que debe aparecer como *Connected*. Por defecto, el servidor funciona por HTTP en la dirección `http://localhost:8080/mcp`.
+4. **Activar MCP en el agente**, si hace falta. Claude Code y VS Code se conectan solos después de la configuración; otros agentes, como Cursor, necesitan que actives el servidor en sus propios ajustes.
+5. **Probar**. Pide al agente algo sencillo, como *"Crea un cubo en el origen de la escena y añádele un Rigidbody"*, y comprueba en Unity que aparece.
+
+Si algún agente no se ha configurado automáticamente, se puede añadir a mano con la dirección del servidor, como vimos en el [apartado anterior](./5-MCP.mdx#configurar-un-servidor-mcp). Por ejemplo, en Claude Code:
+
+```bash
+claude mcp add --scope project --transport http unity http://localhost:8080/mcp
+```
+
+### Los grupos de herramientas
+
+MCP for Unity tiene muchas herramientas (unas 50), organizadas en **grupos**. Por defecto solo está activado el grupo **core**, que incluye las herramientas esenciales:
+
+- Crear, leer, modificar y validar **scripts** (`create_script`, `script_apply_edits`, `validate_script`...).
+- Gestionar **escenas**, **GameObjects**, **componentes** y **prefabs** (`manage_scene`, `manage_gameobject`, `manage_components`, `manage_prefabs`, `find_gameobjects`...).
+- Leer la **consola** (`read_console`) y refrescar y recompilar el proyecto (`refresh_unity`).
+- Gestionar los **paquetes**, la configuración de **físicas**, las **cámaras**, la **build** y otras opciones del editor.
+
+El resto de grupos están **desactivados** y se pueden activar solo cuando se necesitan, desde **Window → MCP for Unity → Tools** o pidiéndoselo al agente. Algunos de los más útiles para programar son:
+
+- **testing**: ejecutar los tests del proyecto.
+- **docs**: consultar la documentación oficial de Unity y la API real de la versión instalada, lo que evita que el agente use funciones que no existen o que están obsoletas.
+- **profiling**: consultar el Profiler para buscar problemas de rendimiento.
+
+La recomendación es mantener activado **solo lo que necesites para la tarea** que estás haciendo.
+
+:::danger[La herramienta `execute_code`]
+El grupo **scripting_ext** incluye la herramienta `execute_code`, que permite al agente **ejecutar cualquier código C# dentro del editor**. Es muy potente, pero también muy peligrosa: ese código puede modificar o borrar cualquier cosa del proyecto sin que quede reflejado en ningún script que podamos revisar. Mantén este grupo desactivado salvo que sepas exactamente para qué lo necesitas.
+:::
+
+## ¿Cuál usar?
+
+| | Unity MCP (oficial) | MCP for Unity (CoplayDev) |
+|---|---|---|
+| Desarrollado por | Unity | Comunidad (CoplayDev) |
+| Licencia | Parte de Unity AI | Código abierto (MIT) |
+| Coste | Requiere acceso a Unity AI (prueba o suscripción) | Gratuito |
+| Versiones de Unity | Unity 6 o posterior | Unity 2021.3 o posterior |
+| Requisitos extra | Proyecto conectado a Unity Cloud | Python y uv |
+| Estado | Beta | Estable, con actualizaciones frecuentes |
+
+Las dos opciones permiten hacer lo mismo en lo esencial. Para el proyecto de la asignatura, **MCP for Unity** suele ser la opción más sencilla, ya que es gratuito y no depende de ninguna cuenta. **No instaléis los dos a la vez** en el mismo proyecto, porque el agente tendría herramientas duplicadas y podría confundirse.
+
+## Cómo trabajar con un MCP de Unity
+
+Tener el editor conectado al agente es muy potente, pero también cambia la forma en que hay que revisar sus cambios. Cuando el agente modifica un **script**, el cambio aparece en el `git diff` y es fácil de revisar. Cuando modifica la **escena** o un **prefab**, el cambio se guarda en archivos `.unity` o `.prefab` que son muy difíciles de leer, por lo que hay que revisarlo **en el propio editor**.
+
+### Para qué es más útil
+
+- **Diagnosticar errores**. Es probablemente su mejor uso. El agente puede leer la consola, consultar los componentes del objeto que falla y comprobar qué referencias faltan en el inspector, en lugar de adivinarlo a partir del código:
+
+  > *Al darle al Play aparece una NullReferenceException en `PlayerHealth`. Revisa la consola y el objeto `Player` de la escena y explícame qué está pasando. No cambies nada todavía.*
+
+- **Consultar el proyecto**. Preguntas que antes tendríamos que comprobar a mano, objeto por objeto:
+
+  > *¿Qué objetos de la escena tienen el tag `Enemy` pero no tienen el componente `EnemyHealth`?*
+
+  > *¿Qué escenas hay en la lista de los Build Profiles y en qué orden?*
+
+- **Tareas repetitivas del editor**. Configurar muchos objetos iguales, revisar la matriz de colisiones, crear la estructura de carpetas del proyecto...
+
+- **Comprobar que el código compila**. Después de modificar un script, el agente puede pedir a Unity que recompile y leer los errores de la consola, en lugar de esperar a que nosotros se los copiemos.
+
+### Precauciones
+
+- **Guarda la escena y haz commit antes** de pedir cambios en la escena. Si el resultado no te convence, podrás volver atrás.
+- **Pide cambios concretos**. *"Crea un objeto vacío llamado `SpawnPoints` con tres hijos en estas posiciones"* es fácil de revisar. *"Monta el nivel 2"* no lo es.
+- **Revisa el resultado en el editor**. Comprueba en la jerarquía y en el inspector qué objetos y componentes se han creado o modificado, y si se ha tocado algo que no debía.
+- **Cuidado con los prefabs**. Un cambio en una instancia de un prefab puede aplicarse sin querer al prefab original y afectar a todas sus instancias, o al revés.
+- **No dejes que lo configure todo**. Que el agente pueda añadir componentes y asignar referencias no significa que deba hacerlo siempre. Configurar la escena tú mismo es la mejor forma de saber cómo está montado tu juego y de poder explicarlo después.
+- **No le des el control del Play**. Algunas herramientas permiten al agente entrar en el modo Play. Prueba tú el juego: es la única forma de saber si se siente bien al jugarlo.
+
+:::tip[Añadid el MCP al `AGENTS.md`]
+Si usáis un MCP de Unity, indicadlo en el [archivo de instrucciones del proyecto](./2-Reglas-del-proyecto.mdx), junto con las reglas de uso que queráis que siga el agente. Por ejemplo:
+
+```markdown
+## Uso del MCP de Unity
+- Después de modificar scripts, recompilar y revisar la consola antes de dar la tarea por terminada.
+- Para modificar la escena, proponer antes los cambios y esperar confirmación.
+- No aplicar cambios a los prefabs (Apply/Override) sin preguntar.
+- No entrar en el modo Play.
+- No usar `execute_code`.
+```
+:::

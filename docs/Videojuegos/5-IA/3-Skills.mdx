@@ -1,0 +1,172 @@
+# Skills y comandos reutilizables
+
+En el apartado anterior vimos cómo el archivo `AGENTS.md` le da a la IA las reglas **generales** del proyecto, que lee siempre. Pero hay tareas concretas que repetimos a menudo y que tienen sus propios pasos: crear un nuevo componente, revisar un script antes de hacer commit, añadir una entrada al diario del GDD... Escribir esas instrucciones cada vez es pesado, y meterlas todas en `AGENTS.md` lo haría demasiado largo.
+
+Para eso existen las **skills** (habilidades) y otros mecanismos parecidos: instrucciones guardadas para una tarea concreta, que el agente **solo carga cuando las necesita**.
+
+## Qué es una skill
+
+Una skill es una **carpeta** que contiene un archivo `SKILL.md` con:
+
+1. Una cabecera con el **nombre** de la skill y una **descripción** de cuándo debe usarse.
+2. Las **instrucciones** para realizar la tarea, en Markdown.
+3. De forma opcional, archivos de apoyo: plantillas, ejemplos, listas de comprobación...
+
+Al empezar, el agente solo lee el nombre y la descripción de cada skill. Cuando le pedimos algo que encaja con una descripción, carga las instrucciones completas de esa skill y las sigue. En muchas herramientas también podemos lanzarla a mano escribiendo su nombre como un comando (por ejemplo, `/nuevo-componente`).
+
+El formato `SKILL.md` es un estándar abierto que entienden la mayoría de agentes actuales (Claude Code, Codex, GitHub Copilot, Gemini CLI, Cursor...). Lo que cambia entre ellos es la **carpeta** donde hay que guardar las skills; por ejemplo, en Claude Code las skills del proyecto van en `.claude/skills/<nombre-de-la-skill>/SKILL.md`. Consultad la documentación de vuestra herramienta para saber cuál usar.
+
+## Ejemplo 1: crear un componente
+
+Esta skill hace que todos los componentes nuevos se creen de la misma forma, siguiendo las reglas del proyecto, y que el agente nos explique qué tenemos que hacer en el editor:
+
+```markdown title=".claude/skills/nuevo-componente/SKILL.md"
+---
+name: nuevo-componente
+description: Crea un nuevo script MonoBehaviour para el proyecto siguiendo su
+  estructura y estilo. Úsala cuando se pida crear un componente o script nuevo de Unity.
+---
+
+# Crear un componente nuevo
+
+1. Pregunta qué debe hacer el componente si no está claro, y en qué objeto se va a usar.
+2. Elige la subcarpeta de `Assets/_Project/Scripts/` que corresponda (`Player`,
+   `Enemies`, `UI`, `Managers` o `Utils`). Si no encaja en ninguna, pregunta.
+3. Crea el script con la estructura de `plantilla.cs` (en esta misma carpeta):
+   - Campos del inspector con `[SerializeField] private`, agrupados con `[Header]`.
+   - Componentes obtenidos en `Awake`. Si el componente es obligatorio, usa `[RequireComponent]`.
+   - Nada de `Find` ni `GetComponent` dentro de `Update`.
+4. Añade un comentario breve encima de la clase explicando qué hace.
+5. No modifiques ningún otro script. Si hace falta, indica qué cambios serían necesarios
+   y espera confirmación.
+6. Al terminar, explica:
+   - Qué hace cada método del script.
+   - A qué objeto hay que añadirlo y qué referencias hay que asignar en el inspector.
+   - Cómo probar en Unity que funciona.
+```
+
+```csharp title=".claude/skills/nuevo-componente/plantilla.cs"
+using UnityEngine;
+
+/// <summary>
+/// Descripción breve de lo que hace el componente.
+/// </summary>
+public class NombreDelComponente : MonoBehaviour
+{
+    [Header("Configuración")]
+    [SerializeField] private float ejemplo = 1f;
+
+    [Header("Referencias")]
+    [SerializeField] private Transform objetivo;
+
+    private Rigidbody2D rb;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void Update()
+    {
+    }
+
+    public void MetodoPublico()
+    {
+    }
+
+    private void MetodoPrivado()
+    {
+    }
+}
+```
+
+## Ejemplo 2: revisar un script antes del commit
+
+Las skills no sirven solo para generar código. Una de sus mejores aplicaciones es **revisar** el código, tanto el que hemos escrito nosotros como el que ha generado la IA:
+
+```markdown title=".claude/skills/revisar-script/SKILL.md"
+---
+name: revisar-script
+description: Revisa uno o varios scripts de Unity en busca de errores habituales y de
+  incumplimientos de las reglas del proyecto. Úsala cuando se pida revisar código o
+  antes de hacer un commit.
+---
+
+# Revisar scripts de Unity
+
+No modifiques ningún archivo: solo informa de lo que encuentres.
+
+Revisa los scripts indicados (o los que aparecen en `git diff` si no se indica ninguno)
+y comprueba:
+
+## Errores habituales de Unity
+- `GetComponent`, `Find` o LINQ dentro de `Update`, `FixedUpdate` o `LateUpdate`.
+- Movimiento sin `Time.deltaTime` en `Update`.
+- Fuerzas o velocidades de un Rigidbody modificadas en `Update` en lugar de `FixedUpdate`.
+- Uso de `?.` o `??` con objetos de Unity (GameObject, componentes).
+- `Destroy(this)` o `Destroy(componente)` cuando se quería destruir el objeto entero.
+- Suscripciones a eventos (`+=`) sin su `-=` en `OnDisable` u `OnDestroy`.
+- Corrutinas o `Invoke` que pueden seguir ejecutándose cuando el objeto ya no existe.
+- Comprobaciones de `null` que faltan en referencias del inspector.
+
+## Reglas del proyecto
+- Comprueba que se cumplen las reglas de estilo y arquitectura de `AGENTS.md`.
+
+## Resultado
+Para cada problema, indica el archivo, la línea, por qué es un problema y cómo se
+podría solucionar. Ordénalos del más grave al menos grave. Si no hay problemas, dilo.
+```
+
+Fíjate en la primera instrucción: *"No modifiques ningún archivo"*. Al revisar, queremos que la IA nos **explique** los problemas para entenderlos y decidir nosotros cómo arreglarlos, no que los arregle sin que nos enteremos.
+
+## Ejemplo 3: el diario de desarrollo del GDD
+
+La IA también puede ayudarnos con la **documentación**. Esta skill añade una entrada al [diario de desarrollo del GDD](../4-Proyecto/3-GDD.mdx#16-diario-de-desarrollo) a partir de lo que hemos hecho:
+
+```markdown title=".claude/skills/diario-gdd/SKILL.md"
+---
+name: diario-gdd
+description: Añade una entrada al diario de desarrollo del GDD a partir de los commits
+  recientes. Úsala cuando se pida actualizar el diario o documentar el trabajo del día.
+---
+
+# Añadir una entrada al diario del GDD
+
+1. Consulta los commits desde la última entrada del diario con `git log`.
+2. Redacta una entrada nueva en la sección "16. Diario de desarrollo" de `Docs/GDD.md`,
+   con la fecha de hoy y estos apartados:
+   - **Qué se ha hecho**: resumen de los cambios, agrupados por sistema.
+   - **Problemas**: deja el apartado con un `TODO` para que lo complete el autor.
+   - **Decisiones de diseño**: deja el apartado con un `TODO` para que lo complete el autor.
+3. Si algún commit ha usado IA para el código, recuérdale al autor que actualice el
+   apartado "14. Declaración de uso de IA".
+4. No modifiques ninguna otra sección del GDD.
+```
+
+Fíjate en que la skill deja con un `TODO` los apartados de problemas y decisiones. La IA puede resumir **qué** ha cambiado a partir de los commits, pero solo tú sabes **por qué** has tomado cada decisión y qué te ha costado. Esa parte del diario la tienes que escribir tú.
+
+## Mecanismos parecidos en otras herramientas
+
+Además de las skills, cada herramienta tiene sus propias formas de guardar instrucciones reutilizables. Las ideas son las mismas: instrucciones guardadas en archivos dentro del proyecto, que se usan solo cuando hacen falta.
+
+| Herramienta | Mecanismo | Dónde se guarda |
+|-------------|-----------|-----------------|
+| Claude Code | Skills y comandos (`/nombre`) | `.claude/skills/` |
+| GitHub Copilot | *Prompt files*, que se lanzan como comandos en el chat | `.github/prompts/*.prompt.md` |
+| GitHub Copilot | Instrucciones que se aplican solo a ciertos archivos | `.github/instructions/*.instructions.md` |
+| Cursor | Reglas que se aplican según el tipo de archivo o la tarea | `.cursor/rules/` |
+| Unity AI Assistant | Skills del asistente integrado en el editor | Configuración del paquete AI Assistant |
+
+Las instrucciones por tipo de archivo son muy útiles en Unity. Por ejemplo, podemos tener unas reglas que solo se apliquen a los scripts de la carpeta `UI/` (usar TextMeshPro, no modificar el `Canvas` desde código...) y otras para los de `Enemies/`.
+
+## Buenas prácticas con las skills
+
+- **Una skill, una tarea.** Es mejor tener varias skills pequeñas que una enorme que lo hace todo.
+- **La descripción es lo más importante.** El agente decide si usar una skill leyendo solo su descripción, así que tiene que dejar claro **cuándo** debe usarse.
+- **Que explique y pregunte.** Incluid siempre pasos para que el agente explique lo que ha hecho y pregunte antes de tomar decisiones importantes.
+- **Subidlas al repositorio.** Forman parte del proyecto, igual que el `AGENTS.md`.
+- **Revisadlas como el código.** Si una skill hace que el agente cometa siempre el mismo error, corregid la skill.
+
+:::warning[Cuidado con las skills descargadas]
+En internet hay repositorios con cientos de skills listas para usar, y algunos servidores MCP traen las suyas. Pueden ser muy útiles, pero una skill puede incluir instrucciones y scripts que el agente ejecutará en tu ordenador. **Antes de instalar una skill de otra persona, lee su `SKILL.md` y todos sus archivos**, y no instales nada que no entiendas o cuya procedencia no sea fiable.
+:::

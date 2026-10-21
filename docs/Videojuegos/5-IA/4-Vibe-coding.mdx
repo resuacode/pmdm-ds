@@ -1,0 +1,117 @@
+# Vibe coding con cabeza
+
+El término ***vibe coding*** lo popularizó el investigador Andrej Karpathy en 2025 para describir una forma de programar en la que **describimos lo que queremos en lenguaje natural**, dejamos que la IA escriba el código y nos limitamos a probar el resultado, sin llegar a leer el código. Si algo falla, le pegamos el error a la IA y le pedimos que lo arregle.
+
+Para hacer un prototipo rápido o probar una idea que vamos a tirar después, puede funcionar. Pero en un proyecto que tenemos que mantener, ampliar, depurar y **explicar**, el *vibe coding* puro es una receta para el desastre: al cabo de unas semanas tendremos un proyecto que no entendemos y que nadie sabe arreglar.
+
+En este apartado veremos cómo aprovechar la velocidad de programar describiendo lo que queremos, pero **manteniendo en todo momento el control y la comprensión del código**.
+
+## El ciclo de trabajo
+
+Para cada tarea, seguiremos este ciclo:
+
+1. **Guardar**: hacer commit del estado actual del proyecto.
+2. **Pensar**: tener claro qué queremos conseguir antes de pedírselo a la IA.
+3. **Pedir un plan**: que la IA nos explique cómo lo va a hacer, antes de que escriba código.
+4. **Implementar**: que la IA haga los cambios, en pasos pequeños.
+5. **Revisar**: leer los cambios y entenderlos.
+6. **Probar**: comprobarlo en Unity.
+7. **Guardar o descartar**: hacer commit si funciona y lo entendemos, o volver atrás si no.
+
+### 1. Guardar
+
+Como vimos en la [introducción](./1-Introduccion.mdx#1-git-es-tu-red-de-seguridad), antes de empezar cualquier tarea el proyecto tiene que estar en un commit. Es lo que nos permite experimentar sin miedo.
+
+### 2. Pensar antes de pedir
+
+Antes de escribir nada, piensa cómo resolverías tú el problema, aunque sea a grandes rasgos: qué scripts harían falta, qué componentes, qué funciones de Unity. No hace falta que sepas escribir todo el código, pero sí deberías poder **reconocer** si la solución que te propone la IA tiene sentido.
+
+Si no tienes ni idea de cómo empezar, en lugar de pedirle a la IA que lo haga, pídele que te lo **enseñe**:
+
+> *¿Qué formas hay de hacer que la cámara siga al jugador en un juego 2D en Unity? Explícame las ventajas e inconvenientes de cada una, sin escribir todavía el código.*
+
+### 3. Pedir un plan
+
+Para cualquier tarea que no sea trivial, pide primero un **plan** y no dejes que la IA escriba código hasta que lo hayas aceptado. Muchos agentes tienen un **modo de planificación** en el que solo pueden leer el proyecto y proponer cambios, sin modificar nada. Si tu herramienta no lo tiene, basta con pedirlo:
+
+> *Antes de escribir código, propón un plan: qué scripts vas a crear o modificar, qué hará cada uno y qué tendré que configurar en el editor. Espera a que te confirme el plan.*
+
+Lee el plan con calma. Es el mejor momento para detectar problemas: un script que no debería tocarse, una solución demasiado complicada, una arquitectura que no encaja con la del proyecto... Corregir un plan cuesta una frase; corregir el código ya escrito cuesta mucho más.
+
+### 4. Implementar en pasos pequeños
+
+Si el plan tiene varios pasos, pide que se hagan **de uno en uno**, probando cada paso antes de pasar al siguiente. Si la IA hace los cinco pasos de golpe y algo falla, no sabremos cuál de ellos es el culpable.
+
+### 5. Revisar
+
+Lee todos los cambios en el `git diff` o en la vista de cambios de tu editor. No hace falta que entiendas cada detalle a la primera, pero sí que sepas qué hace cada parte. Si hay algo que no entiendes, **pregunta antes de seguir**:
+
+> *En el método `HandleJump` has añadido una variable `jumpBufferCounter`. ¿Para qué sirve y cómo funciona?*
+
+### 6. Probar en Unity
+
+Vuelve al editor, espera a que compile y comprueba la **consola**. Después prueba el juego, incluidos los casos raros: ¿qué pasa si salto justo al caer de una plataforma? ¿Y si pulso pausa mientras salto? ¿Y si muero dos veces seguidas?
+
+### 7. Guardar o descartar
+
+Si todo funciona y lo entiendes, haz commit con un mensaje que explique el cambio. Si no funciona y llevas varios intentos sin conseguir arreglarlo, **vuelve al último commit** (`git restore .`) y empieza de nuevo con una petición mejor o con un paso más pequeño. Insistir una y otra vez sobre un código que se va complicando cada vez más es la forma más rápida de perder el control.
+
+## Cómo escribir una buena petición
+
+La calidad del código que obtenemos depende mucho de la calidad de lo que pedimos. Una buena petición tiene cuatro partes:
+
+1. **El objetivo**: qué queremos conseguir y en qué contexto.
+2. **El contexto**: qué archivos, objetos y componentes están relacionados.
+3. **Las restricciones**: qué no se debe hacer o cómo debe hacerse.
+4. **El criterio de éxito**: cómo sabremos que funciona.
+
+Compara estas dos peticiones:
+
+> ❌ *Haz que el jugador pueda hacer un dash.*
+
+> ✅ *Quiero añadir un dash al jugador de mi juego de plataformas 2D. El movimiento está en `PlayerMovement.cs`, que usa `Rigidbody2D.linearVelocity` en `FixedUpdate`, y la entrada se lee con el Input System (acción `Dash`, que ya está creada en `InputSystem_Actions`).*
+>
+> *El dash debe impulsar al jugador horizontalmente en la dirección en la que mira durante 0,15 segundos, sin verse afectado por la gravedad mientras dura, y tener una recarga de 1 segundo. La distancia, la duración y la recarga deben poder ajustarse desde el inspector.*
+>
+> *No crees scripts nuevos: modifica solo `PlayerMovement.cs`. Antes de escribir código, explícame cómo lo vas a hacer.*
+
+La primera petición obliga a la IA a adivinar casi todo: qué sistema de entrada usamos, cómo se mueve el jugador, cuánto dura el dash, si hay que crear un script nuevo... y lo más probable es que adivine mal. La segunda deja muy poco margen para que haga algo que no queremos.
+
+## Depurar errores con la IA
+
+Cuando algo no funciona, la tentación es copiar el error en el chat y pedir *"arréglalo"*. El problema es que la IA puede "arreglar" el síntoma sin entender la causa, o introducir un error nuevo. Es mejor usarla para **entender** el error:
+
+1. **Lee tú primero el error**. En la consola de Unity, haz doble clic sobre él para ir a la línea que lo provoca. Muchas veces la solución es evidente.
+2. **Dale toda la información**: el mensaje de error completo (con la traza), el script implicado, qué estabas haciendo cuando ocurrió y qué debería haber pasado.
+3. **Pide un diagnóstico antes que una solución**:
+
+> *Al darle al Play aparece este error: `NullReferenceException: Object reference not set to an instance of an object — PlayerHealth.TakeDamage (PlayerHealth.cs:42)`. Te paso el script. Antes de cambiar nada, explícame por qué puede ocurrir y qué debería comprobar en el editor.*
+
+4. **Comprueba tú la causa**: muchas veces el error no está en el código, sino en la escena (una referencia sin asignar en el inspector, un objeto sin el componente necesario, un tag mal escrito...), y la IA no puede verlo si no se lo decimos o si no tiene acceso al editor mediante [MCP](./6-MCP-Unity.mdx).
+
+:::tip[El error más habitual: las referencias del inspector]
+Una gran parte de los errores en Unity son `NullReferenceException` causadas por una variable `[SerializeField]` que no se ha asignado en el inspector. La IA escribe el código, pero **la configuración del editor la tienes que hacer tú**. Por eso es tan útil pedirle que, al terminar, te indique qué referencias hay que asignar y en qué objetos.
+:::
+
+## Aprender con la IA
+
+La IA puede ser la mejor herramienta para aprender a programar... o la mejor para no aprender nunca. Algunas formas de usarla para aprender:
+
+- **Escribe tú primero**. Intenta escribir el script tú mismo y después pide a la IA que lo revise y te explique qué mejoraría y por qué.
+- **Pide pistas, no soluciones**. *"No me des el código, dame una pista de qué función de Unity podría usar para detectar si el jugador está en el suelo."*
+- **Pide que te explique el código de otros**. Si encuentras un script en un tutorial o en un asset y no lo entiendes, pide una explicación línea por línea.
+- **Pide alternativas**. *"¿De qué otras formas se podría hacer esto? ¿Cuál es más sencilla de mantener?"*
+- **Pide que te pregunte**. *"Hazme cinco preguntas sobre este script para comprobar si lo he entendido."* Es una forma estupenda de preparar la explicación de tu proyecto.
+
+## Antes de aceptar un cambio
+
+Antes de hacer commit de un cambio generado por IA, comprueba que puedes responder "sí" a todas estas preguntas:
+
+- [ ] ¿Sé qué archivos se han modificado y por qué?
+- [ ] ¿Entiendo qué hace cada parte del código nuevo?
+- [ ] ¿Podría explicárselo a un compañero sin mirar el chat con la IA?
+- [ ] ¿Sigue las reglas de estilo y arquitectura del proyecto?
+- [ ] ¿Lo he probado en Unity, incluidos los casos raros?
+- [ ] ¿La consola está libre de errores y de avisos nuevos?
+- [ ] ¿He configurado en el editor todo lo necesario (componentes, referencias, tags, capas...)?
+- [ ] ¿He anotado el uso de la IA en el [GDD](../4-Proyecto/3-GDD.mdx#14-declaración-de-uso-de-ia)?

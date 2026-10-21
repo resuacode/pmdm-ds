@@ -1,0 +1,98 @@
+# Programar con IA sin perder el control
+
+Las herramientas de inteligencia artificial han cambiado la forma de programar. Hoy un asistente puede escribir un script completo, encontrar un error a partir del mensaje de la consola o explicarnos una parte de la API de Unity que no conocíamos. Y los **agentes** van un paso más allá: son capaces de leer nuestro proyecto, crear y modificar archivos, ejecutar comandos e incluso manejar el editor de Unity.
+
+Bien usadas, estas herramientas nos permiten avanzar mucho más rápido y aprender cosas nuevas. Mal usadas, nos llevan a un proyecto lleno de código que no entendemos, que no sabemos arreglar cuando falla y que no podemos explicar. En esta sección veremos cómo sacarles partido **sin perder nunca el control del proyecto**.
+
+:::info[Qué se permite en el proyecto]
+En el [proyecto de la asignatura](../4-Proyecto/1-Proyecto.mdx#uso-de-inteligencia-artificial-generativa) se puede usar la IA para **programar**, **documentar** y **configurar** el proyecto, y hay que declarar su uso en el [GDD](../4-Proyecto/3-GDD.mdx#14-declaración-de-uso-de-ia). Todo lo que se explica en esta sección se centra en esos usos.
+:::
+
+## La regla principal
+
+> **Tú eres el programador. La IA es una herramienta.**
+
+Todo el código de tu proyecto es **tuyo**, lo hayas escrito tú o lo haya escrito una IA. Eso significa que:
+
+- Tienes que **entender** cada línea que entregas. Si no sabes explicar qué hace un trozo de código, no lo entregues.
+- Eres responsable de que funcione. "Lo ha hecho la IA" no es una explicación válida para un error.
+- Tienes que poder **modificarlo** sin ayuda. Si el día de la entrega te piden cambiar algo y no sabes ni por dónde empezar, has perdido el control del proyecto.
+
+En la evaluación del proyecto se os puede pedir en cualquier momento que expliquéis o modifiquéis cualquier parte de vuestro código.
+
+## Tipos de herramientas
+
+No todas las herramientas de IA trabajan igual. De menos a más autonomía, podemos distinguir tres tipos:
+
+| Tipo | Ejemplos | Qué hace | Control que mantenemos |
+|------|----------|----------|------------------------|
+| **Chat** | ChatGPT, Claude, Gemini (en el navegador) | Responde preguntas y genera código que copiamos nosotros. | Total: solo entra en el proyecto lo que pegamos. |
+| **Asistente en el editor** | GitHub Copilot, autocompletado de Cursor o Rider | Sugiere código mientras escribimos, o responde dentro del editor sobre nuestros archivos. | Alto: aceptamos o rechazamos cada sugerencia. |
+| **Agente** | Claude Code, Codex, Gemini CLI, modo agente de Copilot o Cursor | Recibe una tarea, lee el proyecto, decide qué archivos cambiar y los modifica él mismo. Puede ejecutar comandos y usar herramientas externas (MCP). | El que nosotros le demos: hay que revisar sus cambios. |
+
+Los agentes son los más potentes, pero también los que más fácilmente nos hacen perder el control: en un par de minutos pueden modificar diez archivos. Por eso, la mayor parte de esta sección trata sobre cómo trabajar con ellos.
+
+## Los cinco hábitos para no perder el control
+
+### 1. Git es tu red de seguridad
+
+Antes de pedirle a un agente que haga cualquier cambio, el proyecto tiene que estar **guardado en un commit**. Así, si el resultado no nos convence, podemos volver al estado anterior en un segundo:
+
+```bash
+git status                 # Comprobamos que no hay cambios sin guardar
+git add .
+git commit -m "Movimiento del jugador funcionando"
+
+# ... el agente trabaja ...
+
+git diff                   # Vemos exactamente qué ha cambiado
+git restore .              # Si no nos gusta, descartamos todos los cambios
+```
+
+Para tareas más grandes, es buena idea trabajar en una **rama** aparte (`git switch -c sistema-inventario`) y unirla a la principal solo cuando todo funcione.
+
+### 2. Tareas pequeñas
+
+Es mucho más fácil revisar y entender un cambio pequeño que uno enorme. En lugar de pedir *"Haz el sistema de combate"*, divide la tarea: primero el ataque básico, después la vida de los enemigos, después el retroceso al recibir daño... y prueba cada paso en Unity antes de pasar al siguiente.
+
+### 3. Revisar siempre los cambios
+
+Nunca aceptes un cambio sin mirarlo. Revisa el `git diff` o la vista de cambios de tu editor y comprueba, como mínimo:
+
+- Qué archivos se han modificado, y si alguno no debería haberse tocado.
+- Que entiendes lo que hace el código nuevo.
+- Que sigue el estilo y la arquitectura del resto del proyecto.
+- Que no se han borrado cosas que funcionaban.
+
+### 4. Probar en Unity
+
+Que el código compile no significa que funcione. Después de cada cambio, vuelve a Unity, comprueba que la **consola** no muestra errores, dale al **Play** y prueba el juego. Si algo falla, es mucho más fácil encontrar el error si el cambio ha sido pequeño.
+
+### 5. Pedir explicaciones
+
+La IA no es solo una herramienta para escribir código: también es un profesor con una paciencia infinita. Cuando genere algo que no entiendes, pregúntale:
+
+- *"Explícame línea por línea qué hace este script."*
+- *"¿Por qué has usado `FixedUpdate` en lugar de `Update` aquí?"*
+- *"¿Qué pasaría si quito esta comprobación de `null`?"*
+- *"¿Hay alguna forma más sencilla de hacerlo?"*
+
+Si después de la explicación sigues sin entenderlo, probablemente la solución es demasiado compleja para tu nivel actual. Pide una alternativa más sencilla que sí puedas entender y mantener.
+
+## Señales de que estás perdiendo el control
+
+Si te reconoces en alguna de estas situaciones, para, vuelve al último commit que entendías y avanza en pasos más pequeños:
+
+- Le pides a la IA que arregle un error, aparece otro, le pides que lo arregle, aparece otro... y ya no sabes qué ha cambiado.
+- Hay scripts en tu proyecto que no sabes para qué sirven.
+- No sabes en qué script está el código que hace una cosa concreta de tu juego.
+- Tienes miedo de tocar una parte del código porque "funciona y no sé por qué".
+- Copias mensajes de error en el chat sin leerlos.
+
+## Qué veremos en esta sección
+
+1. [Delimitar el estilo, la arquitectura y el formato del código](./2-Reglas-del-proyecto.mdx): cómo darle a la IA las reglas de nuestro proyecto para que el código que genere encaje con el resto.
+2. [Skills y comandos reutilizables](./3-Skills.mdx): cómo guardar instrucciones para tareas que repetimos a menudo.
+3. [Vibe coding con cabeza](./4-Vibe-coding.mdx): cómo programar describiendo lo que queremos sin dejar de entender el resultado.
+4. [Trabajar con MCP](./5-MCP.mdx): qué son los servidores MCP y cómo dan nuevas capacidades a los agentes.
+5. [MCP para Unity](./6-MCP-Unity.mdx): cómo conectar un agente con el editor de Unity, con el servidor oficial y con el de la comunidad.

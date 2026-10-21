@@ -1,0 +1,178 @@
+# Delimitar el estilo, la arquitectura y el formato del código
+
+Si le pedimos a una IA *"haz un script para que el jugador salte"* sin más información, nos devolverá un script que funciona, pero que probablemente no se parece en nada al resto de nuestro proyecto: usará otro sistema de entrada, otros nombres, otra forma de organizar el código... Si cada script del proyecto lo genera la IA con un estilo distinto, el resultado es un proyecto incoherente y difícil de mantener.
+
+La solución es darle a la IA las **reglas de nuestro proyecto** antes de que empiece a trabajar. Así, todo lo que genere encajará con lo que ya tenemos y será más fácil de revisar.
+
+## Los archivos de instrucciones
+
+Todos los agentes de programación leen al empezar un archivo de instrucciones que colocamos en la raíz del proyecto. En él describimos el proyecto y las reglas que debe seguir el agente. Es como el documento que le daríamos a un compañero nuevo que se une al equipo.
+
+El nombre del archivo depende de la herramienta:
+
+| Herramienta | Archivo |
+|-------------|---------|
+| Codex, Cursor, GitHub Copilot y muchos otros | `AGENTS.md` |
+| Claude Code | `CLAUDE.md` |
+| GitHub Copilot (instrucciones específicas) | `.github/copilot-instructions.md` |
+| Gemini CLI | `GEMINI.md` |
+| Cursor (reglas por temas) | Archivos dentro de `.cursor/rules/` |
+
+`AGENTS.md` se ha convertido en un estándar que entienden la mayoría de herramientas, por lo que es la mejor opción si usáis varias. Si usáis Claude Code, podéis crear un `CLAUDE.md` que se limite a importar el `AGENTS.md` con esta línea:
+
+```markdown
+@AGENTS.md
+```
+
+Estos archivos se **suben al repositorio** como cualquier otro archivo del proyecto, y conviene ir actualizándolos a medida que el proyecto crece y tomamos nuevas decisiones.
+
+:::tip[Que lo escriba la IA, pero que lo revises tú]
+Muchos agentes tienen un comando para generar este archivo automáticamente a partir del proyecto (en Claude Code, por ejemplo, `/init`). Es un buen punto de partida, pero **revísalo y corrígelo**: el agente describirá lo que ve, no las decisiones que tú has tomado o quieres tomar.
+:::
+
+## Qué incluir
+
+Un buen archivo de instrucciones es **corto, concreto y verificable**. No hace falta explicarle a la IA qué es Unity o cómo se programa en C#; lo importante es lo que es **propio de nuestro proyecto**.
+
+### 1. Descripción y tecnología
+
+Qué juego es y con qué está hecho. Esto evita, por ejemplo, que el agente use APIs de versiones antiguas de Unity o el sistema de entrada que no usamos:
+
+- Versión de Unity y pipeline de render (Unity 6, URP).
+- 2D o 3D.
+- Sistema de entrada (Input Manager clásico o Input System).
+- Paquetes que se usan (Cinemachine, TextMeshPro...).
+
+### 2. Estructura del proyecto
+
+Dónde va cada cosa, siguiendo el [requisito de organización del proyecto](../4-Proyecto/1-Proyecto.mdx#12-organización-del-proyecto). Si no se lo decimos, el agente puede dejar scripts sueltos en cualquier carpeta.
+
+### 3. Arquitectura
+
+Las decisiones de diseño del código que queremos que se respeten:
+
+- Qué "gestores" hay y de qué se encarga cada uno (`GameManager`, `AudioManager`, `UIManager`...).
+- Cómo se comunican los scripts: referencias en el inspector, singleton, eventos...
+- Qué patrones usamos (por ejemplo, *object pooling* para los proyectiles o una máquina de estados para los enemigos).
+
+### 4. Estilo y formato
+
+Las convenciones de código: nombres, uso de `[SerializeField]`, idioma de los nombres y los comentarios, cómo se organizan las partes de un script...
+
+### 5. Lo que el agente NO debe hacer
+
+Esta es probablemente la parte más importante para no perder el control. Algunas reglas muy útiles en proyectos de Unity:
+
+- No instalar paquetes ni añadir dependencias sin preguntar.
+- No modificar los archivos de `ProjectSettings` sin preguntar.
+- No borrar, mover ni renombrar archivos `.meta`. Unity usa estos archivos para guardar las referencias entre assets: si se pierden, se rompen las referencias en las escenas y los prefabs.
+- No editar a mano los archivos de escenas (`.unity`) ni de prefabs (`.prefab`).
+- No hacer cambios fuera de lo que se le ha pedido (por ejemplo, "aprovechar" para reorganizar otros scripts).
+- Explicar los cambios realizados al terminar.
+
+:::warning[Mover y renombrar scripts]
+Cuando un agente renombra o mueve un script desde fuera de Unity, puede dejar atrás su archivo `.meta`. Unity generará uno nuevo, pero los objetos de la escena que tenían ese script perderán la referencia y aparecerá el aviso *"The referenced script on this Behaviour is missing!"*. Lo más seguro es **mover y renombrar los archivos desde la ventana Project de Unity**, y si lo hace el agente, asegurarse de que mueve también el `.meta`.
+:::
+
+## Ejemplo de `AGENTS.md` para un proyecto de Unity
+
+```markdown
+# Proyecto: Robot Escape
+
+Juego de plataformas 2D hecho con Unity 6 (URP 2D). El jugador es un robot que
+escapa de una fábrica usando el doble salto y la inversión de la gravedad.
+El GDD está en `Docs/GDD.md`.
+
+## Tecnología
+- Unity 6000.0, Universal Render Pipeline 2D.
+- Entrada: Input System, con las acciones del asset `InputSystem_Actions`.
+  No usar la clase `Input` antigua.
+- Cámara: Cinemachine.
+- Textos de la UI: TextMeshPro.
+
+## Estructura de carpetas
+- `Assets/_Project/Scripts/` con subcarpetas `Player/`, `Enemies/`, `UI/`, `Managers/` y `Utils/`.
+- `Assets/_Project/Prefabs/`, `Assets/_Project/Scenes/`, `Assets/_Project/Audio/`.
+- `Assets/ThirdParty/`: packs externos. No modificar nada de esta carpeta.
+
+## Arquitectura
+- `GameManager`, `AudioManager` y `SceneLoader` son singletons con `DontDestroyOnLoad`.
+  No crear más singletons sin preguntar.
+- La comunicación entre sistemas se hace con eventos de C# (`event Action`),
+  no buscando objetos. Ejemplo: `PlayerHealth.OnDeath`.
+- Prohibido usar `GameObject.Find` o `FindAnyObjectByType` dentro de `Update`.
+- Los proyectiles usan el `ObjectPool` de `UnityEngine.Pool`.
+- El movimiento con físicas se hace en `FixedUpdate` mediante `Rigidbody2D.linearVelocity`.
+
+## Estilo de código
+- Nombres de clases, métodos y propiedades en PascalCase; variables en camelCase.
+- Nombres de clases y métodos en inglés; comentarios en español.
+- Campos del inspector: `[SerializeField] private`, nunca `public`.
+- Obtener componentes en `Awake` y guardarlos en variables.
+- Orden dentro de cada script: campos serializados, campos privados, métodos de Unity
+  (`Awake`, `Start`, `Update`...), métodos públicos y métodos privados.
+- Un script por clase, con el mismo nombre que el archivo.
+
+## Reglas
+- No instalar paquetes ni modificar `ProjectSettings` sin preguntar.
+- No borrar, mover ni renombrar archivos `.meta`.
+- No editar a mano archivos `.unity`, `.prefab` ni `.asset`.
+- No modificar nada que no esté relacionado con la tarea pedida.
+- Antes de cambios grandes (más de 2 o 3 archivos), proponer un plan y esperar confirmación.
+- Al terminar, resumir qué archivos se han cambiado y por qué, e indicar qué hay que
+  configurar a mano en el editor (añadir componentes, asignar referencias...).
+```
+
+Fíjate en que todas las reglas son **concretas**: no dice "escribe buen código", sino "obtener componentes en `Awake`" o "prohibido usar `Find` dentro de `Update`". Las reglas concretas son las que la IA puede cumplir y las que tú puedes comprobar al revisar el código.
+
+:::tip[Menos es más]
+Un archivo de instrucciones muy largo consume parte del contexto que la IA tiene disponible y hace que preste menos atención a cada regla. Si el archivo pasa de unas 100 líneas, plantéate qué reglas son realmente importantes, o mueve las instrucciones de tareas concretas a [skills](./3-Skills.mdx).
+:::
+
+## Un script de referencia
+
+Una de las formas más eficaces de conseguir que la IA siga nuestro estilo es darle un **ejemplo**. Cuando tengas un script escrito exactamente como te gusta, indícalo en las instrucciones (*"Usar `Assets/_Project/Scripts/Player/PlayerHealth.cs` como referencia de estilo"*) o menciónalo al pedir una tarea:
+
+> *Crea un script `EnemyHealth` para los enemigos con la misma estructura que `PlayerHealth.cs`.*
+
+## El formato del código con `.editorconfig`
+
+Hay detalles de formato (sangría, posición de las llaves, espacios...) que es mejor que no dependan de la IA, sino del **editor**. El archivo `.editorconfig`, en la raíz del proyecto, define estas reglas y lo entienden Visual Studio, Rider y Visual Studio Code (con la extensión de C#). Así, el código queda igual lo escriba quien lo escriba, y podemos formatear cualquier archivo con el atajo de formato del editor:
+
+```ini
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+
+# Llaves en una línea nueva (estilo habitual de C#)
+csharp_new_line_before_open_brace = all
+
+# Usar var solo cuando el tipo es evidente
+csharp_style_var_when_type_is_apparent = true:suggestion
+
+# Campos privados en camelCase
+dotnet_naming_rule.private_fields_camel.symbols = private_fields
+dotnet_naming_rule.private_fields_camel.style = camel_case
+dotnet_naming_rule.private_fields_camel.severity = suggestion
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.camel_case.capitalization = camel_case
+```
+
+## Las instrucciones en cada petición
+
+El archivo de instrucciones contiene las reglas **generales**. En cada petición concreta, además, conviene indicar lo que es propio de esa tarea:
+
+- **Qué** queremos conseguir y **por qué**.
+- **Qué archivos** están relacionados.
+- **Qué restricciones** hay ("sin crear scripts nuevos", "sin cambiar la interfaz pública de `PlayerHealth`").
+- **Cómo sabremos que funciona**: qué debería ocurrir al probarlo en Unity.
+
+Lo veremos con más detalle en el apartado de [vibe coding con cabeza](./4-Vibe-coding.mdx#cómo-escribir-una-buena-petición).

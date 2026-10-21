@@ -1,0 +1,92 @@
+# Trabajar con MCP
+
+Un agente de programación, por sí solo, puede leer y escribir los archivos de nuestro proyecto y ejecutar comandos en la terminal. Pero hay muchas cosas que no puede hacer: no puede ver qué hay en la escena de Unity, no puede leer los errores de la consola del editor ni consultar la documentación actualizada de una librería.
+
+El **MCP** (*Model Context Protocol*) es un estándar que permite conectar los agentes con **otras aplicaciones y servicios** para que puedan usarlos. Cada aplicación que quiera ofrecer sus funciones a los agentes publica un **servidor MCP**, y los agentes (los **clientes**) se conectan a él.
+
+## Cómo funciona
+
+Un servidor MCP ofrece al agente una serie de **herramientas** (*tools*): funciones con un nombre, una descripción y unos parámetros, como `read_console` (leer la consola), `create_script` (crear un script) o `manage_gameobject` (crear o modificar objetos de la escena). También puede ofrecer **recursos** (*resources*), que son datos que el agente puede leer, como la lista de escenas del proyecto.
+
+Cuando le pedimos algo al agente, este decide si alguna de las herramientas disponibles le ayuda y, si es así, la llama. Por ejemplo, si le decimos *"mira qué errores hay en la consola de Unity"*, el agente llama a la herramienta de leer la consola del servidor MCP de Unity, recibe los mensajes y nos los resume.
+
+```
+Nosotros ──petición──▶ Agente (cliente MCP) ──llamada a herramienta──▶ Servidor MCP ──▶ Aplicación (Unity)
+                            ◀──────────────── resultado ────────────────
+```
+
+Lo importante es que el protocolo es **estándar**: cualquier agente compatible con MCP (Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI...) puede usar cualquier servidor MCP, sin que el servidor tenga que estar pensado para un agente concreto.
+
+## Tipos de servidores
+
+Los servidores MCP pueden funcionar de dos formas:
+
+- **Locales**: se ejecutan en nuestro ordenador. El agente los arranca como un programa (transporte *stdio*) o se conecta a ellos a través de una dirección local como `http://localhost:8080/mcp` (transporte *HTTP*). Los servidores de Unity son de este tipo, ya que tienen que comunicarse con el editor que tenemos abierto.
+- **Remotos**: se ejecutan en internet y nos conectamos a ellos con una URL, normalmente iniciando sesión con nuestra cuenta. Es lo habitual en servicios como GitHub.
+
+## Configurar un servidor MCP
+
+Cada herramienta guarda la lista de servidores MCP en su propio archivo de configuración, aunque el contenido es muy parecido en todas. Muchos servidores, como los de Unity, ofrecen un botón para configurar automáticamente los agentes más habituales, pero conviene saber dónde está esa configuración para poder revisarla.
+
+**Claude Code** se configura desde la terminal con el comando `claude mcp add`:
+
+```bash
+# Servidor HTTP
+claude mcp add --transport http nombre-del-servidor http://localhost:8080/mcp
+
+# Servidor que se arranca como un programa (stdio)
+claude mcp add nombre-del-servidor -- comando argumento1 argumento2
+
+# Con --scope project, se guarda en el archivo .mcp.json del proyecto
+claude mcp add --scope project --transport http nombre-del-servidor http://localhost:8080/mcp
+```
+
+Dentro de Claude Code, el comando `/mcp` muestra los servidores configurados y si están conectados.
+
+**Visual Studio Code** (GitHub Copilot) lee los servidores del archivo `.vscode/mcp.json` del proyecto:
+
+```json title=".vscode/mcp.json"
+{
+  "servers": {
+    "nombre-del-servidor": {
+      "type": "http",
+      "url": "http://localhost:8080/mcp"
+    }
+  }
+}
+```
+
+**Cursor** usa el archivo `.cursor/mcp.json`, con un formato parecido pero con la clave `mcpServers`:
+
+```json title=".cursor/mcp.json"
+{
+  "mcpServers": {
+    "nombre-del-servidor": {
+      "url": "http://localhost:8080/mcp"
+    }
+  }
+}
+```
+
+:::tip[Configuración del proyecto o del usuario]
+La mayoría de herramientas permiten guardar la configuración de los servidores MCP en el **proyecto** (en un archivo dentro del repositorio) o en la configuración de **nuestro usuario** (para todos los proyectos). Si el servidor solo tiene sentido en este proyecto, como el de Unity, es mejor guardarlo en el proyecto. Eso sí, **nunca subáis al repositorio un archivo de configuración que contenga contraseñas, tokens o claves de acceso**.
+:::
+
+## Otros servidores útiles para programar
+
+Además de los de Unity, que veremos en el [siguiente apartado](./6-MCP-Unity.mdx), hay otros servidores MCP que resultan muy útiles para programar:
+
+- **Documentación**: servidores que permiten al agente consultar la documentación oficial y actualizada de un lenguaje o una librería, en lugar de fiarse de lo que recuerda. Por ejemplo, Microsoft ofrece un servidor MCP con la documentación de C# y .NET (Microsoft Learn), y algunos servidores de Unity incluyen herramientas para consultar la documentación de Unity.
+- **GitHub**: permite al agente consultar y gestionar los *issues*, las *pull requests* y los repositorios. Es útil, por ejemplo, para que el agente lea la descripción de una tarea que hayas apuntado como *issue*.
+
+Instala solo los servidores que vayas a usar: cada servidor añade herramientas que el agente tiene que tener en cuenta, y demasiadas herramientas hacen que el agente trabaje peor.
+
+## Seguridad
+
+Un servidor MCP le da al agente **la capacidad de actuar** sobre otras aplicaciones. Eso es lo que lo hace tan útil, pero también lo que lo hace peligroso si no se usa con cuidado:
+
+- **Instala solo servidores de fuentes fiables**. Un servidor MCP local es un programa que se ejecuta en tu ordenador, con acceso a tus archivos. Usa servidores oficiales o proyectos conocidos, con su código publicado, y no instales cualquier servidor que encuentres en internet.
+- **Revisa los permisos**. Los agentes suelen pedir confirmación antes de usar una herramienta. No actives la opción de aprobar todo automáticamente, al menos con las herramientas que **modifican** cosas. Las que solo leen (como leer la consola) son menos peligrosas.
+- **Activa solo lo que necesites**. Muchos servidores permiten activar o desactivar herramientas. Cuantas menos herramientas tenga el agente, menos cosas pueden salir mal.
+- **Desconfía de lo que lee el agente**. Si el agente lee el contenido de una página web, de un archivo descargado o de un *issue* escrito por otra persona, ese contenido puede incluir instrucciones ocultas para que haga algo que no le hemos pedido (*prompt injection*). Esta es otra razón para revisar todo lo que hace.
+- **Haz commit antes**. Igual que con cualquier otro cambio del agente, si va a modificar el proyecto a través de un servidor MCP, haz commit antes para poder deshacerlo.

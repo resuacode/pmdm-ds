@@ -25,7 +25,7 @@ const tracks: Track[] = [
     label: 'Bloque 2',
     title: 'Videojuegos con Unity 6',
     description:
-      'Editor, scripting en C#, físicas 2D y prácticas guiadas como Pong y Breakout.',
+      'Editor, scripting en C#, físicas, UI, audio y un proyecto propio a lo largo del curso.',
     to: '/docs/Videojuegos/indice',
     tone: 'games',
   },

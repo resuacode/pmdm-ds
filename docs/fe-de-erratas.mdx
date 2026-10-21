@@ -301,13 +301,13 @@ No se incluyen las faltas de ortografía ni las secciones nuevas que se han aña
 
 ## Bloque 5: Juegos paso a paso y C#
 
-### [Pong](./Videojuegos/2-Juegos/1-Pong.mdx)
+### Pong
 
 - ❌ El script `Player` mezclaba `rb.velocity` y `rb.linearVelocity` en la misma línea.
 - ❌ `Destroy(FindAnyObjectByType<GameManager>())` destruía solo el **componente** GameManager, no el objeto. **Correcto:** `Destroy(FindAnyObjectByType<GameManager>().gameObject)`.
 - 🔄 En Unity 6, TextMeshPro ya no se instala desde el Package Manager: viene incluido y solo hay que importar los *TMP Essentials*.
 
-### [Breakout](./Videojuegos/2-Juegos/2-Breakout.mdx)
+### Breakout
 
 - ❌ El bloque de código de la pala se titulaba `PlayerController.cs`, pero la clase era `Player`. En Unity el nombre del archivo y el de la clase deben coincidir.
 - 🔄 `rb.velocity` → `rb.linearVelocity` en `ResetBall()`.

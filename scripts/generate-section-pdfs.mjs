@@ -53,6 +53,10 @@ async function listMdxFiles(dir) {
     const entries = await fs.readdir(current, {withFileTypes: true});
     entries.sort((x, y) => naturalCompare(x.name, y.name));
     for (const entry of entries) {
+      // Docusaurus ignora los archivos y carpetas que empiezan por "_"
+      if (entry.name.startsWith('_')) {
+        continue;
+      }
       const full = path.join(current, entry.name);
       if (entry.isDirectory()) {
         await walk(full);

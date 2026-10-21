@@ -92,6 +92,38 @@ int numero = 10;
 
 Las variables en C# son sensibles a mayúsculas y minúsculas, por lo que `numero` y `Numero` serían dos variables diferentes.
 
+:::info[Más sobre C#]
+En el anexo [Sobre C#](../3-CSharp/3-CSharp.mdx) se explican con detalle los tipos de datos, las colecciones, las clases, las propiedades, los eventos y el resto de características del lenguaje, comparándolas con Java y Kotlin.
+:::
+
+### Atributos para el inspector
+
+Además de `[SerializeField]`, Unity tiene otros **atributos** que se escriben entre corchetes delante de una variable o de una clase y que cambian cómo se muestra en el inspector. Nos ayudan a que nuestros scripts sean más fáciles de configurar desde el editor:
+
+```csharp
+using UnityEngine;
+
+[RequireComponent(typeof(Rigidbody2D))] // Añade un Rigidbody2D si el objeto no lo tiene e impide quitarlo
+public class Jugador : MonoBehaviour
+{
+    [Header("Movimiento")]                   // Título para agrupar variables
+    [SerializeField] private float velocidad = 5f;
+
+    [Tooltip("Fuerza que se aplica al saltar")] // Texto de ayuda al pasar el ratón
+    [SerializeField] private float fuerzaSalto = 8f;
+
+    [Header("Vida")]
+    [Range(1, 10)]                           // Muestra un deslizador entre 1 y 10
+    [SerializeField] private int vidasMaximas = 3;
+
+    [Space(10)]                              // Deja un espacio en el inspector
+    [TextArea]                               // Caja de texto de varias líneas
+    [SerializeField] private string descripcion;
+
+    [HideInInspector] public int vidasActuales; // Pública, pero oculta en el inspector
+}
+```
+
 ## Funciones y métodos
 
 Las funciones en C# se utilizan para agrupar un conjunto de instrucciones que se pueden llamar desde cualquier parte del código. En Unity, las funciones se utilizan para definir el comportamiento de los objetos en la escena.
@@ -119,6 +151,17 @@ Para llamar a una función desde otra parte del código, se utiliza el nombre de
 ```csharp
 Saludar();
 ```
+
+Las funciones también pueden recibir parámetros y devolver un valor. Por convención, en C# los nombres de las funciones se escriben en PascalCase (`RecibirDaño`, `CalcularPuntos`):
+
+```csharp
+int CalcularPuntos(int enemigosDerrotados, float tiempo)
+{
+    return enemigosDerrotados * 100 - (int)tiempo;
+}
+```
+
+Puedes ver más sobre los parámetros por defecto, la sobrecarga o los parámetros `ref` y `out` en el apartado de [métodos del anexo de C#](../3-CSharp/3-CSharp.mdx#métodos).
 
 ## Las funciones del MonoBehaviour
 
@@ -151,11 +194,7 @@ Los FPS no solo van a variar dependiendo del hardware en dónde se ejecute nuest
 
 Otras funciones relevantes, entre otras, son las siguientes:
  
-- **OnTriggerEnter(Collider other)**: Se llama cuando un objeto entra en el trigger del objeto.
-- **OnTriggerExit(Collider other)**: Se llama cuando un objeto sale del trigger del objeto.
-- **OnCollisionEnter(Collision collision)**: Se llama cuando un objeto colisiona con otro objeto.
-- **OnCollisionExit(Collision collision)**: Se llama cuando un objeto deja de colisionar con otro objeto.
-- En los juegos 2D se usan sus equivalentes con el sufijo `2D`: **OnTriggerEnter2D(Collider2D other)**, **OnCollisionEnter2D(Collision2D collision)**, etc.
+- **OnCollisionEnter**, **OnTriggerEnter** y el resto de funciones que se llaman cuando un objeto choca con otro o entra en un trigger. Son tan importantes que las vemos con detalle en el apartado de [colisiones y triggers](#colisiones-y-triggers).
 - **OnMouseDown()**: Se llama cuando se hace clic en el objeto con el ratón.
 - **OnMouseEnter()**: Se llama cuando el ratón entra en el objeto.
 - **OnMouseExit()**: Se llama cuando el ratón sale del objeto.
@@ -421,7 +460,1004 @@ if (Mouse.current.leftButton.isPressed)
 ```
 
 :::tip[¿Qué sistema usar?]
-En los tutoriales de este curso (Pong, Breakout y los ejemplos de scripting) usamos el Input Manager clásico (`Input.GetAxis`, `GetAxisRaw`...) por sencillez; no hace falta conocer el Input System para seguir las prácticas. Si al usar la clase `Input` aparece el error `InvalidOperationException` descrito más arriba, basta con poner **Both** en *Active Input Handling*. Para proyectos nuevos, y especialmente si queremos que el juego funcione con mando o en móvil, es recomendable usar el Input System.
+En los ejemplos de estos apuntes usamos el Input Manager clásico (`Input.GetAxis`, `GetAxisRaw`...) por sencillez; no hace falta conocer el Input System para seguir las prácticas. Si al usar la clase `Input` aparece el error `InvalidOperationException` descrito más arriba, basta con poner **Both** en *Active Input Handling*. Para proyectos nuevos, y especialmente si queremos que el juego funcione con mando o en móvil, es recomendable usar el Input System.
 
 Más información en la [documentación del Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@latest).
 :::
+
+## Acceder a los componentes
+
+Casi todo lo que hacemos en un script consiste en leer o modificar los **componentes** de un GameObject: su `Rigidbody2D` para moverlo, su `SpriteRenderer` para cambiarle el color, su `AudioSource` para reproducir un sonido... Desde un script podemos acceder directamente a dos de ellos:
+
+- `gameObject`: el GameObject al que está asociado el script.
+- `transform`: el componente `Transform` de ese GameObject, que todos los objetos tienen.
+
+Para el resto de componentes tenemos dos opciones: obtenerlos por código o asignarlos desde el inspector.
+
+### `GetComponent`
+
+La función `GetComponent<T>()` busca en el GameObject un componente del tipo indicado entre los símbolos `<` y `>` y lo devuelve. Si el objeto no tiene ese componente, devuelve `null`.
+
+```csharp
+using UnityEngine;
+
+public class Jugador : MonoBehaviour
+{
+    private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
+
+    void Awake()
+    {
+        // Buscamos los componentes una sola vez y guardamos la referencia
+        rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 8f);
+            spriteRenderer.color = Color.yellow;
+        }
+    }
+}
+```
+
+En el ejemplo anterior, obtenemos el `Rigidbody2D` y el `SpriteRenderer` del jugador en `Awake()` y los guardamos en variables. Así, en `Update()` podemos usarlos directamente sin tener que buscarlos en cada frame.
+
+:::warning[No llames a `GetComponent` en cada frame]
+`GetComponent` tiene que buscar entre todos los componentes del objeto, por lo que no conviene llamarlo dentro de `Update()`. Lo correcto es obtener los componentes una vez en `Awake()` o `Start()` y guardarlos en variables, como en el ejemplo anterior.
+:::
+
+Si no estamos seguros de que el objeto tenga un componente, podemos usar `TryGetComponent`, que devuelve `true` o `false` según si lo ha encontrado y, si lo encuentra, lo guarda en la variable indicada con `out`:
+
+```csharp
+if (TryGetComponent(out AudioSource audioSource))
+{
+    audioSource.Play();
+}
+```
+
+También podemos añadir componentes a un objeto desde código con `AddComponent<T>()`:
+
+```csharp
+Rigidbody2D rb = gameObject.AddComponent<Rigidbody2D>();
+rb.gravityScale = 0;
+```
+
+### Asignar las referencias desde el inspector
+
+La otra opción, y en muchos casos la más recomendable, es declarar una variable `[SerializeField]` del tipo del componente y **arrastrar** el objeto que lo tiene hasta ella en el inspector. Esto funciona tanto con componentes del propio objeto como con los de otros objetos de la escena:
+
+```csharp
+[SerializeField] private Rigidbody2D rb;
+[SerializeField] private AudioSource musica;        // El AudioSource de otro objeto
+[SerializeField] private Transform puntoDeDisparo;  // Un objeto hijo del jugador
+```
+
+Es más eficiente que buscar los componentes por código y permite ver en el inspector qué referencias tiene cada script. Si se nos olvida asignar alguna, al darle al Play aparecerá en la consola una `UnassignedReferenceException` indicando qué variable está vacía.
+
+## El componente Transform
+
+El componente `Transform` guarda la **posición**, la **rotación** y la **escala** del objeto. Estas son sus propiedades y funciones más utilizadas:
+
+```csharp
+// Posición
+transform.position = new Vector3(0, 2, 0);     // Posición en el mundo
+transform.localPosition = Vector3.zero;        // Posición respecto al objeto padre
+transform.Translate(Vector3.right * 5f * Time.deltaTime); // Desplaza el objeto
+
+// Rotación
+transform.rotation = Quaternion.Euler(0, 90, 0); // Rotación a partir de grados
+transform.Rotate(0, 0, 45f * Time.deltaTime);    // Gira el objeto
+transform.LookAt(objetivo);                      // Lo orienta hacia otro Transform (en 3D)
+float anguloZ = transform.eulerAngles.z;         // La rotación actual, en grados
+
+// Escala
+transform.localScale = new Vector3(2, 2, 2);     // El doble de grande
+
+// Direcciones del objeto (dependen de hacia dónde está girado)
+Vector3 delante = transform.forward; // Su eje Z
+Vector3 derecha = transform.right;   // Su eje X
+Vector3 arriba = transform.up;       // Su eje Y
+```
+
+Fíjate en la diferencia entre `position` y `localPosition`: si un objeto es hijo de otro, `position` es su posición en el mundo y `localPosition` es su posición **respecto a su padre**. Si el objeto no tiene padre, las dos valen lo mismo.
+
+La rotación se guarda como un `Quaternion`, que es una forma matemática de representar rotaciones que evita algunos problemas de los ángulos. No hace falta entender cómo funciona por dentro: para crear una rotación a partir de grados usaremos `Quaternion.Euler(x, y, z)`, y para leerla en grados, `transform.eulerAngles`.
+
+:::warning[No se puede modificar `transform.position.x` directamente]
+`transform.position` es un `Vector3`, que es una estructura, y al leerlo obtenemos una **copia**. Por eso `transform.position.x = 5f;` no compila. Hay que modificar una copia y volver a asignarla:
+
+```csharp
+Vector3 posicion = transform.position;
+posicion.x = 5f;
+transform.position = posicion;
+```
+
+Puedes ver por qué ocurre esto en el apartado de [C# en Unity del anexo](../3-CSharp/3-CSharp.mdx#modificar-la-posición-las-estructuras-son-copias).
+:::
+
+:::info[Objetos con Rigidbody]
+Si un objeto tiene un **Rigidbody dinámico**, no conviene moverlo modificando su `Transform`, porque estaremos "teletransportándolo" sin que el motor de físicas lo sepa y las colisiones pueden fallar. En su lugar, lo moveremos a través del Rigidbody, normalmente en `FixedUpdate()`: cambiando su velocidad con `rb.linearVelocity`, aplicándole fuerzas con `rb.AddForce()` o, en un Rigidbody cinemático, con `rb.MovePosition()`.
+:::
+
+### Mover objetos de forma suave
+
+Para mover un objeto hacia un punto de forma progresiva, en lugar de colocarlo allí de golpe, tenemos dos funciones muy útiles:
+
+```csharp
+[SerializeField] private Transform destino;
+[SerializeField] private float velocidad = 3f;
+
+void Update()
+{
+    // Avanza hacia el destino a velocidad constante y se para al llegar
+    transform.position = Vector3.MoveTowards(transform.position, destino.position, velocidad * Time.deltaTime);
+}
+```
+
+- `Vector3.MoveTowards(origen, destino, distanciaMaxima)`: avanza desde el origen hacia el destino como mucho la distancia indicada, sin pasarse nunca del destino. Es ideal para plataformas móviles o enemigos que patrullan entre dos puntos.
+- `Vector3.Lerp(a, b, t)`: devuelve el punto que está a una fracción `t` (entre `0` y `1`) del camino entre `a` y `b`. Con `t = 0.5f` devuelve el punto medio. Se usa mucho para animar transiciones.
+
+También existen las versiones `Vector2.MoveTowards`, `Mathf.MoveTowards` (para números) o `Quaternion.Lerp` (para rotaciones).
+
+## Padres e hijos
+
+Como vimos en el apartado de [GameObjects](./6-GameObjects.mdx#jerarquía-de-gameobjects), los objetos de la escena se pueden organizar en una **jerarquía**, metiendo unos dentro de otros. Un objeto hijo se mueve, gira y escala junto con su padre, y si desactivamos o destruimos el padre, también se desactivan o destruyen sus hijos. Desde código, toda la jerarquía se maneja a través del componente `Transform`.
+
+### Acceder al padre
+
+```csharp
+Transform padre = transform.parent; // null si el objeto no tiene padre
+Transform raiz = transform.root;    // El objeto más alto de la jerarquía
+
+if (transform.parent != null)
+{
+    Debug.Log($"Mi padre es {transform.parent.name}");
+}
+```
+
+### Acceder a los hijos
+
+```csharp
+int numeroDeHijos = transform.childCount;
+Transform primerHijo = transform.GetChild(0);   // Por posición en la jerarquía
+
+Transform arma = transform.Find("Arma");        // Por nombre, solo entre los hijos directos
+Transform mano = transform.Find("Brazo/Mano");  // Se pueden indicar rutas
+
+// Recorrer todos los hijos directos
+foreach (Transform hijo in transform)
+{
+    Debug.Log(hijo.name);
+}
+```
+
+- `GetChild(indice)`: devuelve el hijo que está en esa posición de la jerarquía, empezando por `0`. Si el índice no existe, lanza una excepción.
+- `Find(nombre)`: busca un hijo **directo** por su nombre y devuelve `null` si no lo encuentra. Para buscar más abajo en la jerarquía hay que indicar la ruta separada por `/`. A diferencia de `GameObject.Find`, también encuentra los hijos desactivados.
+- `foreach (Transform hijo in transform)`: recorre los hijos directos, pero no los hijos de los hijos.
+
+Un ejemplo muy habitual es desactivar o modificar todos los hijos de un objeto, por ejemplo, las vidas que se muestran en el HUD:
+
+```csharp
+[SerializeField] private Transform contenedorVidas; // Un objeto con un icono hijo por cada vida
+
+public void ActualizarVidas(int vidas)
+{
+    for (int i = 0; i < contenedorVidas.childCount; i++)
+    {
+        // Mostramos tantos iconos como vidas quedan
+        contenedorVidas.GetChild(i).gameObject.SetActive(i < vidas);
+    }
+}
+```
+
+### Buscar componentes en los hijos y en el padre
+
+`GetComponent` solo busca en el propio objeto, pero hay versiones que buscan también en la jerarquía:
+
+```csharp
+// Busca en el propio objeto y, si no lo encuentra, en sus hijos (y en los hijos de los hijos)
+Animator animator = GetComponentInChildren<Animator>();
+
+// Busca en el propio objeto y, si no lo encuentra, en su padre, el padre de su padre...
+Enemigo enemigo = GetComponentInParent<Enemigo>();
+
+// Devuelven un array con todos los componentes de ese tipo que encuentren
+SpriteRenderer[] sprites = GetComponentsInChildren<SpriteRenderer>();
+```
+
+Es muy habitual cuando el aspecto visual del personaje está en un objeto hijo. Por ejemplo, si el jugador tiene el script y el Rigidbody en el objeto padre y el `SpriteRenderer` y el `Animator` en un hijo llamado `Grafico`, usaremos `GetComponentInChildren<Animator>()` para obtener el Animator desde el script del padre.
+
+:::tip[`GetComponentInChildren` también busca en el propio objeto]
+A pesar de su nombre, `GetComponentInChildren` y `GetComponentsInChildren` empiezan buscando en el **propio** objeto. Por ejemplo, si el padre y los hijos tienen un `SpriteRenderer`, el array que devuelve `GetComponentsInChildren<SpriteRenderer>()` incluye también el del padre. Por defecto, no tienen en cuenta los hijos desactivados; para incluirlos, se les pasa `true` como parámetro: `GetComponentsInChildren<SpriteRenderer>(true)`.
+:::
+
+### Cambiar el padre de un objeto
+
+Con `SetParent` podemos meter un objeto dentro de otro, o sacarlo de su padre, durante la partida:
+
+```csharp
+// Mete el objeto dentro de nuevoPadre, manteniendo su posición en el mundo
+transform.SetParent(nuevoPadre);
+
+// Mete el objeto dentro de nuevoPadre y mantiene su posición local,
+// por lo que se coloca en la posición del padre si su localPosition era (0, 0, 0)
+transform.SetParent(nuevoPadre, false);
+
+// Saca el objeto de su padre, dejándolo en la raíz de la escena
+transform.SetParent(null);
+```
+
+Un ejemplo clásico es un jugador que recoge un arma del suelo y la lleva en la mano:
+
+```csharp
+using UnityEngine;
+
+public class RecogerArma : MonoBehaviour
+{
+    [SerializeField] private Transform mano; // Un objeto hijo del jugador situado en la mano
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Arma"))
+        {
+            Transform arma = other.transform;
+            arma.SetParent(mano, false);           // El arma pasa a ser hija de la mano
+            arma.localPosition = Vector3.zero;     // Justo en la posición de la mano
+            arma.localRotation = Quaternion.identity;
+            other.enabled = false;                 // Desactivamos su collider para no volver a recogerla
+        }
+    }
+}
+```
+
+Otro uso habitual es hacer que el jugador se mueva junto con una **plataforma móvil**: al subirse a ella, se convierte en hijo de la plataforma (`SetParent(plataforma)`) y al bajarse vuelve a la raíz de la escena (`SetParent(null)`).
+
+:::info[El orden de los hijos en la interfaz]
+En la UI, los elementos que están más abajo en la jerarquía se dibujan **por encima** de los anteriores. Para cambiar este orden desde código se usan `transform.SetAsLastSibling()` (lo pone el último, es decir, por encima de todos), `transform.SetAsFirstSibling()` y `transform.SetSiblingIndex(indice)`. Es útil, por ejemplo, para que un panel de pausa aparezca siempre por encima del HUD.
+:::
+
+## Buscar objetos en la escena
+
+Cuando un script necesita acceder a un objeto que no es él mismo ni uno de sus hijos, lo ideal es asignar la referencia desde el inspector. Pero hay casos en los que no es posible, por ejemplo, en un objeto que creamos durante la partida a partir de un prefab, que no puede tener referencias a los objetos de la escena. Para esos casos, Unity tiene varias funciones de búsqueda:
+
+```csharp
+// Por nombre
+GameObject jugador = GameObject.Find("Jugador");
+
+// Por tag: el primero que encuentre, o todos los que lo tengan
+GameObject jugador = GameObject.FindWithTag("Player");
+GameObject[] enemigos = GameObject.FindGameObjectsWithTag("Enemy");
+
+// Por tipo de componente: uno cualquiera, o todos
+GameManager gameManager = FindAnyObjectByType<GameManager>();
+Enemigo[] todosLosEnemigos = FindObjectsByType<Enemigo>(FindObjectsSortMode.None);
+```
+
+- `GameObject.Find(nombre)`: busca un objeto por su nombre en toda la escena. Es la más lenta y la más frágil, porque si cambiamos el nombre del objeto en la jerarquía, el código deja de funcionar sin darnos ningún error de compilación.
+- `GameObject.FindWithTag(tag)` y `GameObject.FindGameObjectsWithTag(tag)`: buscan por [tag](./5-TagsLayers.mdx#sobre-los-tags). Si el tag no existe en el proyecto, lanzan una excepción.
+- `FindAnyObjectByType<T>()`: devuelve un objeto cualquiera que tenga un componente de ese tipo. Es la más cómoda para buscar objetos de los que solo hay uno en la escena, como el `GameManager` o el jugador. Si necesitamos que sea siempre el mismo cuando hay varios, existe `FindFirstObjectByType<T>()`, que es algo más lenta.
+- `FindObjectsByType<T>(FindObjectsSortMode.None)`: devuelve un array con todos los objetos que tienen ese componente. El parámetro indica si queremos que estén ordenados; `None` es lo más rápido.
+
+:::warning[Las búsquedas solo encuentran objetos activos]
+Ninguna de estas funciones encuentra objetos **desactivados**. Si necesitamos acceder a un objeto que empieza desactivado (por ejemplo, el panel del menú de pausa), es mejor asignarlo desde el inspector. `FindObjectsByType` tiene una versión que sí los incluye: `FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None)`.
+:::
+
+:::info[`FindObjectOfType` está obsoleto]
+En tutoriales antiguos veremos `FindObjectOfType<T>()` y `FindObjectsOfType<T>()`. En Unity 6 están marcadas como obsoletas y se sustituyen por `FindAnyObjectByType<T>()`, `FindFirstObjectByType<T>()` y `FindObjectsByType<T>()`.
+:::
+
+### Cuándo buscar
+
+Todas estas funciones recorren los objetos de la escena, por lo que son lentas. Para usarlas bien, seguiremos este orden de preferencia:
+
+1. **Asignar la referencia en el inspector** siempre que se pueda.
+2. Si no se puede, **buscar una sola vez** en `Awake()` o `Start()` y guardar el resultado en una variable.
+3. **Nunca** buscar dentro de `Update()` ni de otras funciones que se ejecuten muy a menudo.
+
+```csharp
+using UnityEngine;
+
+public class EnemigoPerseguidor : MonoBehaviour
+{
+    [SerializeField] private float velocidad = 2f;
+    private Transform jugador;
+
+    void Start()
+    {
+        // El enemigo se crea desde un prefab, así que buscamos al jugador al aparecer
+        GameObject objetoJugador = GameObject.FindWithTag("Player");
+        if (objetoJugador != null)
+        {
+            jugador = objetoJugador.transform;
+        }
+    }
+
+    void Update()
+    {
+        if (jugador == null) return; // El jugador no existe o ha sido destruido
+
+        transform.position = Vector2.MoveTowards(transform.position, jugador.position, velocidad * Time.deltaTime);
+    }
+}
+```
+
+En el ejemplo anterior, el enemigo busca al jugador una sola vez al aparecer y, en cada frame, se mueve hacia él usando la referencia guardada.
+
+## Crear y destruir objetos
+
+### `Instantiate`
+
+La función `Instantiate` crea una copia de un objeto durante la partida. Lo normal es usarla con un [prefab](./10-Prefabs.mdx), por ejemplo, para crear balas, enemigos o efectos de partículas:
+
+```csharp
+using UnityEngine;
+
+public class Disparo : MonoBehaviour
+{
+    [SerializeField] private GameObject balaPrefab;
+    [SerializeField] private Transform puntoDeDisparo;
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Instantiate(balaPrefab, puntoDeDisparo.position, puntoDeDisparo.rotation);
+        }
+    }
+}
+```
+
+`Instantiate` tiene varias versiones, según dónde queramos colocar la copia:
+
+```csharp
+Instantiate(prefab);                                    // En la posición guardada en el prefab
+Instantiate(prefab, posicion, Quaternion.identity);     // En una posición, sin rotación
+Instantiate(prefab, posicion, rotacion, padre);         // Además, como hijo de otro objeto
+Instantiate(prefab, padre);                             // Como hijo de otro objeto
+```
+
+`Instantiate` devuelve el objeto creado, lo que nos permite configurarlo justo después. Si la variable del prefab es del tipo de un componente en lugar de `GameObject`, nos devuelve directamente ese componente:
+
+```csharp
+[SerializeField] private Bala balaPrefab; // Bala es un script que tiene el prefab
+
+void Disparar()
+{
+    Bala bala = Instantiate(balaPrefab, puntoDeDisparo.position, Quaternion.identity);
+    bala.Configurar(velocidad: 15f, daño: 2); // Llamamos a un método de su script
+}
+```
+
+### `Destroy`
+
+La función `Destroy` elimina un objeto de la escena:
+
+```csharp
+Destroy(gameObject);          // Destruye el objeto que tiene este script
+Destroy(gameObject, 3f);      // Lo destruye dentro de 3 segundos
+Destroy(otroObjeto);          // Destruye otro GameObject
+Destroy(GetComponent<Rigidbody2D>()); // Destruye solo un componente
+```
+
+La segunda versión es muy útil para que las balas o los efectos de partículas desaparezcan solos al cabo de un tiempo: `Destroy(gameObject, 3f)` en el `Start()` de la bala.
+
+:::warning[Destruir el objeto, no el componente]
+Si a `Destroy` le pasamos un **componente**, solo se elimina ese componente y el objeto sigue en la escena. Por ejemplo, `Destroy(this)` o `Destroy(FindAnyObjectByType<GameManager>())` eliminan el script, pero no el objeto. Para destruir el objeto entero hay que pasarle su `gameObject`: `Destroy(FindAnyObjectByType<GameManager>().gameObject)`.
+:::
+
+:::tip[Object Pooling]
+Crear y destruir objetos constantemente (por ejemplo, cientos de balas) tiene un coste para el rendimiento. Para esos casos se usa la técnica del [Object Pooling](./18-ObjectPooling.mdx), que reutiliza los objetos en lugar de destruirlos.
+:::
+
+## Activar y desactivar objetos y componentes
+
+En lugar de destruir un objeto, muchas veces nos interesa **desactivarlo** para volver a activarlo más tarde, como con los paneles de los menús. Un objeto desactivado no se ve, no ejecuta sus scripts y no colisiona con nada:
+
+```csharp
+[SerializeField] private GameObject panelPausa;
+
+void Pausar()
+{
+    panelPausa.SetActive(true);
+}
+
+void Reanudar()
+{
+    panelPausa.SetActive(false);
+}
+```
+
+Para saber si un objeto está activo tenemos dos propiedades:
+
+- `gameObject.activeSelf`: si el propio objeto está marcado como activo.
+- `gameObject.activeInHierarchy`: si está activo **de verdad** en la escena. Un objeto puede tener `activeSelf` a `true` y no estar activo en la escena, porque su padre está desactivado.
+
+También podemos activar o desactivar **componentes** concretos con su propiedad `enabled`, sin desactivar el objeto entero:
+
+```csharp
+GetComponent<Collider2D>().enabled = false;     // Deja de colisionar, pero se sigue viendo
+GetComponent<SpriteRenderer>().enabled = false; // Deja de verse, pero sigue colisionando
+GetComponent<Jugador>().enabled = false;        // Su Update() deja de ejecutarse
+```
+
+Al desactivar un script con `enabled = false`, se dejan de llamar sus funciones `Update()`, `FixedUpdate()` y `LateUpdate()`, y se llama a su `OnDisable()`. Ojo: las funciones de colisiones y triggers se siguen llamando aunque el script esté desactivado.
+
+## Colisiones y triggers
+
+Cuando dos objetos con [collider](./8-Fisicas.mdx#collider) entran en contacto, Unity llama automáticamente a ciertas funciones de los scripts de **los dos objetos**, si las tienen. Hay dos tipos de contacto:
+
+- **Colisión**: los dos objetos chocan y el motor de físicas hace que reboten o se detengan. Es lo que ocurre cuando el jugador pisa el suelo o la pelota del Pong golpea una pala.
+- **Trigger**: uno de los dos colliders tiene activada la opción **Is Trigger**, por lo que no hay choque físico y los objetos se atraviesan, pero Unity nos avisa de que se están tocando. Se usa para detectar que el jugador entra en una zona: recoger monedas, llegar a la meta, activar un checkpoint, entrar en una zona de daño...
+
+### Requisitos para que se detecten
+
+Para que Unity llame a estas funciones:
+
+1. Los dos objetos deben tener un **collider**, y los dos deben ser 2D o los dos 3D. Los colliders 2D y 3D no interactúan entre sí.
+2. **Al menos uno** de los dos objetos debe tener un **Rigidbody** (o Rigidbody 2D). Para las colisiones, ese Rigidbody debe ser **dinámico** (no cinemático). Lo habitual es que lo tenga el objeto que se mueve, como el jugador o una bala.
+3. Las [capas](./5-TagsLayers.mdx#sobre-los-layers) de los dos objetos deben poder colisionar en la [matriz de colisiones](./8-Fisicas.mdx#matriz-de-colisiones).
+4. La función debe estar escrita **exactamente** con el nombre y el tipo de parámetro correctos. Si nos equivocamos (por ejemplo, `OnTriggerEnter(Collider2D other)`), Unity no da ningún error: simplemente no la llama nunca.
+
+### Funciones de colisión
+
+| 3D | 2D | Cuándo se llama |
+|----|----|-----------------|
+| `OnCollisionEnter(Collision collision)` | `OnCollisionEnter2D(Collision2D collision)` | Al empezar a chocar. |
+| `OnCollisionStay(Collision collision)` | `OnCollisionStay2D(Collision2D collision)` | Mientras siguen en contacto, en cada paso de las físicas. |
+| `OnCollisionExit(Collision collision)` | `OnCollisionExit2D(Collision2D collision)` | Al dejar de estar en contacto. |
+
+El parámetro `collision` nos da información sobre el choque:
+
+- `collision.gameObject`: el **otro** objeto con el que hemos chocado.
+- `collision.collider`: el collider del otro objeto.
+- `collision.GetContact(0)`: el primer punto de contacto, con su posición (`point`) y su normal (`normal`), que es la dirección perpendicular a la superficie en ese punto.
+- `collision.relativeVelocity`: la velocidad relativa entre los dos objetos al chocar, útil para saber con qué fuerza ha sido el golpe.
+
+Un ejemplo de colisión: el jugador recibe daño al chocar con un enemigo, salvo que caiga sobre él desde arriba, en cuyo caso lo derrota, como en los juegos de Mario:
+
+```csharp
+using UnityEngine;
+
+public class Jugador : MonoBehaviour
+{
+    [SerializeField] private float fuerzaRebote = 6f;
+    private Rigidbody2D rb;
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (!collision.gameObject.CompareTag("Enemy")) return;
+
+        // La normal apunta desde la superficie del enemigo hacia el jugador.
+        // Si apunta hacia arriba, el jugador ha caído sobre el enemigo.
+        Vector2 normal = collision.GetContact(0).normal;
+
+        if (normal.y > 0.5f)
+        {
+            Destroy(collision.gameObject);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, fuerzaRebote); // Pequeño rebote
+        }
+        else
+        {
+            RecibirDaño();
+        }
+    }
+
+    private void RecibirDaño()
+    {
+        Debug.Log("¡Au!");
+    }
+}
+```
+
+Otro ejemplo: reproducir un sonido de golpe solo si el choque ha sido fuerte, con un volumen que depende de la velocidad del impacto:
+
+```csharp
+[SerializeField] private AudioSource audioSource;
+[SerializeField] private AudioClip sonidoGolpe;
+
+private void OnCollisionEnter(Collision collision)
+{
+    float fuerza = collision.relativeVelocity.magnitude;
+
+    if (fuerza > 2f)
+    {
+        audioSource.PlayOneShot(sonidoGolpe, Mathf.Clamp01(fuerza / 10f));
+    }
+}
+```
+
+### Funciones de trigger
+
+| 3D | 2D | Cuándo se llama |
+|----|----|-----------------|
+| `OnTriggerEnter(Collider other)` | `OnTriggerEnter2D(Collider2D other)` | Cuando otro collider entra en el trigger. |
+| `OnTriggerStay(Collider other)` | `OnTriggerStay2D(Collider2D other)` | Mientras el otro collider sigue dentro, en cada paso de las físicas. |
+| `OnTriggerExit(Collider other)` | `OnTriggerExit2D(Collider2D other)` | Cuando el otro collider sale del trigger. |
+
+A diferencia de las colisiones, el parámetro es directamente el **collider del otro objeto** (`other`), ya que no hay un choque del que dar información. A partir de él podemos acceder a su objeto (`other.gameObject`), a su `Transform` (`other.transform`) o a sus componentes (`other.GetComponent<T>()`).
+
+El ejemplo más típico de trigger es una moneda que el jugador recoge al tocarla. El script va en la moneda, que tiene un collider con **Is Trigger** activado:
+
+```csharp
+using UnityEngine;
+
+public class Moneda : MonoBehaviour
+{
+    [SerializeField] private int valor = 1;
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            GameManager.Instance.SumarPuntos(valor); // Ver el apartado del singleton, más abajo
+            Destroy(gameObject);
+        }
+    }
+}
+```
+
+Con `OnTriggerEnter` y `OnTriggerExit` juntos podemos saber si el jugador está dentro de una zona. Por ejemplo, para mostrar un aviso de "Pulsa E para abrir" cuando el jugador se acerca a una puerta:
+
+```csharp
+using UnityEngine;
+
+public class Puerta : MonoBehaviour
+{
+    [SerializeField] private GameObject avisoInteractuar; // Un texto o icono, desactivado al empezar
+    private bool jugadorCerca = false;
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            jugadorCerca = true;
+            avisoInteractuar.SetActive(true);
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            jugadorCerca = false;
+            avisoInteractuar.SetActive(false);
+        }
+    }
+
+    void Update()
+    {
+        if (jugadorCerca && Input.GetKeyDown(KeyCode.E))
+        {
+            Debug.Log("Abriendo la puerta");
+        }
+    }
+}
+```
+
+Fíjate en que la entrada del jugador se lee en `Update()` y no en `OnTriggerStay2D()`. Las funciones `Stay` se ejecutan al ritmo de las físicas y no en cada frame, por lo que `Input.GetKeyDown()` podría no detectar algunas pulsaciones.
+
+`OnTriggerStay` sí es útil para efectos continuos, como una zona de lava que hace daño cada cierto tiempo mientras el jugador está dentro:
+
+```csharp
+[SerializeField] private int daño = 10;
+[SerializeField] private float intervalo = 0.5f; // Segundos entre cada golpe de daño
+private float proximoDaño = 0f;
+
+private void OnTriggerStay2D(Collider2D other)
+{
+    if (Time.time < proximoDaño) return;
+
+    if (other.TryGetComponent(out Vida vida))
+    {
+        vida.RecibirDaño(daño);
+        proximoDaño = Time.time + intervalo;
+    }
+}
+```
+
+### Tags o componentes
+
+En los ejemplos anteriores hemos usado dos formas de saber con qué hemos chocado:
+
+- **Comprobar su tag** con `CompareTag("Player")`. Es sencillo y rápido, y es mejor que comparar `other.tag == "Player"`, que es más lento.
+- **Buscar un componente** con `TryGetComponent`. En el ejemplo de la lava no nos importa si quien entra es el jugador, un enemigo o una caja: si tiene un componente `Vida`, recibe daño. Esto hace que el código funcione con objetos nuevos sin tener que añadir más tags, y combinado con una [interfaz](../3-CSharp/3-CSharp.mdx#interfaces) como `IDañable` es una forma muy flexible de programar las interacciones.
+
+:::warning[Objetos muy rápidos que atraviesan paredes]
+Si un objeto se mueve muy rápido (una bala, por ejemplo), puede pasar de un lado a otro de una pared delgada entre un paso de las físicas y el siguiente, sin que se llegue a detectar la colisión. Para evitarlo, en su Rigidbody hay que cambiar la opción **Collision Detection** a **Continuous**, como vimos en el apartado de [físicas](./8-Fisicas.mdx#propiedades-más-relevantes-de-un-rigidbody).
+:::
+
+## Raycasts y detección de zonas
+
+Las colisiones y los triggers nos avisan cuando dos objetos se tocan, pero muchas veces necesitamos **preguntar** nosotros si hay algo en un sitio: si hay suelo bajo los pies del jugador, si un enemigo puede ver al jugador o qué objeto hay debajo del ratón. Para eso se usan los **raycasts** y las funciones de **solapamiento** (*overlap*).
+
+### Raycasts
+
+Un **raycast** lanza un rayo invisible desde un punto en una dirección y nos dice si ha chocado con algún collider y con cuál:
+
+```csharp
+[SerializeField] private float distanciaVision = 5f;
+[SerializeField] private LayerMask capaJugador;
+
+void Update()
+{
+    // 2D: lanza un rayo hacia la derecha del enemigo
+    RaycastHit2D hit = Physics2D.Raycast(transform.position, transform.right, distanciaVision, capaJugador);
+
+    if (hit.collider != null)
+    {
+        Debug.Log($"Veo a {hit.collider.name} a {hit.distance} metros");
+    }
+
+    // Dibuja el rayo en la vista de escena para comprobar que va donde esperamos
+    Debug.DrawRay(transform.position, transform.right * distanciaVision, Color.red);
+}
+```
+
+En 3D, la función devuelve un `bool` y la información del impacto se guarda en una variable con `out`:
+
+```csharp
+if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, 10f))
+{
+    Debug.Log($"Delante hay un {hit.collider.name} en el punto {hit.point}");
+}
+```
+
+Un uso muy habitual en 3D es saber qué objeto hay debajo del ratón al hacer clic, lanzando un rayo desde la cámara:
+
+```csharp
+if (Input.GetMouseButtonDown(0))
+{
+    Ray rayo = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+    if (Physics.Raycast(rayo, out RaycastHit hit))
+    {
+        Debug.Log($"Has hecho clic en {hit.collider.name}");
+    }
+}
+```
+
+:::tip[El parámetro `LayerMask`]
+Casi todas las funciones de físicas aceptan un parámetro `LayerMask` para indicar con qué [capas](./5-TagsLayers.mdx#sobre-los-layers) queremos que choque el rayo. Si declaramos una variable `[SerializeField] private LayerMask capaSuelo;`, en el inspector aparecerá un desplegable para elegir las capas. Así evitamos, por ejemplo, que el rayo que comprueba si el jugador está en el suelo choque con el propio jugador.
+:::
+
+### Funciones de solapamiento
+
+Las funciones `Overlap` comprueban si hay algún collider dentro de una zona con forma de círculo, caja, esfera... Una de las más usadas es `Physics2D.OverlapCircle`, para saber si el jugador está tocando el suelo, como vimos en el apartado del [Coyote Time](./20-CoyoteTime.mdx):
+
+```csharp
+[SerializeField] private Transform comprobadorSuelo; // Un objeto hijo situado en los pies del jugador
+[SerializeField] private float radio = 0.2f;
+[SerializeField] private LayerMask capaSuelo;
+
+private bool EstaEnSuelo()
+{
+    return Physics2D.OverlapCircle(comprobadorSuelo.position, radio, capaSuelo) != null;
+}
+```
+
+Otra función muy útil es `Physics2D.OverlapCircleAll` (o `Physics.OverlapSphere` en 3D), que devuelve **todos** los colliders que hay dentro de la zona. Es perfecta para una explosión que daña a todo lo que está cerca:
+
+```csharp
+void Explotar()
+{
+    Collider2D[] afectados = Physics2D.OverlapCircleAll(transform.position, 3f);
+
+    foreach (Collider2D afectado in afectados)
+    {
+        if (afectado.TryGetComponent(out Vida vida))
+        {
+            vida.RecibirDaño(50);
+        }
+    }
+
+    Destroy(gameObject);
+}
+```
+
+:::tip[Ver las zonas en el editor con Gizmos]
+Para comprobar que el radio y la posición de estas zonas son correctos, podemos dibujarlas en la vista de escena con la función `OnDrawGizmos`, que Unity llama automáticamente en el editor:
+
+```csharp
+private void OnDrawGizmos()
+{
+    Gizmos.color = Color.yellow;
+    Gizmos.DrawWireSphere(transform.position, 3f);
+}
+```
+:::
+
+## El tiempo
+
+La clase `Time` nos da información sobre el tiempo del juego:
+
+- `Time.deltaTime`: el tiempo en segundos que ha pasado desde el frame anterior. Como vimos con el Input, se multiplica por las velocidades para que el movimiento no dependa de los FPS.
+- `Time.time`: los segundos que han pasado desde que empezó el juego.
+- `Time.timeScale`: la velocidad a la que pasa el tiempo del juego. Con `1` va a velocidad normal, con `0.5f` a cámara lenta y con `0` se detiene por completo. Es la forma más sencilla de **pausar** el juego.
+- `Time.unscaledDeltaTime`: como `deltaTime`, pero sin verse afectado por `timeScale`. Sirve para animar cosas mientras el juego está en pausa, como los menús.
+
+Un uso muy habitual de `Time.time` es controlar la cadencia de disparo, para que no se pueda disparar más de una vez cada cierto tiempo:
+
+```csharp
+[SerializeField] private float tiempoEntreDisparos = 0.3f;
+private float proximoDisparo = 0f;
+
+void Update()
+{
+    if (Input.GetKey(KeyCode.Space) && Time.time >= proximoDisparo)
+    {
+        Disparar();
+        proximoDisparo = Time.time + tiempoEntreDisparos;
+    }
+}
+```
+
+Y un ejemplo de menú de pausa con `Time.timeScale`:
+
+```csharp
+using UnityEngine;
+
+public class MenuPausa : MonoBehaviour
+{
+    [SerializeField] private GameObject panelPausa;
+    private bool enPausa = false;
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (enPausa) Reanudar();
+            else Pausar();
+        }
+    }
+
+    public void Pausar()
+    {
+        enPausa = true;
+        panelPausa.SetActive(true);
+        Time.timeScale = 0f; // Se detienen las físicas, las animaciones y todo lo que use deltaTime
+    }
+
+    public void Reanudar()
+    {
+        enPausa = false;
+        panelPausa.SetActive(false);
+        Time.timeScale = 1f;
+    }
+}
+```
+
+:::warning[`Time.timeScale` no se reinicia al cambiar de escena]
+Si desde el menú de pausa (con `Time.timeScale = 0`) volvemos al menú principal y empezamos una partida nueva, el juego seguirá congelado, porque `timeScale` mantiene su valor entre escenas. Hay que acordarse de volver a ponerlo a `1` antes de cambiar de escena.
+:::
+
+### Ejecutar código con retraso: `Invoke`
+
+La función `Invoke` ejecuta una función del script al cabo de un tiempo, e `InvokeRepeating` la ejecuta de forma repetida:
+
+```csharp
+void Start()
+{
+    Invoke(nameof(MostrarMensaje), 2f);               // Dentro de 2 segundos
+    InvokeRepeating(nameof(CrearEnemigo), 1f, 5f);    // Al cabo de 1 segundo y después cada 5
+}
+
+void MostrarMensaje()
+{
+    Debug.Log("¡Han pasado 2 segundos!");
+}
+
+void CrearEnemigo()
+{
+    Debug.Log("Nuevo enemigo");
+}
+
+void PararOleadas()
+{
+    CancelInvoke(nameof(CrearEnemigo)); // Deja de repetirse
+}
+```
+
+Usamos `nameof(Funcion)` en lugar de escribir el nombre entre comillas (`"MostrarMensaje"`) para que, si nos equivocamos al escribirlo o cambiamos el nombre de la función, el compilador nos avise del error. `Invoke` no permite pasar parámetros a la función; para retrasos más complejos se usan las [corrutinas](./17-Corrutinas.mdx).
+
+## Cambiar de escena
+
+Para cambiar de escena se usa la clase `SceneManager`, del espacio de nombres `UnityEngine.SceneManagement`. Las escenas deben estar añadidas en la lista de escenas de los **Build Profiles**, como vimos en el apartado de [builds](./16-Builds.mdx):
+
+```csharp
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class GestorEscenas : MonoBehaviour
+{
+    public void IrAlMenuPrincipal()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MenuPrincipal"); // Por nombre
+    }
+
+    public void ReiniciarNivel()
+    {
+        Time.timeScale = 1f;
+        int escenaActual = SceneManager.GetActiveScene().buildIndex;
+        SceneManager.LoadScene(escenaActual);    // Por su posición en la lista de escenas
+    }
+
+    public void SiguienteNivel()
+    {
+        int siguiente = SceneManager.GetActiveScene().buildIndex + 1;
+
+        if (siguiente < SceneManager.sceneCountInBuildSettings)
+        {
+            SceneManager.LoadScene(siguiente);
+        }
+        else
+        {
+            SceneManager.LoadScene("Victoria");  // No quedan más niveles
+        }
+    }
+
+    public void Salir()
+    {
+        Application.Quit(); // Cierra el juego en la build (en el editor no hace nada)
+    }
+}
+```
+
+Como estas funciones son `public`, se pueden asignar directamente al evento **On Click** de los botones de la UI, como vimos en el apartado de [UI](./11-UI.mdx#eventos-de-la-ui).
+
+Al cargar una escena, todos los objetos de la escena anterior se destruyen. Si la escena es muy grande y tarda en cargar, se puede usar `SceneManager.LoadSceneAsync()`, que la carga poco a poco sin congelar el juego y permite mostrar una pantalla de carga.
+
+## Comunicación entre scripts
+
+En un juego, los scripts tienen que comunicarse constantemente: el jugador avisa al `GameManager` de que ha recogido una moneda, el `GameManager` avisa a la UI de que tiene que actualizar la puntuación... Estas son las formas más habituales de hacerlo, de la más sencilla a la más flexible:
+
+1. **Una referencia en el inspector**: declaramos una variable `[SerializeField]` del tipo del otro script, la asignamos en el inspector y llamamos a sus funciones `public`.
+2. **`GetComponent` sobre el otro objeto**: cuando nos llega el objeto por una colisión o un trigger, como en los ejemplos de `TryGetComponent(out Vida vida)`.
+3. **Un singleton**: para los scripts de los que solo hay uno y a los que necesita acceder todo el juego, como el `GameManager` o el `AudioManager`.
+4. **Eventos**: el script avisa de que ha pasado algo y cada script interesado se suscribe. Lo vimos en el apartado de [eventos del anexo de C#](../3-CSharp/3-CSharp.mdx#eventos).
+
+### El patrón singleton y `DontDestroyOnLoad`
+
+Un **singleton** es una clase de la que solo existe **un objeto**, y al que se puede acceder desde cualquier parte del código a través de una variable `static`. En Unity se usa mucho para los "gestores" del juego:
+
+```csharp
+using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance { get; private set; }
+
+    public int Puntos { get; private set; }
+
+    void Awake()
+    {
+        // Si ya existe otro GameManager (por ejemplo, al volver a cargar la escena), destruimos este
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject); // No se destruye al cambiar de escena
+    }
+
+    public void SumarPuntos(int cantidad)
+    {
+        Puntos += cantidad;
+    }
+}
+```
+
+Desde cualquier otro script podemos usarlo así, sin necesidad de buscarlo ni de asignarlo en el inspector:
+
+```csharp
+GameManager.Instance.SumarPuntos(10);
+```
+
+La función `DontDestroyOnLoad(gameObject)` hace que el objeto **no se destruya al cambiar de escena**. Es útil para mantener la puntuación o las vidas entre niveles, o para que la música siga sonando sin cortarse al pasar de una escena a otra. Solo funciona con objetos que están en la raíz de la jerarquía, no con objetos hijos.
+
+:::warning[No abuses de los singletons]
+Los singletons son muy cómodos, pero si todos los scripts dependen de todos, el código se vuelve difícil de entender y de modificar. Úsalos solo para los pocos gestores que realmente necesita todo el juego (el `GameManager`, el `AudioManager`...), y para el resto usa referencias en el inspector o eventos.
+:::
+
+## Funciones matemáticas y números aleatorios
+
+La clase `Mathf` contiene funciones matemáticas pensadas para trabajar con `float`:
+
+```csharp
+vida = Mathf.Clamp(vida - daño, 0f, 100f);         // Limita un valor entre un mínimo y un máximo
+float volumen = Mathf.Clamp01(valor);              // Limita un valor entre 0 y 1
+float distancia = Mathf.Abs(a - b);                // Valor absoluto
+float direccion = Mathf.Sign(velocidad);           // 1 si es positivo, -1 si es negativo
+float suave = Mathf.Lerp(actual, objetivo, 0.1f);  // Interpolación entre dos valores
+int redondeado = Mathf.RoundToInt(3.6f);           // 4
+bool iguales = Mathf.Approximately(a, b);          // Compara dos float con margen de error
+```
+
+La clase `Vector3` (y `Vector2`) tiene también funciones y propiedades muy útiles:
+
+```csharp
+float distancia = Vector3.Distance(jugador.position, enemigo.position); // Distancia entre dos puntos
+Vector3 direccion = (enemigo.position - jugador.position).normalized;   // Dirección de uno a otro, con longitud 1
+float velocidadActual = rb.linearVelocity.magnitude;                     // Longitud de un vector
+
+// Vectores predefinidos
+Vector3 cero = Vector3.zero;   // (0, 0, 0)
+Vector3 arriba = Vector3.up;   // (0, 1, 0)
+Vector2 derecha = Vector2.right; // (1, 0)
+```
+
+Para los números aleatorios se usa la clase `Random` de Unity:
+
+```csharp
+int tirada = Random.Range(1, 7);         // Entero entre 1 y 6: el máximo NO se incluye
+float escala = Random.Range(0.5f, 1.5f); // Decimal entre 0.5 y 1.5: el máximo SÍ se incluye
+float probabilidad = Random.value;       // Decimal entre 0 y 1
+
+if (Random.value < 0.25f)
+{
+    Debug.Log("Ha soltado un objeto (25 % de probabilidad)");
+}
+
+Vector2 puntoAleatorio = Random.insideUnitCircle * 5f; // Punto aleatorio dentro de un círculo de radio 5
+```
+
+:::warning[`Random.Range` con enteros]
+Con números enteros, `Random.Range` **no incluye** el valor máximo: `Random.Range(0, 3)` devuelve `0`, `1` o `2`. Esto es muy práctico para elegir un elemento aleatorio de un array o una lista: `armas[Random.Range(0, armas.Length)]`. Con números decimales, en cambio, el máximo sí puede salir.
+:::
+
+## Guardar datos con PlayerPrefs
+
+La clase `PlayerPrefs` permite guardar datos sencillos (números enteros, decimales y textos) que se conservan aunque se cierre el juego. Es la forma más sencilla de guardar las **opciones** del jugador, como el volumen, o datos como la puntuación máxima:
+
+```csharp
+// Guardar
+PlayerPrefs.SetFloat("VolumenMusica", 0.8f);
+PlayerPrefs.SetInt("NivelDesbloqueado", 3);
+PlayerPrefs.SetString("NombreJugador", "Ana");
+PlayerPrefs.Save(); // Fuerza el guardado en disco
+
+// Leer, indicando un valor por defecto por si todavía no se ha guardado nada
+float volumen = PlayerPrefs.GetFloat("VolumenMusica", 1f);
+int nivel = PlayerPrefs.GetInt("NivelDesbloqueado", 1);
+
+// Comprobar y borrar
+if (PlayerPrefs.HasKey("NombreJugador"))
+{
+    PlayerPrefs.DeleteKey("NombreJugador");
+}
+```
+
+Un ejemplo: guardar la puntuación máxima al terminar la partida:
+
+```csharp
+public void TerminarPartida(int puntos)
+{
+    int record = PlayerPrefs.GetInt("Record", 0);
+
+    if (puntos > record)
+    {
+        PlayerPrefs.SetInt("Record", puntos);
+        PlayerPrefs.Save();
+        Debug.Log("¡Nuevo récord!");
+    }
+}
+```
+
+:::tip[Usa constantes para las claves]
+Si escribimos la clave a mano en cada sitio (`"VolumenMusica"`), es fácil equivocarse en una letra y que el dato no se lea nunca. Es mejor guardar las claves en constantes: `private const string ClaveVolumen = "VolumenMusica";`.
+:::
+
+`PlayerPrefs` está pensado para datos pequeños. Para guardar partidas completas (inventario, posición, estado de cada nivel...) se suele convertir un objeto a JSON con `JsonUtility.ToJson()` y guardarlo en un archivo.
+
+**[Documentación oficial de la API de scripting de Unity](https://docs.unity3d.com/ScriptReference/)**

@@ -1,152 +1,1021 @@
 # El lenguaje C Sharp
 
-C# es un lenguaje de programación orientado a objetos desarrollado por Microsoft como parte de la plataforma .NET. 
+C# es un lenguaje de programación orientado a objetos desarrollado por Microsoft como parte de la plataforma .NET. Es un lenguaje moderno, de tipado estático y seguro que se utiliza para crear aplicaciones de escritorio, aplicaciones web, aplicaciones móviles y, por supuesto, videojuegos, ya que es el lenguaje de scripting de Unity.
 
-Es un lenguaje de programación moderno, de tipado estático y seguro que se utiliza para crear aplicaciones de escritorio, aplicaciones web, aplicaciones móviles y, por supuesto, videojuegos, ya que es el lenguaje de scripting de Unity. 
+Si venimos de Java, C# nos resultará muy familiar: la sintaxis, las clases, las interfaces o las excepciones son muy parecidas. Además, comparte muchas ideas con Kotlin, como las propiedades, las lambdas o la inferencia de tipos con `var`. En este anexo repasamos la sintaxis y las características más importantes del lenguaje, comparándolas con Java y Kotlin, y al final veremos algunas particularidades de usar C# dentro de Unity.
 
-Si venimos de Java, C# nos resultará muy familiar: la sintaxis, las clases, las interfaces o las excepciones son muy parecidas.
+:::info[Versión de C# en Unity]
+Cada versión de C# añade características nuevas al lenguaje. Unity 6 es compatible con **C# 9**, por lo que algunas de las características más recientes de C# que encontraremos en la documentación de Microsoft no se pueden usar en nuestros scripts. Todo lo que se explica en este anexo funciona en Unity 6.
+:::
 
-## Sintaxis básica
+## Estructura de un programa
 
-La sintaxis de C# es similar a la de otros lenguajes de programación como Java y C++.
+Un programa de C# fuera de Unity tiene este aspecto:
 
 ```csharp
 using System;
 
-namespace HelloWorld
+namespace HolaMundo
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("¡Hola, mundo!");
         }
     }
 }
 ```
 
-## Tipos de datos en C#
+- `using System;`: importa un espacio de nombres para poder usar sus clases sin escribir su nombre completo. Es el equivalente al `import` de Java y Kotlin. Por ejemplo, `Console` está en el espacio de nombres `System`.
+- `namespace HolaMundo`: agrupa las clases relacionadas bajo un mismo nombre, como los paquetes (`package`) de Java y Kotlin. A diferencia de Java, en C# el espacio de nombres **no tiene por qué coincidir** con la estructura de carpetas.
+- `static void Main(string[] args)`: el punto de entrada del programa, como el `main` de Java. En Unity no existe, ya que es el motor quien se encarga de ejecutar nuestros scripts.
+- `Console.WriteLine()`: muestra un texto por consola, como `System.out.println()` en Java. En Unity usaremos `Debug.Log()`.
 
-C# es un lenguaje de programación fuertemente tipado, lo que significa que cada variable debe tener un tipo de datos específico.    
+Igual que en Java, las instrucciones terminan en punto y coma (`;`) y los bloques de código se delimitan con llaves (`{ }`). Por convención, en C# la llave de apertura se escribe **en una línea nueva**, aunque el compilador acepta cualquiera de los dos estilos.
 
-Los tipos de datos en C# se dividen en dos categorías: tipos por valor y tipos por referencia.
+### Comentarios
 
-### Tipos por valor
+```csharp
+// Comentario de una línea
 
-Las variables de tipos por valor contienen directamente su dato, y al asignarlas a otra variable se copia el valor. Los más utilizados son:
+/* Comentario
+   de varias líneas */
 
-- `int`: Representa un número entero.
-- `float`: Representa un número de punto flotante de precisión simple. Es el que más se usa en Unity; sus literales llevan el sufijo `f` (`5.0f`).
-- `double`: Representa un número de punto flotante de precisión doble.
-- `char`: Representa un carácter Unicode.
-- `bool`: Representa un valor booleano (`true` o `false`).
-- Las **estructuras** (`struct`) y las **enumeraciones** (`enum`). En Unity, tipos como `Vector2`, `Vector3`, `Quaternion` o `Color` son estructuras.
+/// <summary>
+/// Comentario de documentación: aparece al pasar el ratón por encima
+/// de la función en el editor, como el Javadoc de Java.
+/// </summary>
+void Saltar() { }
+```
 
-### Tipos por referencia
+### Convenciones de nombres
 
-Las variables de tipos por referencia guardan una referencia al objeto, por lo que al asignarlas a otra variable ambas apuntan al mismo objeto. Algunos de ellos son:
+Una de las diferencias que más llama la atención al pasar de Java a C# es que en C# los métodos y las propiedades se escriben en **PascalCase** (con la primera letra en mayúscula):
 
-- `string`: Representa una secuencia de caracteres (inmutable, como en Java).
-- `object`: El tipo base del que heredan todos los demás.
-- Los **arrays** (`int[]`, `string[]`...): colecciones de tamaño fijo de elementos del mismo tipo.
-- Las **clases**, incluidas las colecciones como `List<T>` o `Dictionary<TKey, TValue>` y todos los componentes de Unity (`GameObject`, `Transform`, `Rigidbody2D`...).
+| Elemento | Convención | Ejemplo |
+|----------|------------|---------|
+| Clases, structs, enums | PascalCase | `PlayerController`, `EstadoJuego` |
+| Interfaces | PascalCase empezando por `I` | `IDañable`, `IInteractuable` |
+| Métodos | PascalCase | `RecibirDaño()`, `Start()` |
+| Propiedades | PascalCase | `Vida`, `EstaVivo` |
+| Variables locales y parámetros | camelCase | `velocidad`, `puntosGanados` |
+| Atributos privados | camelCase (a veces con `_` delante) | `vidaActual`, `_vidaActual` |
+| Constantes | PascalCase | `VidaMaxima` |
+
+Por eso en Unity escribimos `transform.Translate()` o `GetComponent()`, en lugar de `translate()` o `getComponent()` como haríamos en Java.
+
+## Variables y tipos de datos
+
+C# es un lenguaje fuertemente tipado: cada variable tiene un tipo concreto que no puede cambiar. Las variables se declaran indicando primero el tipo y después el nombre, como en Java:
 
 ```csharp
 int vidas = 3;
 float velocidad = 5.5f;
 string nombre = "Jugador";
-var puntos = 0; // var: el compilador deduce el tipo (int)
-
-int[] puntuaciones = { 10, 20, 30 };
-List<string> inventario = new List<string> { "Espada", "Escudo" }; // using System.Collections.Generic;
-
-// Interpolación de cadenas, equivalente a las plantillas de Kotlin
-Debug.Log($"{nombre} tiene {vidas} vidas");
+bool estaVivo = true;
 ```
+
+También podemos usar `var` para que el compilador deduzca el tipo a partir del valor, igual que en Kotlin. La variable sigue teniendo un tipo fijo:
+
+```csharp
+var puntos = 0;        // int
+var nombre = "Ana";    // string
+puntos = "hola";       // Error: puntos es de tipo int
+```
+
+### Tipos por valor y tipos por referencia
+
+Los tipos de datos en C# se dividen en dos categorías: tipos por valor y tipos por referencia.
+
+Las variables de **tipos por valor** contienen directamente su dato, y al asignarlas a otra variable **se copia el valor**. Los más utilizados son:
+
+| Tipo | Descripción | Ejemplo |
+|------|-------------|---------|
+| `int` | Número entero de 32 bits | `int vidas = 3;` |
+| `long` | Número entero de 64 bits | `long puntos = 10000000000L;` |
+| `float` | Número decimal de precisión simple. Es el que más se usa en Unity. | `float velocidad = 5.5f;` |
+| `double` | Número decimal de precisión doble | `double distancia = 12.345;` |
+| `decimal` | Número decimal de alta precisión, para cantidades de dinero | `decimal precio = 9.99m;` |
+| `char` | Un carácter Unicode, entre comillas simples | `char letra = 'A';` |
+| `bool` | Un valor booleano (`true` o `false`) | `bool enSuelo = false;` |
+| `struct` | Estructuras, como `Vector2`, `Vector3`, `Quaternion` o `Color` en Unity | `Vector3 posicion = new Vector3(1, 0, 2);` |
+| `enum` | Enumeraciones | `Dificultad nivel = Dificultad.Normal;` |
+
+:::warning[El sufijo `f` de los `float`]
+En C# un número con decimales como `5.5` es de tipo `double`. Para asignarlo a una variable `float` hay que añadirle el sufijo `f` (`5.5f`); si no, el código no compila. Como en Unity casi todo usa `float` (posiciones, velocidades, tiempos...), es un error muy habitual al empezar.
+:::
+
+Las variables de **tipos por referencia** guardan una referencia al objeto, por lo que al asignarlas a otra variable **ambas apuntan al mismo objeto**. Algunos de ellos son:
+
+- `string`: una cadena de texto (inmutable, como en Java).
+- `object`: el tipo base del que heredan todos los demás.
+- Los **arrays** (`int[]`, `string[]`...).
+- Las **clases**, incluidas las colecciones como `List<T>` o `Dictionary<TKey, TValue>` y todos los componentes de Unity (`GameObject`, `Transform`, `Rigidbody2D`...).
+
+```csharp
+// Tipo por valor: se copia el dato
+int a = 5;
+int b = a;
+b = 10;
+Debug.Log(a); // 5: a no ha cambiado
+
+// Tipo por referencia: las dos variables apuntan al mismo objeto
+List<int> lista1 = new List<int> { 1, 2, 3 };
+List<int> lista2 = lista1;
+lista2.Add(4);
+Debug.Log(lista1.Count); // 4: lista1 también ha cambiado
+```
+
+:::info[Diferencia con Java]
+En Java, los tipos primitivos (`int`, `float`...) y los objetos (`Integer`, `Float`...) son tipos distintos. En C# no existe esa distinción: `int` es simplemente otro nombre para la estructura `System.Int32` y tiene métodos propios, como `int.Parse()` o `ToString()`.
+:::
+
+### Constantes y variables de solo lectura
+
+C# tiene dos formas de declarar valores que no pueden cambiar, equivalentes al `final` de Java o al `val` y `const val` de Kotlin:
+
+```csharp
+public class Jugador
+{
+    const int VidaMaxima = 100;      // Constante: su valor se conoce al compilar
+    readonly float velocidadBase;    // Solo lectura: se asigna una vez, en la declaración o en el constructor
+
+    public Jugador(float velocidad)
+    {
+        velocidadBase = velocidad;
+    }
+}
+```
+
+- `const`: el valor tiene que ser un literal conocido al compilar (un número, un texto...).
+- `readonly`: se puede asignar en la declaración o en el constructor, pero después ya no se puede cambiar.
+
+### Conversiones entre tipos
+
+Las conversiones que no pierden información se hacen automáticamente (**conversiones implícitas**). Las que pueden perder información hay que indicarlas con un *cast*, escribiendo el tipo entre paréntesis (**conversiones explícitas**), igual que en Java:
+
+```csharp
+int entero = 10;
+float decimal1 = entero;        // Implícita: de int a float no se pierde nada
+
+float velocidad = 7.9f;
+int velocidadEntera = (int)velocidad; // Explícita: se pierden los decimales, vale 7
+```
+
+Para convertir textos en números se usan los métodos `Parse` y `TryParse`:
+
+```csharp
+int numero = int.Parse("42");          // 42. Si el texto no es un número, lanza una excepción
+
+if (int.TryParse("hola", out int resultado))
+{
+    Debug.Log($"Es un número: {resultado}");
+}
+else
+{
+    Debug.Log("No es un número"); // Se ejecuta esta rama
+}
+
+string texto = numero.ToString();      // "42"
+```
+
+`TryParse` devuelve `true` o `false` según si la conversión ha funcionado y guarda el resultado en la variable indicada con `out`. Es el equivalente al `toIntOrNull()` de Kotlin.
+
+### Tipos que admiten `null`
+
+Los tipos por referencia pueden valer `null`, como en Java. Los tipos por valor, en cambio, no pueden ser `null`, salvo que añadamos `?` al tipo, como en Kotlin:
+
+```csharp
+int vidas = null;   // Error: int no admite null
+int? record = null; // Correcto: int? admite null
+
+if (record.HasValue)
+{
+    Debug.Log(record.Value);
+}
+```
+
+Para trabajar con valores que pueden ser `null`, C# tiene los mismos operadores que Kotlin:
+
+```csharp
+string nombre = null;
+
+int? longitud = nombre?.Length;       // Llamada segura: null si nombre es null
+string mostrado = nombre ?? "Anónimo"; // Valor por defecto (el "elvis" de Kotlin)
+nombre ??= "Jugador";                  // Asigna solo si nombre es null
+```
+
+:::warning[`?.` y `??` con objetos de Unity]
+Estos operadores **no funcionan bien** con los objetos de Unity (`GameObject`, componentes...), porque Unity considera "nulo" un objeto que se ha destruido, pero `?.` y `??` no lo detectan. Con los objetos de Unity hay que comprobarlo con `if (objeto != null)`. Lo vemos con más detalle en el apartado de [C# en Unity](#c-en-unity).
+:::
+
+## Cadenas de texto
+
+Las cadenas se escriben entre comillas dobles. Para meter variables dentro de una cadena se usa la **interpolación**, poniendo un `$` delante de la cadena y las variables entre llaves, como las plantillas de Kotlin:
+
+```csharp
+string nombre = "Ana";
+int vidas = 3;
+
+string mensaje = $"{nombre} tiene {vidas} vidas";
+string tiempo = $"Tiempo: {Time.time:F2} s"; // F2: con 2 decimales
+string concatenado = "Hola, " + nombre;       // También se pueden concatenar con +
+string ruta = @"C:\Juegos\Partidas";          // Con @ no hace falta escapar las barras
+```
+
+Algunos de los métodos y propiedades más usados de las cadenas son:
+
+```csharp
+string texto = "  Game Over  ";
+
+texto.Length;                   // 13: número de caracteres
+texto.Trim();                   // "Game Over": quita los espacios del principio y el final
+texto.ToUpper();                // "  GAME OVER  "
+texto.Contains("Over");         // true
+texto.Replace("Over", "Start"); // "  Game Start  "
+"a,b,c".Split(',');             // Array con "a", "b" y "c"
+string.IsNullOrEmpty(texto);    // false
+```
+
+:::info[Diferencia con Java: comparar cadenas]
+En Java hay que comparar las cadenas con `equals()`, porque `==` compara si son el mismo objeto. En C#, igual que en Kotlin, **`==` compara el contenido** de las cadenas, por lo que `nombre == "Ana"` funciona como esperamos.
+:::
+
+## Operadores
+
+La mayoría de operadores son iguales que en Java:
+
+| Tipo | Operadores |
+|------|------------|
+| Aritméticos | `+`, `-`, `*`, `/`, `%` (resto) |
+| Incremento y decremento | `++`, `--` |
+| Asignación | `=`, `+=`, `-=`, `*=`, `/=` |
+| Comparación | `==`, `!=`, `<`, `>`, `<=`, `>=` |
+| Lógicos | `&&` (y), `\|\|` (o), `!` (no) |
+| Ternario | `condicion ? valorSiTrue : valorSiFalse` |
+| Nulos | `?.`, `??`, `??=` |
+| Tipos | `is` (comprueba el tipo), `as` (convierte o devuelve `null`) |
+
+```csharp
+string estado = vidas > 0 ? "Vivo" : "Muerto";
+
+if (componente is Rigidbody2D rb) // Comprueba el tipo y, si coincide, lo guarda en rb
+{
+    rb.gravityScale = 0;
+}
+```
+
+:::warning[La división entera]
+Igual que en Java, si dividimos dos números enteros el resultado es otro entero y se pierden los decimales: `7 / 2` vale `3`. Si queremos el resultado con decimales, al menos uno de los dos números tiene que ser decimal: `7 / 2f` vale `3.5`.
+:::
 
 ## Estructuras de control
 
-Las estructuras de control en C# permiten controlar el flujo de ejecución de un programa.
+### Estructuras condicionales
 
-### Estructuras de control condicionales
-
-Las estructuras de control condicionales en C# son las siguientes:
-
-- `if`: Permite ejecutar un bloque de código si se cumple una condición.
-- `else`: Permite ejecutar un bloque de código si no se cumple la condición del `if`.
-- `else if`: Permite evaluar una condición adicional si no se cumple la condición del `if`.
-- `switch`: Permite evaluar múltiples condiciones y ejecutar un bloque de código en función del valor de una expresión.
-
-### Estructuras de control iterativas
-
-Las estructuras de control iterativas en C# son las siguientes:
-
-- `for`: Permite ejecutar un bloque de código un número específico de veces.
-- `while`: Permite ejecutar un bloque de código mientras se cumpla una condición.
-- `do while`: Permite ejecutar un bloque de código al menos una vez y luego repetirlo mientras se cumpla una condición.
-
-## Funciones en C#
-
-Las funciones en C# se utilizan para encapsular un bloque de código que realiza una tarea específica.
+Las estructuras `if`, `else if` y `else` funcionan exactamente igual que en Java:
 
 ```csharp
-using System;
-
-namespace HelloWorld
+if (vida <= 0)
 {
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Console.WriteLine(Suma(5, 3));
-        }
-
-        static int Suma(int a, int b)
-        {
-            return a + b;
-        }
-    }
+    Morir();
+}
+else if (vida < 20)
+{
+    MostrarAvisoVidaBaja();
+}
+else
+{
+    Debug.Log("Todo bien");
 }
 ```
 
-## Clases y objetos en C#
+### `switch`
 
-Las clases y objetos en C# se utilizan para modelar entidades del mundo real. Una diferencia importante con Java son las **propiedades** (`{ get; set; }`), que sustituyen a los métodos `getX()` y `setX()`, de forma parecida a las propiedades de Kotlin.
+El `switch` clásico también es parecido al de Java, pero con una diferencia importante: en C#, cada `case` que tenga código **tiene que terminar** con `break` (o `return`, o `throw`). Si se nos olvida, el código no compila, lo que evita el error habitual de Java de que se ejecuten también los `case` siguientes. Lo que sí se puede hacer es agrupar varios `case` vacíos:
 
 ```csharp
-using System;
-
-namespace HelloWorld
+switch (dificultad)
 {
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Persona persona = new Persona("Juan", 25);
-            Console.WriteLine(persona.Nombre);
-            Console.WriteLine(persona.Edad);
-        }
-    }
-
-    class Persona
-    {
-        public string Nombre { get; set; }
-        public int Edad { get; set; }
-
-        public Persona(string nombre, int edad)
-        {
-            Nombre = nombre;
-            Edad = edad;
-        }
-    }
+    case Dificultad.Facil:
+        vidas = 5;
+        break;
+    case Dificultad.Normal:
+        vidas = 3;
+        break;
+    case Dificultad.Dificil:
+    case Dificultad.Pesadilla: // Varios casos con el mismo código
+        vidas = 1;
+        break;
+    default:
+        vidas = 3;
+        break;
 }
 ```
 
-:::info[C# en Unity]
-En Unity no escribimos un método `Main`: nuestras clases heredan de `MonoBehaviour` y es el motor quien llama a sus métodos (`Awake`, `Start`, `Update`...). Además, para que un campo aparezca en el inspector, Unity necesita que sea un campo `public` o `[SerializeField]`, no una propiedad. Puedes ver más en el apartado de [Scripting en Unity](../1-Unity/9-Scripting.mdx).
+Además, C# tiene las **expresiones `switch`**, que devuelven un valor y se parecen mucho al `when` de Kotlin:
+
+```csharp
+string calificacion = nota switch
+{
+    >= 9 => "Sobresaliente",
+    >= 7 => "Notable",
+    >= 5 => "Aprobado",
+    _ => "Suspenso" // _ equivale al else de Kotlin o al default
+};
+
+int vidas = dificultad switch
+{
+    Dificultad.Facil => 5,
+    Dificultad.Normal => 3,
+    _ => 1
+};
+```
+
+### Estructuras repetitivas
+
+C# tiene los mismos bucles que Java, incluido el `for` clásico con contador. Para recorrer colecciones se usa `foreach`, el equivalente al `for (elemento : coleccion)` de Java o al `for (elemento in coleccion)` de Kotlin:
+
+```csharp
+// for clásico
+for (int i = 0; i < 10; i++)
+{
+    Debug.Log($"Vuelta {i}");
+}
+
+// foreach para recorrer colecciones
+string[] armas = { "Espada", "Arco", "Bastón" };
+foreach (string arma in armas)
+{
+    Debug.Log(arma);
+}
+
+// while: se repite mientras se cumpla la condición
+int enemigos = 5;
+while (enemigos > 0)
+{
+    enemigos--;
+}
+
+// do-while: se ejecuta al menos una vez
+int intentos = 0;
+do
+{
+    intentos++;
+} while (intentos < 3);
+```
+
+Dentro de los bucles se pueden usar `break` para salir del bucle y `continue` para pasar a la siguiente vuelta, como en Java y Kotlin.
+
+:::warning[No modifiques una colección mientras la recorres con `foreach`]
+Si dentro de un `foreach` añadimos o eliminamos elementos de la colección que estamos recorriendo, se lanza una excepción (`InvalidOperationException`). Si necesitamos eliminar elementos, lo más sencillo es recorrer la lista con un `for` **al revés**, desde el último elemento hasta el primero, o usar el método `RemoveAll()`.
 :::
+
+## Arrays y colecciones
+
+### Arrays
+
+Los arrays tienen un tamaño fijo, que se indica al crearlos:
+
+```csharp
+int[] puntuaciones = new int[5];          // 5 posiciones, todas a 0
+string[] niveles = { "Bosque", "Cueva", "Castillo" };
+
+puntuaciones[0] = 100;
+Debug.Log(niveles.Length);                // 3
+Debug.Log(niveles[niveles.Length - 1]);   // "Castillo"
+```
+
+C# permite crear arrays de varias dimensiones, muy útiles para representar tableros o cuadrículas:
+
+```csharp
+int[,] tablero = new int[8, 8]; // Array de 8 filas y 8 columnas
+tablero[2, 3] = 1;
+
+int filas = tablero.GetLength(0);    // 8
+int columnas = tablero.GetLength(1); // 8
+```
+
+### Listas
+
+La clase `List<T>` es una lista de tamaño variable, como el `ArrayList` de Java o la `MutableList` de Kotlin. Para usarla hay que importar el espacio de nombres `System.Collections.Generic`:
+
+```csharp
+using System.Collections.Generic;
+
+List<string> inventario = new List<string> { "Espada", "Escudo" };
+
+inventario.Add("Poción");               // Añade al final
+inventario.Remove("Escudo");            // Elimina el elemento
+inventario.RemoveAt(0);                 // Elimina el elemento de la posición 0
+bool tienePocion = inventario.Contains("Poción");
+int cantidad = inventario.Count;        // Número de elementos
+inventario.Clear();                     // Vacía la lista
+```
+
+:::info[`Length` o `Count`]
+El número de elementos de un **array** se obtiene con la propiedad `Length` y el de una **lista** con la propiedad `Count`. Ninguna de las dos lleva paréntesis, porque son propiedades, no métodos.
+:::
+
+### Diccionarios
+
+La clase `Dictionary<TKey, TValue>` guarda pares clave-valor, como el `HashMap` de Java o el `Map` de Kotlin:
+
+```csharp
+Dictionary<string, int> precios = new Dictionary<string, int>
+{
+    { "Poción", 50 },
+    { "Espada", 200 }
+};
+
+precios["Escudo"] = 150;              // Añade o modifica un valor
+bool existe = precios.ContainsKey("Arco");
+
+if (precios.TryGetValue("Poción", out int precio))
+{
+    Debug.Log($"La poción cuesta {precio}");
+}
+
+foreach (KeyValuePair<string, int> par in precios)
+{
+    Debug.Log($"{par.Key}: {par.Value}");
+}
+```
+
+Si accedemos a una clave que no existe con `precios["Arco"]`, se lanza una excepción. Por eso, si no estamos seguros de que la clave existe, es mejor usar `TryGetValue`.
+
+Otras colecciones útiles son `HashSet<T>` (elementos sin repetir, como el `Set` de Kotlin), `Queue<T>` (cola: el primero en entrar es el primero en salir) y `Stack<T>` (pila: el último en entrar es el primero en salir).
+
+## Métodos
+
+Los métodos se declaran indicando el tipo que devuelven (o `void` si no devuelven nada), el nombre y los parámetros:
+
+```csharp
+int Sumar(int a, int b)
+{
+    return a + b;
+}
+
+// Si el método solo tiene una expresión, se puede escribir con =>
+int Multiplicar(int a, int b) => a * b;
+```
+
+### Parámetros con valores por defecto y con nombre
+
+Igual que en Kotlin, los parámetros pueden tener valores por defecto, y al llamar al método se puede indicar el nombre de cada argumento:
+
+```csharp
+void Disparar(float velocidad = 10f, int daño = 1, bool atraviesa = false)
+{
+    // ...
+}
+
+Disparar();                        // Todos los valores por defecto
+Disparar(20f);                     // velocidad = 20
+Disparar(daño: 5, atraviesa: true); // Indicando los nombres
+```
+
+### Sobrecarga
+
+Podemos tener varios métodos con el mismo nombre si reciben parámetros distintos, como en Java. Unity lo usa muchísimo; por ejemplo, `Instantiate` tiene muchas versiones:
+
+```csharp
+void RecibirDaño(int cantidad) { /* ... */ }
+void RecibirDaño(int cantidad, Vector2 direccionEmpuje) { /* ... */ }
+```
+
+### Parámetros `ref` y `out`
+
+Por defecto, los parámetros se pasan por valor: el método recibe una copia. Con `ref` y `out` el método puede modificar la variable original:
+
+- `ref`: la variable tiene que tener un valor antes de llamar al método, y el método puede leerla y modificarla.
+- `out`: el método está **obligado** a darle un valor. Se usa para devolver varios resultados, como hacen `TryParse` y `TryGetValue`.
+
+```csharp
+void Duplicar(ref int numero)
+{
+    numero *= 2;
+}
+
+int puntos = 10;
+Duplicar(ref puntos);
+Debug.Log(puntos); // 20
+```
+
+En Unity veremos `out` muy a menudo, por ejemplo, en `Physics.Raycast(origen, direccion, out RaycastHit hit)` o en `TryGetComponent(out Rigidbody rb)`.
+
+## Clases y objetos
+
+Las clases se declaran con `class` y los objetos se crean con `new`, como en Java:
+
+```csharp
+public class Enemigo
+{
+    // Atributos
+    private int vida;
+    private string nombre;
+
+    // Constructor
+    public Enemigo(string nombre, int vida)
+    {
+        this.nombre = nombre;
+        this.vida = vida;
+    }
+
+    // Método
+    public void RecibirDaño(int cantidad)
+    {
+        vida -= cantidad;
+        if (vida <= 0)
+        {
+            Debug.Log($"{nombre} ha sido derrotado");
+        }
+    }
+}
+
+Enemigo orco = new Enemigo("Orco", 50);
+orco.RecibirDaño(20);
+```
+
+### Modificadores de acceso
+
+| Modificador | Desde dónde se puede acceder |
+|-------------|------------------------------|
+| `public` | Desde cualquier sitio. |
+| `private` | Solo desde la propia clase. |
+| `protected` | Desde la propia clase y desde las clases que heredan de ella. |
+| `internal` | Desde cualquier clase del mismo proyecto (ensamblado). |
+
+:::warning[Diferencia con Java: el acceso por defecto]
+En C#, si no ponemos ningún modificador, los atributos y métodos de una clase son **`private`**. Por eso en Unity, si escribimos `float velocidad;` sin modificador, la variable no aparece en el inspector ni se puede usar desde otros scripts. Aun así, es recomendable escribir siempre `private` de forma explícita para que quede claro.
+:::
+
+### Propiedades
+
+Las **propiedades** son una de las grandes diferencias con Java. Sustituyen a los métodos `getX()` y `setX()` y, desde fuera de la clase, se usan como si fueran variables, igual que las propiedades de Kotlin:
+
+```csharp
+public class Jugador
+{
+    // Propiedad automática: C# crea el atributo internamente
+    public string Nombre { get; set; }
+
+    // Se puede leer desde fuera, pero solo se puede modificar desde dentro de la clase
+    public int Puntos { get; private set; }
+
+    // Propiedad con lógica propia, guardando el valor en un atributo privado
+    private int vida = 100;
+    public int Vida
+    {
+        get { return vida; }
+        set { vida = Mathf.Clamp(value, 0, 100); } // value es el valor que se asigna
+    }
+
+    // Propiedad calculada, de solo lectura
+    public bool EstaVivo => vida > 0;
+
+    public void SumarPuntos(int cantidad)
+    {
+        Puntos += cantidad;
+    }
+}
+
+Jugador jugador = new Jugador();
+jugador.Nombre = "Ana";
+jugador.Vida = 150;          // Se guarda 100, por el Clamp del set
+Debug.Log(jugador.EstaVivo); // true
+jugador.Puntos = 10;         // Error: el set es privado
+```
+
+### Inicializadores de objetos
+
+Si una clase tiene propiedades públicas, podemos darles valor al crear el objeto sin necesidad de un constructor:
+
+```csharp
+Jugador jugador = new Jugador { Nombre = "Ana", Vida = 80 };
+```
+
+### Miembros estáticos
+
+Los atributos y métodos `static` pertenecen a la clase y no a cada objeto, como en Java (en Kotlin se usa el `companion object`). Se acceden con el nombre de la clase:
+
+```csharp
+public class Utilidades
+{
+    public static int partidasJugadas = 0;
+
+    public static float Porcentaje(float valor, float total) => valor / total * 100f;
+}
+
+Utilidades.partidasJugadas++;
+float porcentaje = Utilidades.Porcentaje(30, 120);
+```
+
+En Unity usamos constantemente métodos estáticos: `Debug.Log()`, `Mathf.Clamp()`, `Random.Range()` o `Destroy()` son algunos ejemplos.
+
+## Herencia, polimorfismo e interfaces
+
+### Herencia
+
+La herencia se indica con dos puntos (`:`), tanto para heredar de una clase como para implementar interfaces. Para llamar al constructor o a los métodos de la clase padre se usa `base`, que es el equivalente al `super` de Java:
+
+```csharp
+public class Personaje
+{
+    protected int vida;
+
+    public Personaje(int vida)
+    {
+        this.vida = vida;
+    }
+}
+
+public class Mago : Personaje
+{
+    private int mana;
+
+    public Mago(int vida, int mana) : base(vida) // Llama al constructor de Personaje
+    {
+        this.mana = mana;
+    }
+}
+```
+
+En C#, una clase solo puede heredar de **una** clase, pero puede implementar varias interfaces, como en Java.
+
+### `virtual` y `override`
+
+En Java, cualquier método se puede sobrescribir en una clase hija. En C#, igual que en Kotlin con `open`, el método de la clase padre tiene que estar marcado como **`virtual`** para poder sobrescribirlo, y el método de la clase hija tiene que marcarse con **`override`**:
+
+```csharp
+public class Enemigo
+{
+    public virtual void Atacar()
+    {
+        Debug.Log("El enemigo ataca");
+    }
+}
+
+public class Arquero : Enemigo
+{
+    public override void Atacar()
+    {
+        base.Atacar(); // Opcional: ejecuta también el código del padre
+        Debug.Log("El arquero dispara una flecha");
+    }
+}
+
+Enemigo enemigo = new Arquero();
+enemigo.Atacar(); // Ejecuta el método de Arquero (polimorfismo)
+```
+
+Otros modificadores relacionados con la herencia son:
+
+- `abstract`: una clase abstracta no se puede instanciar, y un método abstracto no tiene cuerpo y las clases hijas están obligadas a implementarlo.
+- `sealed`: una clase sellada no se puede heredar, como una clase `final` en Java. Ojo, no es lo mismo que una `sealed class` de Kotlin.
+
+```csharp
+public abstract class Arma
+{
+    public abstract void Usar(); // Las clases hijas deben implementarlo
+}
+
+public class Espada : Arma
+{
+    public override void Usar()
+    {
+        Debug.Log("¡Tajo!");
+    }
+}
+```
+
+### Interfaces
+
+Las interfaces definen un conjunto de métodos o propiedades que deben tener las clases que las implementan. Por convención, su nombre empieza por `I`:
+
+```csharp
+public interface IDañable
+{
+    void RecibirDaño(int cantidad);
+}
+
+public class Barril : IDañable
+{
+    public void RecibirDaño(int cantidad)
+    {
+        Debug.Log("El barril explota");
+    }
+}
+```
+
+Las interfaces son muy útiles en los juegos. Por ejemplo, un proyectil no necesita saber si ha chocado con un enemigo, un jugador o un barril: le basta con saber que el objeto es `IDañable` para llamar a `RecibirDaño()`. Lo veremos en el apartado de [scripting](../1-Unity/9-Scripting.mdx#colisiones-y-triggers).
+
+## Estructuras y enumeraciones
+
+### Estructuras (`struct`)
+
+Las estructuras se parecen a las clases, pero son **tipos por valor**: al asignarlas o pasarlas a un método se copian. Se usan para datos pequeños, como vectores o colores, y en Unity las usamos constantemente (`Vector2`, `Vector3`, `Quaternion`, `Color`...):
+
+```csharp
+public struct Punto
+{
+    public int x;
+    public int y;
+}
+
+Punto p1 = new Punto { x = 1, y = 2 };
+Punto p2 = p1; // Se copia
+p2.x = 10;
+Debug.Log(p1.x); // 1: p1 no ha cambiado
+```
+
+Que sean tipos por valor tiene una consecuencia muy importante en Unity, que veremos en el apartado de [C# en Unity](#c-en-unity).
+
+### Enumeraciones (`enum`)
+
+Las enumeraciones definen un conjunto de valores con nombre. Son ideales para representar estados:
+
+```csharp
+public enum EstadoJuego
+{
+    MenuPrincipal,
+    Jugando,
+    Pausa,
+    GameOver
+}
+
+EstadoJuego estado = EstadoJuego.Jugando;
+
+if (estado == EstadoJuego.Pausa)
+{
+    Debug.Log("El juego está en pausa");
+}
+```
+
+Si declaramos un atributo `public` o `[SerializeField]` de un tipo `enum` en un script de Unity, aparece en el inspector como un **desplegable** con todos sus valores.
+
+## Delegados, lambdas y eventos
+
+### Delegados y lambdas
+
+Un **delegado** es un tipo que representa a una función, de forma parecida a los tipos de función de Kotlin (`(Int) -> Unit`). En la práctica, casi siempre usaremos los dos delegados genéricos que trae C#:
+
+- `Action`: una función que no devuelve nada. `Action<int>` recibe un `int`, `Action<int, string>` recibe un `int` y un `string`...
+- `Func`: una función que devuelve un valor. El **último** tipo es el que devuelve: `Func<int, bool>` recibe un `int` y devuelve un `bool`.
+
+Las **lambdas** se escriben con `=>`, como en Kotlin pero con una flecha distinta:
+
+```csharp
+using System;
+
+Action saludar = () => Debug.Log("¡Hola!");
+Action<string> saludarA = nombre => Debug.Log($"¡Hola, {nombre}!");
+Func<int, int, int> sumar = (a, b) => a + b;
+Func<int, bool> esPar = n => n % 2 == 0;
+
+saludar();
+saludarA("Ana");
+int resultado = sumar(2, 3); // 5
+```
+
+### Eventos
+
+Un **evento** es un delegado al que otras clases pueden **suscribirse** para que se les avise cuando ocurre algo. Es la forma más limpia de comunicar distintas partes del juego sin que tengan que conocerse entre sí:
+
+```csharp
+using System;
+using UnityEngine;
+
+public class Vida : MonoBehaviour
+{
+    public event Action<int> OnVidaCambiada; // Avisa con la vida que queda
+    public event Action OnMuerte;
+
+    [SerializeField] private int vida = 100;
+
+    public void RecibirDaño(int cantidad)
+    {
+        vida -= cantidad;
+        OnVidaCambiada?.Invoke(vida); // Avisa a los suscriptores, si los hay
+
+        if (vida <= 0)
+        {
+            OnMuerte?.Invoke();
+        }
+    }
+}
+```
+
+```csharp
+using UnityEngine;
+
+public class BarraDeVida : MonoBehaviour
+{
+    [SerializeField] private Vida vidaJugador;
+
+    void OnEnable()
+    {
+        vidaJugador.OnVidaCambiada += ActualizarBarra; // Nos suscribimos
+    }
+
+    void OnDisable()
+    {
+        vidaJugador.OnVidaCambiada -= ActualizarBarra; // Nos damos de baja
+    }
+
+    private void ActualizarBarra(int vidaRestante)
+    {
+        Debug.Log($"Actualizando la barra: {vidaRestante}");
+    }
+}
+```
+
+En el ejemplo anterior, el script `Vida` no sabe nada de la barra de vida, del sonido ni de la pantalla de Game Over: solo avisa de que la vida ha cambiado o de que el personaje ha muerto, y cada script interesado se suscribe con `+=` y hace lo que necesite. Es importante darse de baja con `-=` cuando el objeto se desactiva o se destruye.
+
+:::info[`UnityEvent`]
+Unity tiene su propio tipo de evento, `UnityEvent`, que se usa por ejemplo en el `OnClick` de los botones. Su ventaja es que aparece en el **inspector** y se le pueden asignar funciones arrastrando objetos, sin escribir código. Para declararlo hay que importar `UnityEngine.Events`: `public UnityEvent alMorir;`, y se lanza con `alMorir.Invoke()`.
+:::
+
+## LINQ
+
+**LINQ** es un conjunto de métodos para trabajar con colecciones, muy parecido a las funciones de colecciones de Kotlin (`filter`, `map`, `sortedBy`...). Para usarlo hay que importar `System.Linq`:
+
+```csharp
+using System.Linq;
+
+List<int> puntuaciones = new List<int> { 50, 120, 30, 200, 90 };
+
+var altas = puntuaciones.Where(p => p > 100).ToList();       // filter: [120, 200]
+var dobles = puntuaciones.Select(p => p * 2).ToList();       // map
+var ordenadas = puntuaciones.OrderByDescending(p => p).ToList();
+int maxima = puntuaciones.Max();
+bool hayCeros = puntuaciones.Any(p => p == 0);
+int primera = puntuaciones.First(p => p > 100);              // 120
+int cuantas = puntuaciones.Count(p => p >= 50);
+```
+
+| Kotlin | C# (LINQ) |
+|--------|-----------|
+| `filter { }` | `Where()` |
+| `map { }` | `Select()` |
+| `sortedBy { }` | `OrderBy()` |
+| `first { }` / `firstOrNull { }` | `First()` / `FirstOrDefault()` |
+| `any { }`, `all { }`, `count { }` | `Any()`, `All()`, `Count()` |
+| `sumOf { }` | `Sum()` |
+
+:::warning[LINQ y el rendimiento]
+LINQ es muy cómodo, pero crea objetos nuevos cada vez que se usa. Si lo usamos dentro de `Update()`, que se ejecuta en cada frame, puede afectar al rendimiento del juego. Úsalo sin problemas al cargar un nivel, en los menús o en momentos puntuales, pero evítalo en el código que se ejecuta en cada frame.
+:::
+
+## Genéricos
+
+Igual que en Java y Kotlin, los genéricos permiten escribir clases y métodos que funcionan con cualquier tipo. Ya los hemos usado con `List<T>` y `Dictionary<TKey, TValue>`, y en Unity los usaremos sobre todo con `GetComponent<T>()`:
+
+```csharp
+Rigidbody2D rb = GetComponent<Rigidbody2D>();
+```
+
+Nosotros también podemos crear métodos genéricos. Con `where` podemos restringir los tipos que se admiten:
+
+```csharp
+T ElementoAleatorio<T>(List<T> lista)
+{
+    return lista[Random.Range(0, lista.Count)];
+}
+
+string arma = ElementoAleatorio(new List<string> { "Espada", "Arco", "Hacha" });
+```
+
+## Excepciones
+
+Las excepciones se gestionan con `try`, `catch` y `finally`, igual que en Java y Kotlin. Como en Kotlin, en C# no hay excepciones comprobadas, por lo que nunca es obligatorio capturarlas ni declarar `throws`:
+
+```csharp
+try
+{
+    string texto = File.ReadAllText(ruta); // using System.IO;
+}
+catch (FileNotFoundException)
+{
+    Debug.LogWarning("No hay ninguna partida guardada");
+}
+catch (Exception e)
+{
+    Debug.LogError($"Error al cargar la partida: {e.Message}");
+}
+finally
+{
+    Debug.Log("Fin de la carga");
+}
+```
+
+Para lanzar una excepción se usa `throw new`, como en Java: `throw new ArgumentException("La cantidad no puede ser negativa");`. Puedes ver más sobre las excepciones y sus diferencias con Java en el apartado de [excepciones en Kotlin](../../Android/1-sobre-kotlin/16-excepciones.mdx).
+
+## C# en Unity
+
+Todo lo anterior es C# estándar, pero al usarlo en Unity hay algunas particularidades que conviene conocer.
+
+### No hay `Main` y no se usa `new` con los componentes
+
+En Unity no escribimos un método `Main`: nuestras clases heredan de `MonoBehaviour` y es el motor quien llama a sus métodos (`Awake`, `Start`, `Update`...). Además, los componentes **no se crean con `new`**, sino que se añaden a un GameObject desde el inspector o con `AddComponent<T>()`, y los objetos de la escena se crean con `Instantiate()`. Lo vemos en el apartado de [scripting](../1-Unity/9-Scripting.mdx).
+
+```csharp
+Rigidbody2D rb = new Rigidbody2D();             // Mal: no funciona
+Rigidbody2D rb = gameObject.AddComponent<Rigidbody2D>(); // Bien
+```
+
+Las clases que **no** heredan de `MonoBehaviour` (por ejemplo, una clase `Partida` con los datos de la partida) sí se crean con `new`, como en cualquier programa de C#.
+
+### El inspector: campos sí, propiedades no
+
+Para que un dato aparezca en el inspector, Unity necesita que sea un **campo** (atributo) `public` o `[SerializeField]`. Las propiedades (`{ get; set; }`) **no** aparecen en el inspector:
+
+```csharp
+[SerializeField] private float velocidad = 5f; // Aparece en el inspector
+public int Vida { get; set; }                   // No aparece
+```
+
+### Modificar la posición: las estructuras son copias
+
+Como `Vector3` es una estructura, `transform.position` nos devuelve una **copia** de la posición. Por eso no podemos modificar directamente uno de sus componentes:
+
+```csharp
+transform.position.x = 5f; // Error: no compila
+
+// Correcto: copiamos el vector, lo modificamos y lo volvemos a asignar
+Vector3 posicion = transform.position;
+posicion.x = 5f;
+transform.position = posicion;
+
+// O creamos un vector nuevo
+transform.position = new Vector3(5f, transform.position.y, transform.position.z);
+```
+
+Lo mismo ocurre con otras propiedades que son estructuras, como `rb.linearVelocity`, `transform.localScale` o el `color` de un `SpriteRenderer`.
+
+### Los objetos destruidos y `null`
+
+Cuando destruimos un objeto con `Destroy()`, el objeto de C# no desaparece al momento, pero Unity hace que al compararlo con `null` usando `==` o `!=` el resultado sea "nulo". Esto no funciona con los operadores `?.` y `??`, que no tienen en cuenta esta comprobación especial de Unity:
+
+```csharp
+if (objetivo != null) // Correcto: detecta que el objetivo se ha destruido
+{
+    objetivo.RecibirDaño(10);
+}
+
+objetivo?.RecibirDaño(10); // Incorrecto con objetos de Unity: puede lanzar una MissingReferenceException
+```
+
+Por eso, con cualquier objeto que herede de `UnityEngine.Object` (GameObjects, componentes, scripts propios...) siempre comprobaremos `null` con `if`. Con los objetos de C# normales y con los eventos, `?.` funciona sin problemas.
+
+### Los `float` y las comparaciones
+
+Como en Unity se trabaja constantemente con `float`, hay que tener en cuenta que los números decimales tienen pequeños errores de precisión. Por eso no es buena idea comparar dos `float` con `==`:
+
+```csharp
+if (transform.position.x == 10f) { }                   // Puede no cumplirse nunca
+if (Mathf.Approximately(transform.position.x, 10f)) { } // Mejor
+if (Vector3.Distance(transform.position, destino) < 0.01f) { } // Para posiciones
+```
+
+### `Random` de Unity y `Random` de C#
+
+Tanto Unity (`UnityEngine.Random`) como C# (`System.Random`) tienen una clase llamada `Random`. Si un script importa los dos espacios de nombres (`using System;` y `using UnityEngine;`), el compilador no sabe a cuál nos referimos y da un error. Para evitarlo, podemos escribir el nombre completo o indicar cuál queremos usar con un `using`:
+
+```csharp
+using System;
+using UnityEngine;
+using Random = UnityEngine.Random; // A partir de aquí, Random es el de Unity
+
+int tirada = Random.Range(1, 7);
+```
+
+## Resumen: Java, Kotlin y C#
+
+| | Java | Kotlin | C# |
+|---|---|---|---|
+| Importar | `import` | `import` | `using` |
+| Agrupar clases | `package` | `package` | `namespace` |
+| Inferencia de tipos | `var` (Java 10+) | `val` / `var` | `var` |
+| Constantes | `final` | `val`, `const val` | `readonly`, `const` |
+| Texto con variables | `"Hola " + nombre` | `"Hola $nombre"` | `$"Hola {nombre}"` |
+| Comparar cadenas | `equals()` | `==` | `==` |
+| Nombres de los métodos | camelCase | camelCase | PascalCase |
+| Acceso por defecto | De paquete | `public` | `private` |
+| Getters y setters | Métodos `getX()` / `setX()` | Propiedades | Propiedades `{ get; set; }` |
+| Herencia | `extends` / `implements` | `:` | `:` |
+| Llamar al padre | `super` | `super` | `base` |
+| Sobrescribir métodos | Siempre se puede (`@Override`) | `open` + `override` | `virtual` + `override` |
+| Impedir la herencia | `final` | Por defecto | `sealed` |
+| Recorrer colecciones | `for (x : lista)` | `for (x in lista)` | `foreach (var x in lista)` |
+| Lambdas | `x -> x * 2` | `{ x -> x * 2 }` | `x => x * 2` |
+| Valores nulos | Cualquier objeto | Solo tipos con `?` | Objetos y tipos por valor con `?` |
+| Excepciones comprobadas | Sí | No | No |
 
 ## Recursos
 
 - [Documentación oficial de C#](https://learn.microsoft.com/es-es/dotnet/csharp/)
 - [Tutoriales de C# para principiantes de Microsoft](https://learn.microsoft.com/es-es/dotnet/csharp/tour-of-csharp/tutorials/)
+- [Convenciones de código de C#](https://learn.microsoft.com/es-es/dotnet/csharp/fundamentals/coding-style/coding-conventions)
+- [Características de C# compatibles con Unity](https://docs.unity3d.com/6000.0/Documentation/Manual/csharp-compiler.html)

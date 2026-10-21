@@ -7,7 +7,7 @@ Apuntes, ejemplos y referencias del módulo de **Programación Multimedia y Disp
 El contenido se divide en dos bloques:
 
 - **Desarrollo de apps Android** con Kotlin y Jetpack Compose: lenguaje Kotlin, Compose, gestión del estado, navegación, arquitectura MVVM, conexión a internet con Retrofit, serialización JSON y persistencia con Room y DataStore.
-- **Desarrollo de videojuegos** con Unity 6 y C#: uso del editor, físicas, scripting, UI, audio, animaciones, builds y juegos completos paso a paso (Pong y Breakout).
+- **Desarrollo de videojuegos** con Unity 6 y C#: uso del editor, físicas, scripting, UI, audio, animaciones, builds y el proyecto de evaluación.
 
 Los vídeos de las clases están en el canal de YouTube [@resuacode](https://www.youtube.com/@resuacode).
 
